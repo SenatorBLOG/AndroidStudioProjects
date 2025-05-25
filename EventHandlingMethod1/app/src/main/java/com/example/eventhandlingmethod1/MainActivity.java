@@ -2,6 +2,7 @@ package com.example.eventhandlingmethod1;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -30,8 +31,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         int id = v.getId();
         if (id == R.id.btn1) {
             ConstraintLayout.setBackgroundColor(Color.RED);
+            Log.e(TAG, "Color changed to RED");
         } else if (id == R.id.btn2) {
             ConstraintLayout.setBackgroundColor(Color.GREEN);
+            Log.e(TAG, "Color changed to GREEN");
         }
     }
 }
