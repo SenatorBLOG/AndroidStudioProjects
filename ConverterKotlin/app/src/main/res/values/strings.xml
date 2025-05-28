@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">ConverterKotlin</string>
+    <string name="button">Button</string>
+    <string name="enter_a_number">Enter a Number</string>
+    <string name="textview">TextView</string>
+    <string name="no_value_string" />
+</resources>
