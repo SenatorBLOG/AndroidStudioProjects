@@ -61,4 +61,5 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("name",nameEditText.getText().toString());
         startActivity(intent);
     }
+ы
 }
