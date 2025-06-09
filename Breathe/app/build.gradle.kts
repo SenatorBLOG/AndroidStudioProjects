@@ -1,16 +1,18 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.composeCompiler)
 }
 
 android {
     namespace = "com.example.breathe"
-    compileSdk = 34
+    compileSdk = 35
+    // Updated to 35
 
     defaultConfig {
         applicationId = "com.example.breathe"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
     }
@@ -20,7 +22,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.11"
+        kotlinCompilerExtensionVersion = "1.5.14" // Updated for compatibility
     }
 
     compileOptions {
@@ -34,22 +36,21 @@ android {
 }
 
 dependencies {
-    implementation(libs.material) // [Проверка] Убедитесь, что версия в libs.versions.toml = "1.12.0"
-    implementation ("androidx.datastore:datastore-preferences:1.0.0")
+    implementation(libs.material)
     implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.compose.ui)
     implementation(libs.compose.material3)
     implementation(libs.compose.tooling)
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat) // [Проверка] Может быть не нужно для чистого Compose
+    implementation(libs.androidx.appcompat)
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.datastore.preferences) // [Исправление] Единая зависимость вместо двух
-    // implementation(libs.androidx.compiler) // [Удалено] Не нужно, если не используется отдельно
+    implementation(libs.androidx.datastore.preferences)
+
 
     debugImplementation(libs.compose.tooling.debug)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.espresso.core)
-
 }

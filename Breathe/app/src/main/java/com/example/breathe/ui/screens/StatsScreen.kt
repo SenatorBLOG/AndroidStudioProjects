@@ -9,22 +9,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.breathe.getBestStreakFlow
-import com.example.breathe.getSessionsThisWeekFlow
-import com.example.breathe.getTotalMeditationTimeFlow
 import com.example.breathe.ui.theme.*
 
 @Composable
-fun StatsScreen() {
-    // Access DataStore using LocalContext
-    val context = LocalContext.current
-    val totalMeditationTime by context.getTotalMeditationTimeFlow().collectAsState(initial = 0L)
-    val bestStreak by context.getBestStreakFlow().collectAsState(initial = 0)
-    val sessionsThisWeek by context.getSessionsThisWeekFlow().collectAsState(initial = 0)
-
-    // Access the current theme using LocalTheme
-    val colors = LocalTheme.current
-
+fun StatsScreen(colors: AppColors) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -32,7 +20,6 @@ fun StatsScreen() {
         verticalArrangement = Arrangement.SpaceBetween,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Заголовок
         Text(
             text = "Statistics",
             color = colors.title,
@@ -43,8 +30,6 @@ fun StatsScreen() {
             color = colors.subtitle,
             style = MaterialTheme.typography.titleMedium
         )
-
-        // График (заглушка, замените на реальный график)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -54,16 +39,14 @@ fun StatsScreen() {
         ) {
             Text("Graph Placeholder", color = colors.text)
         }
-
-        // Карточки статистики
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            StatCard(label = "TOTAL MEDITATION TIME", value = "${totalMeditationTime / 60000} min", colors = colors)
-            StatCard(label = "BEST STREAK", value = "$bestStreak days", colors = colors)
+            StatCard(label = "TOTAL MEDITATION TIME", value = "0 min", colors = colors)
+            StatCard(label = "BEST STREAK", value = "0 days", colors = colors)
         }
-        StatCard(label = "SESSIONS THIS WEEK", value = "$sessionsThisWeek sessions", colors = colors, fullWidth = true)
+        StatCard(label = "SESSIONS THIS WEEK", value = "0 sessions", colors = colors, fullWidth = true)
     }
 }
 
