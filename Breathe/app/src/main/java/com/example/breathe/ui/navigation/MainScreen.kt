@@ -1,5 +1,6 @@
 package com.example.breathe.ui.navigation
 
+import android.content.res.Configuration
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -20,9 +21,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.rememberNavController
+import com.example.breathe.BottomNavigationBar
 import com.example.breathe.ui.theme.*
 import kotlinx.coroutines.delay
 
+// Модели данных для дыхания
 data class BreathingPattern(
     val inhale: Long,
     val holdAfterInhale: Long,
@@ -54,17 +58,18 @@ fun MainScreen(colors: AppColors, onThemeChange: (String) -> Unit) {
 
     val pattern = patterns[breathingPattern] ?: BreathingPattern(4000, 0, 4000, 0)
 
+    // Анимация дыхания
     LaunchedEffect(isRunning) {
         if (isRunning) {
             while (isRunning) {
                 currentPhase = Phase.INHALE
-                scale.animateTo(1.5f, animationSpec = tween(durationMillis = pattern.inhale.toInt(), easing = LinearEasing))
+                scale.animateTo(1.5f, animationSpec = tween(pattern.inhale.toInt(), easing = LinearEasing))
                 if (!isRunning) break
                 currentPhase = Phase.HOLD1
                 delay(pattern.holdAfterInhale)
                 if (!isRunning) break
                 currentPhase = Phase.EXHALE
-                scale.animateTo(1.0f, animationSpec = tween(durationMillis = pattern.exhale.toInt(), easing = LinearEasing))
+                scale.animateTo(1.0f, animationSpec = tween(pattern.exhale.toInt(), easing = LinearEasing))
                 if (!isRunning) break
                 if (pattern.holdAfterExhale > 0) {
                     currentPhase = Phase.HOLD2
@@ -78,6 +83,7 @@ fun MainScreen(colors: AppColors, onThemeChange: (String) -> Unit) {
         }
     }
 
+    // Таймер длительности
     LaunchedEffect(isRunning) {
         if (isRunning) {
             delay(remainingTime)
@@ -98,9 +104,8 @@ fun MainScreen(colors: AppColors, onThemeChange: (String) -> Unit) {
             Text(
                 text = "Breathe Better",
                 color = colors.title,
-                style = MaterialTheme.typography.headlineLarge,
+                style = MaterialTheme.typography.headlineLarge
             )
-
             Text(
                 text = "Meditation for Sleep & Relaxation",
                 color = colors.subtitle,
@@ -109,6 +114,7 @@ fun MainScreen(colors: AppColors, onThemeChange: (String) -> Unit) {
             )
             Spacer(modifier = Modifier.height(64.dp))
 
+            // Круг дыхания
             Box(
                 modifier = Modifier
                     .size(250.dp)
@@ -140,7 +146,7 @@ fun MainScreen(colors: AppColors, onThemeChange: (String) -> Unit) {
                                     colorStops = arrayOf(
                                         0f to colors.glowInner.copy(alpha = 0.05f),
                                         0.99f to colors.glowInner.copy(alpha = 0.6f),
-                                        1f to colors.glowInner.copy(alpha = 0.85f),
+                                        1f to colors.glowInner.copy(alpha = 0.85f)
                                     ),
                                     center = Offset(size.width / 2, size.height / 2),
                                     radius = size.width / 2
@@ -166,8 +172,7 @@ fun MainScreen(colors: AppColors, onThemeChange: (String) -> Unit) {
             Spacer(modifier = Modifier.height(64.dp))
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .height(100.dp),
+                modifier = Modifier.height(100.dp)
             ) {
                 SettingItem(
                     title = "Duration",
@@ -215,11 +220,12 @@ fun MainScreen(colors: AppColors, onThemeChange: (String) -> Unit) {
                 Text(
                     text = if (isRunning) "Stop" else "Start",
                     style = MaterialTheme.typography.labelLarge,
-                    color = colors.title,
+                    color = colors.title
                 )
             }
         }
 
+        // Иконка настроек
         IconButton(
             onClick = { showSettingsDialog = true },
             modifier = Modifier
@@ -234,124 +240,152 @@ fun MainScreen(colors: AppColors, onThemeChange: (String) -> Unit) {
             )
         }
 
+        // Диалоги
         if (showSettingsDialog) {
-            AlertDialog(
-                onDismissRequest = { showSettingsDialog = false },
-                title = { Text("Settings", style = MaterialTheme.typography.titleSmall) },
-                text = {
-                    Column {
-                        Text(
-                            text = "Themes",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    showSettingsDialog = false
-                                    showThemeDialog = true
-                                }
-                                .padding(16.dp),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                },
-                confirmButton = {},
-                dismissButton = {
-                    TextButton(onClick = { showSettingsDialog = false }) {
-                        Text("Cancel", style = MaterialTheme.typography.bodyMedium)
-                    }
-                }
+            SettingsDialog(
+                onDismiss = { showSettingsDialog = false },
+                onThemeClick = { showThemeDialog = true }
             )
         }
-
         if (showThemeDialog) {
-            AlertDialog(
-                onDismissRequest = { showThemeDialog = false },
-                title = { Text("Choose Theme", style = MaterialTheme.typography.titleSmall) },
-                text = {
-                    Column {
-                        listOf("Ocean", "Forest", "Sunset").forEach { theme ->
-                            Text(
-                                text = theme,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        onThemeChange(theme)
-                                        showThemeDialog = false
-                                    }
-                                    .padding(16.dp),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    }
-                },
-                confirmButton = {},
-                dismissButton = {
-                    TextButton(onClick = { showThemeDialog = false }) {
-                        Text("Cancel", style = MaterialTheme.typography.bodyMedium)
-                    }
-                }
+            ThemeDialog(
+                onDismiss = { showThemeDialog = false },
+                onThemeSelected = { theme -> onThemeChange(theme) }
             )
         }
-
         if (showDurationDialog) {
-            AlertDialog(
-                onDismissRequest = { showDurationDialog = false },
-                title = { Text("Choose Duration", style = MaterialTheme.typography.titleSmall) },
-                text = {
-                    Column {
-                        listOf("5 min", "10 min", "15 min", "20 min").forEach { option ->
-                            Text(
-                                text = option,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        duration = option
-                                        showDurationDialog = false
-                                    }
-                                    .padding(16.dp),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    }
-                },
-                confirmButton = {},
-                dismissButton = {
-                    TextButton(onClick = { showDurationDialog = false }) {
-                        Text("Cancel", style = MaterialTheme.typography.bodyMedium)
-                    }
-                }
+            DurationDialog(
+                onDismiss = { showDurationDialog = false },
+                onDurationSelected = { selectedDuration -> duration = selectedDuration }
             )
         }
-
         if (showPatternDialog) {
-            AlertDialog(
-                onDismissRequest = { showPatternDialog = false },
-                title = { Text("Choose Breathing Pattern", style = MaterialTheme.typography.titleSmall) },
-                text = {
-                    Column {
-                        listOf("4-7-8", "Box Breathing").forEach { option ->
-                            Text(
-                                text = option,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        breathingPattern = option
-                                        showPatternDialog = false
-                                    }
-                                    .padding(16.dp),
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    }
-                },
-                confirmButton = {},
-                dismissButton = {
-                    TextButton(onClick = { showPatternDialog = false }) {
-                        Text("Cancel", style = MaterialTheme.typography.bodyMedium)
-                    }
-                }
+            PatternDialog(
+                onDismiss = { showPatternDialog = false },
+                onPatternSelected = { selectedPattern -> breathingPattern = selectedPattern }
             )
         }
     }
+}
+
+// Отдельные функции для диалогов
+@Composable
+fun SettingsDialog(onDismiss: () -> Unit, onThemeClick: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Settings", style = MaterialTheme.typography.titleSmall) },
+        text = {
+            Column {
+                Text(
+                    text = "Themes",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onThemeClick() }
+                        .padding(16.dp),
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    )
+}
+
+@Composable
+fun ThemeDialog(onDismiss: () -> Unit, onThemeSelected: (String) -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Choose Theme", style = MaterialTheme.typography.titleSmall) },
+        text = {
+            Column {
+                listOf("Ocean", "Forest", "Sunset").forEach { theme ->
+                    Text(
+                        text = theme,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                onThemeSelected(theme)
+                                onDismiss()
+                            }
+                            .padding(16.dp),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    )
+}
+
+@Composable
+fun DurationDialog(onDismiss: () -> Unit, onDurationSelected: (String) -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Choose Duration", style = MaterialTheme.typography.titleSmall) },
+        text = {
+            Column {
+                listOf("5 min", "10 min", "15 min", "20 min").forEach { option ->
+                    Text(
+                        text = option,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                onDurationSelected(option)
+                                onDismiss()
+                            }
+                            .padding(16.dp),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    )
+}
+
+@Composable
+fun PatternDialog(onDismiss: () -> Unit, onPatternSelected: (String) -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Choose Breathing Pattern", style = MaterialTheme.typography.titleSmall) },
+        text = {
+            Column {
+                listOf("4-7-8", "Box Breathing").forEach { option ->
+                    Text(
+                        text = option,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                onPatternSelected(option)
+                                onDismiss()
+                            }
+                            .padding(16.dp),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel", style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+    )
 }
 
 @Composable
@@ -378,7 +412,6 @@ fun SettingItem(title: String, value: String, onClick: () -> Unit, colors: AppCo
                 textAlign = TextAlign.Center
             )
         }
-
         Spacer(modifier = Modifier.height(0.dp))
         Box(
             modifier = Modifier
@@ -393,13 +426,5 @@ fun SettingItem(title: String, value: String, onClick: () -> Unit, colors: AppCo
                 textAlign = TextAlign.Center
             )
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MainScreenPreview() {
-    BreatheTheme(OceanThemeColors) {
-        MainScreen(colors = OceanThemeColors, onThemeChange = {})
     }
 }
