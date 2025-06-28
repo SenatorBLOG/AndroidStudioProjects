@@ -15,6 +15,8 @@ import com.example.breathe.ui.theme.*
 
 @Composable
 fun StatsScreen(colors: AppColors, navController: NavController) {
+    val totalMeditatonTime = "00:00:00"
+    val daysStreak = "0 days"
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
@@ -31,7 +33,7 @@ fun StatsScreen(colors: AppColors, navController: NavController) {
                 style = MaterialTheme.typography.headlineLarge
             )
             Text(
-                text = "Posture Progression",
+                text = "Meditation Progress",
                 color = colors.subtitle,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(top = 0.dp)
@@ -48,17 +50,31 @@ fun StatsScreen(colors: AppColors, navController: NavController) {
                 Text("Graph Placeholder", color = colors.text)
             }
             Spacer(modifier = Modifier.height(48.dp))
+
+            //Коробки с данными статистики
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier. height(120.dp)
             ) {
                 StatCard(
-                    label = "TOTAL MEDITATION TIME",
-                    value = "0 min", colors = colors)
-                StatCard(label = "BEST STREAK", value = "0 days", colors = colors)
+                    title = "Total\nmeditation",
+                    value = totalMeditatonTime,
+                    onClick = { /*TODO*/ },
+                    colors = colors
+                )
+                StatCard(
+                    title = "Best streak",
+                    value = daysStreak,
+                    onClick = { /*TODO*/ },
+                    colors = colors
+                )
             }
+            Spacer(modifier = Modifier.height(34.dp))
             StatCard(
-                label = "SESSIONS THIS WEEK", value = "0 sessions", colors = colors, fullWidth = true
+                title = "Session\nthis week",
+                value = "0 sessions",
+                onClick = { /*TODO*/ },
+                colors = colors
             )
         }
     }
@@ -66,53 +82,47 @@ fun StatsScreen(colors: AppColors, navController: NavController) {
 }
 
 @Composable
-fun StatCard(label: String, value: String, colors: AppColors, fullWidth: Boolean = false) {
-    val modifier = if (fullWidth) Modifier.fillMaxWidth() else Modifier.width(150.dp)
-    Card(
-        modifier = modifier.padding(8.dp)
-            .height(100.dp),
-
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = colors.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .background(colors.surface, shape = RoundedCornerShape(14.dp))
-                .width(100.dp)
-                .height(120.dp)
-                .padding(vertical = 12.dp, horizontal = 12.dp)
+fun StatCard(
+    title: String,
+    value: String,
+    onClick: () -> Unit,
+    colors: AppColors) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .background(colors.surface, shape = RoundedCornerShape(14.dp))
+            .width(120.dp)
+            .height(110.dp)
+            .padding(vertical = 12.dp, horizontal = 12.dp)
+            .clickable { onClick() }
         ) {
-            Box(
-                modifier = Modifier
-                    .height(48.dp)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ){
-                Text(
-                    text = label,
-                    color = colors.label,
-                    style = MaterialTheme.typography.labelSmall,
-                    textAlign = TextAlign.Center
-                )
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            Box(
-                modifier = Modifier
-                    .height(24.dp)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ){
-                Text(
-                    text = value,
-                    color = colors.value,
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Center
-                )
-            }
-
-
+        Box(
+            modifier = Modifier
+                .height(48.dp)
+                .width(120.dp)
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = title.uppercase(),
+                color = colors.label,
+                style = MaterialTheme.typography.labelSmall,
+                textAlign = TextAlign.Center
+            )
+        }
+        Spacer(modifier = Modifier.height(0.dp))
+        Box(
+            modifier = Modifier
+                .height(24.dp)
+                .fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = value,
+                color = colors.value,
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center
+            )
         }
     }
-}
+    }

@@ -168,7 +168,7 @@ fun MainScreen(colors: AppColors, onThemeChange: (String) -> Unit) {
                     }
                 }
             }
-
+            //Коробки
             Spacer(modifier = Modifier.height(64.dp))
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -389,7 +389,11 @@ fun PatternDialog(onDismiss: () -> Unit, onPatternSelected: (String) -> Unit) {
 }
 
 @Composable
-fun SettingItem(title: String, value: String, onClick: () -> Unit, colors: AppColors) {
+fun SettingItem(
+    title: String,
+    value: String,
+    onClick: () -> Unit,
+    colors: AppColors) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
