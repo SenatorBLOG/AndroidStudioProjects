@@ -29,10 +29,11 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.navigation.NavController
 import com.example.breathe.ui.screens.StatsScreen
+import dagger.hilt.android.AndroidEntryPoint
 
 // DataStore для сохранения настроек
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
-
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

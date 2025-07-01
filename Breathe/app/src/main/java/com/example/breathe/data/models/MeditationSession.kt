@@ -1,9 +1,10 @@
 package com.example.breathe.data.models
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
-import java.time.LocalDate
-
+@Entity(tableName = "meditation_sessions")
 data class MeditationSession(
-    val id: Int,
-    val date: LocalDate,    // Session Date
-    val duration: Long      // Duration in milliseconds
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val duration: Long, // длительность в секундах
+    val date: Long     // дата в формате timestamp
 )
