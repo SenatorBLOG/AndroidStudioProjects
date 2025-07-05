@@ -4,6 +4,8 @@ import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -27,7 +29,12 @@ import kotlinx.coroutines.launch
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import com.example.breathe.ui.screens.MeditationRegularityScreen
+import com.example.breathe.ui.screens.ProfileScreen
 import com.example.breathe.ui.screens.StatsScreen
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -55,7 +62,10 @@ class MainActivity : ComponentActivity() {
             BreatheTheme(colors) {
                 val navController = rememberNavController()
                 Scaffold(
-                    bottomBar = { BottomNavigationBar(navController) }
+                    bottomBar = { BottomNavigationBar(
+                        navController,
+                        colors
+                    ) }
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
@@ -63,15 +73,26 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding)
                     ) {
                         composable("main") {
-                            MainScreen(colors = colors) { newTheme ->
+                            MainScreen(colors = colors, { newTheme ->
                                 CoroutineScope(Dispatchers.IO).launch {
                                     context.dataStore.edit { settings ->
                                         settings[themeKey] = newTheme
                                     }
                                 }
-                            }
+                            }, Modifier.padding(innerPadding))
                         }
-                        composable("stats") { StatsScreen(colors, navController) }
+                        composable("stats") { StatsScreen(
+                            colors,
+                            navController,
+                            Modifier.padding(innerPadding)
+                        ) }
+                        composable("profile") { ProfileScreen(
+                            colors,
+                            navController,
+                            Modifier.padding(innerPadding)
+                        ) }
+                        composable("meditation_regularity") { MeditationRegularityScreen(
+                            colors = colors, navController = navController) }
                     }
                 }
             }
@@ -80,19 +101,31 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun BottomNavigationBar(navController: NavController) {
-    NavigationBar {
+fun BottomNavigationBar(navController: NavHostController, colors: AppColors) {
+    NavigationBar(
+        modifier = Modifier
+            .height(70.dp) // Увеличиваем высоту
+            .background(colors.primary), // Кастомный цвет фона
+        containerColor = colors.primary, // Убедимся, что фон совпадает
+        contentColor = colors.title // Цвет иконок и текста по умолчанию
+    ) {
         NavigationBarItem(
-            icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-            label = { Text("Home") },
+            icon = { Icon(painter = painterResource(id = R.drawable.home_icon), contentDescription = "Home", tint = colors.title) },
+            label = { Text("Home", color = colors.title) },
             selected = navController.currentDestination?.route == "main",
-            onClick = { navController.navigate("main") }
+            onClick = { navController.navigate("main") { popUpTo("main") { saveState = true } } }
         )
         NavigationBarItem(
-            icon = { Icon(Icons.Default.Info, contentDescription = "Stats") },
-            label = { Text("Stats") },
+            icon = { Icon(painter = painterResource(id = R.drawable.stats_icon), contentDescription = "Stats", tint = colors.title) },
+            label = { Text("Stats", color = colors.title) },
             selected = navController.currentDestination?.route == "stats",
-            onClick = { navController.navigate("stats") }
+            onClick = { navController.navigate("stats") { popUpTo("stats") { saveState = true } } }
+        )
+        NavigationBarItem(
+            icon = { Icon(painter = painterResource(id = R.drawable.profile_icon), contentDescription = "Profile", tint = colors.title) },
+            label = { Text("Profile", color = colors.title) },
+            selected = navController.currentDestination?.route == "profile",
+            onClick = { navController.navigate("profile") { popUpTo("profile") { saveState = true } } }
         )
     }
 }

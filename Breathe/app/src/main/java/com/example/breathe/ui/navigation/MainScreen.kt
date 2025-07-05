@@ -1,6 +1,5 @@
 package com.example.breathe.ui.navigation
 
-import android.content.res.Configuration
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,10 +18,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.compose.rememberNavController
-import com.example.breathe.BottomNavigationBar
 import com.example.breathe.ui.theme.*
 import kotlinx.coroutines.delay
 
@@ -39,7 +35,7 @@ enum class Phase {
 }
 
 @Composable
-fun MainScreen(colors: AppColors, onThemeChange: (String) -> Unit) {
+fun MainScreen(colors: AppColors, onThemeChange: (String) -> Unit, modifier: Modifier) {
     var duration by remember { mutableStateOf("10 min") }
     var breathingPattern by remember { mutableStateOf("4-7-8") }
     var showDurationDialog by remember { mutableStateOf(false) }

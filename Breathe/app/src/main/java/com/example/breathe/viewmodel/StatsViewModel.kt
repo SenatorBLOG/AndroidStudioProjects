@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.Instant
@@ -72,10 +73,16 @@ class StatsViewModel @Inject constructor(
     /**
      * Save a new session to the database.
      */
+
     fun saveSession(duration: Long, date: Long) {
         viewModelScope.launch {
             val session = MeditationSession(duration = duration, date = date)
             repository.insertSession(session)
+            // Обновляем sessions вручную после сохранения
+            val updatedSessions = repository.getAllSessions().first()
+            _sessions.value = updatedSessions
+            computeStats()
+            android.util.Log.d("StatsViewModel", "Saved session: duration=$duration, date=$date, localDate=${toLocalDate(date)}, sessionsCount=${updatedSessions.size}")
         }
     }
 
@@ -120,8 +127,10 @@ class StatsViewModel @Inject constructor(
      */
     private fun toLocalDate(timestamp: Long): LocalDate =
         Instant.ofEpochMilli(timestamp)
-            .atZone(ZoneId.systemDefault())
-            .toLocalDate()
+            .atZone(ZoneId.of("America/Los_Angeles")) // Явно указываем PDT
+            .toLocalDate().also {
+                android.util.Log.d("StatsViewModel", "Converted timestamp $timestamp to $it")
+            }
 
     /**
      * Format minutes into "HH:mm" clock string.
