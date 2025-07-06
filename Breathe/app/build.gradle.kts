@@ -1,9 +1,9 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose") version "2.0.21"
+    id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.dagger.hilt.android")
-    kotlin("kapt")
+    id("com.google.devtools.ksp")
 }
 
 android {
@@ -23,8 +23,7 @@ android {
     }
 
     composeOptions {
-        // Match Compose Compiler to Kotlin 2.0.21
-        kotlinCompilerExtensionVersion = "2.0.1"
+        kotlinCompilerExtensionVersion = "2.2.0"
     }
 
     compileOptions {
@@ -32,8 +31,11 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    kotlinOptions {
-        jvmTarget = "11"
+    sourceSets["main"].java.srcDir("build/generated/ksp/debug/kotlin")
+}
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
     }
 }
 
@@ -43,7 +45,7 @@ dependencies {
 
     // Core AndroidX
     implementation("androidx.core:core-ktx:1.16.0")
-    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("androidx.appcompat:appcompat:1.7.1")
     implementation("androidx.activity:activity-compose:1.10.1")
 
     // Compose UI
@@ -53,20 +55,20 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     // Navigation
-    implementation("androidx.navigation:navigation-compose:2.9.0")
+    implementation("androidx.navigation:navigation-compose:2.9.1")
 
     // DataStore
     implementation("androidx.datastore:datastore-preferences:1.1.7")
 
     // Room
     implementation("androidx.room:room-runtime:2.7.2")
-    implementation("androidx.room:room-common:2.7.2")
-    kapt("androidx.room:room-compiler:2.7.2")
+    implementation("androidx.room:room-ktx:2.7.2")
+    ksp("androidx.room:room-compiler:2.7.2")
 
     // Hilt
     implementation("com.google.dagger:hilt-android:2.51.1")
-    kapt("com.google.dagger:hilt-compiler:2.51.1")
-    implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
+    ksp("com.google.dagger:hilt-compiler:2.51.1")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
     // Material (Optional if using M3 already)
     implementation("com.google.android.material:material:1.12.0")
@@ -78,4 +80,7 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+}
+ksp {
+    arg("room.incremental", "true")
 }

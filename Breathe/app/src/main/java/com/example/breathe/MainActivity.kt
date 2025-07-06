@@ -33,6 +33,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.breathe.ui.screens.MeditationRegularityScreen
 import com.example.breathe.ui.screens.ProfileScreen
 import com.example.breathe.ui.screens.StatsScreen
@@ -102,30 +103,54 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun BottomNavigationBar(navController: NavHostController, colors: AppColors) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
     NavigationBar(
         modifier = Modifier
-            .height(70.dp) // Увеличиваем высоту
-            .background(colors.primary), // Кастомный цвет фона
-        containerColor = colors.primary, // Убедимся, что фон совпадает
-        contentColor = colors.title // Цвет иконок и текста по умолчанию
+            .height(55.dp)
+            .background(colors.primary),
+        containerColor = colors.onPrimary,
+        contentColor = colors.title
     ) {
         NavigationBarItem(
             icon = { Icon(painter = painterResource(id = R.drawable.home_icon), contentDescription = "Home", tint = colors.title) },
             label = { Text("Home", color = colors.title) },
-            selected = navController.currentDestination?.route == "main",
-            onClick = { navController.navigate("main") { popUpTo("main") { saveState = true } } }
+            selected = currentRoute == "main",
+            onClick = { navController.navigate("main") { popUpTo("main") { inclusive = true } } },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = colors.onPrimary,
+                unselectedIconColor = colors.title,
+                selectedTextColor = colors.onPrimary,
+                unselectedTextColor = colors.title,
+                indicatorColor = colors.primary.copy(alpha = 0.3f)
+            )
         )
         NavigationBarItem(
             icon = { Icon(painter = painterResource(id = R.drawable.stats_icon), contentDescription = "Stats", tint = colors.title) },
             label = { Text("Stats", color = colors.title) },
-            selected = navController.currentDestination?.route == "stats",
-            onClick = { navController.navigate("stats") { popUpTo("stats") { saveState = true } } }
+            selected = currentRoute == "stats",
+            onClick = { navController.navigate("stats") { popUpTo("stats") { inclusive = true } } },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = colors.onPrimary,
+                unselectedIconColor = colors.title,
+                selectedTextColor = colors.onPrimary,
+                unselectedTextColor = colors.title,
+                indicatorColor = colors.primary.copy(alpha = 0.3f)
+            )
         )
         NavigationBarItem(
             icon = { Icon(painter = painterResource(id = R.drawable.profile_icon), contentDescription = "Profile", tint = colors.title) },
             label = { Text("Profile", color = colors.title) },
-            selected = navController.currentDestination?.route == "profile",
-            onClick = { navController.navigate("profile") { popUpTo("profile") { saveState = true } } }
+            selected = currentRoute == "profile",
+            onClick = { navController.navigate("profile") { popUpTo("profile") { inclusive = true } } },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = colors.onPrimary,
+                unselectedIconColor = colors.title,
+                selectedTextColor = colors.onPrimary,
+                unselectedTextColor = colors.title,
+                indicatorColor = colors.primary.copy(alpha = 0.3f)
+            )
         )
     }
 }

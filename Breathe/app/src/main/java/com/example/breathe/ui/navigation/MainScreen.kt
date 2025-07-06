@@ -19,6 +19,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.example.breathe.ui.theme.*
 import kotlinx.coroutines.delay
 
@@ -35,7 +36,9 @@ enum class Phase {
 }
 
 @Composable
-fun MainScreen(colors: AppColors, onThemeChange: (String) -> Unit, modifier: Modifier) {
+fun MainScreen(colors: AppColors,
+               onThemeChange: (String) -> Unit,
+               modifier: Modifier) {
     var duration by remember { mutableStateOf("10 min") }
     var breathingPattern by remember { mutableStateOf("4-7-8") }
     var showDurationDialog by remember { mutableStateOf(false) }
