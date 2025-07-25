@@ -19,8 +19,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.example.breathe.ui.theme.*
+import com.example.breathe.viewmodel.StatsViewModel
 import kotlinx.coroutines.delay
 
 // Модели данных для дыхания
@@ -49,6 +51,7 @@ fun MainScreen(colors: AppColors,
     var remainingTime by remember { mutableStateOf(0L) }
     val scale = remember { Animatable(1.0f) }
     var currentPhase by remember { mutableStateOf(Phase.INHALE) }
+    val viewModel: StatsViewModel = hiltViewModel()
 
     val patterns = mapOf(
         "4-7-8" to BreathingPattern(4000, 7000, 8000, 0),
@@ -85,8 +88,43 @@ fun MainScreen(colors: AppColors,
     // Таймер длительности
     LaunchedEffect(isRunning) {
         if (isRunning) {
-            delay(remainingTime)
-            isRunning = false
+            val totalDurationMillis = when (duration) {
+                "5 min" -> 5 * 60 * 1000L
+                "10 min" -> 10 * 60 * 1000L
+                "15 min" -> 15 * 60 * 1000L
+                "20 min" -> 20 * 60 * 1000L
+                else -> 10 * 60 * 1000L
+            }
+            remainingTime = totalDurationMillis
+            val startTimeMillis = System.currentTimeMillis() // Capture start time
+
+            while (remainingTime > 0 && isRunning) {
+                val elapsedTime = System.currentTimeMillis() - startTimeMillis
+                remainingTime = totalDurationMillis - elapsedTime
+                if (remainingTime <= 0) {
+                    isRunning = false
+                    // Save session when timer ends
+                    viewModel.saveSession(totalDurationMillis / 1000, System.currentTimeMillis())
+                }
+                delay(1000) // Update every second
+            }
+        } else {
+            // When stopping manually
+            if (remainingTime > 0) { // Only save if a session was actually running
+                val completedDurationSeconds = (
+                        when (duration) {
+                            "5 min" -> 5 * 60 * 1000L
+                            "10 min" -> 10 * 60 * 1000L
+                            "15 min" -> 15 * 60 * 1000L
+                            "20 min" -> 20 * 60 * 1000L
+                            else -> 10 * 60 * 1000L
+                        } - remainingTime
+                        ) / 1000
+                if (completedDurationSeconds > 0) { // Ensure positive duration
+                    viewModel.saveSession(completedDurationSeconds, System.currentTimeMillis())
+                }
+            }
+            remainingTime = 0L // Reset remaining time on stop
         }
     }
 

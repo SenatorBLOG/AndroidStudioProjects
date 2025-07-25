@@ -23,20 +23,19 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "2.2.0"
+        kotlinCompilerExtensionVersion = "2.0.20"
     }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-
-    sourceSets["main"].java.srcDir("build/generated/ksp/debug/kotlin")
-}
-kotlin {
-    compilerOptions {
-        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+        }
     }
+
 }
 
 dependencies {
@@ -61,9 +60,9 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.7")
 
     // Room
-    implementation("androidx.room:room-runtime:2.7.2")
-    implementation("androidx.room:room-ktx:2.7.2")
-    ksp("androidx.room:room-compiler:2.7.2")
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
 
     // Hilt
     implementation("com.google.dagger:hilt-android:2.51.1")

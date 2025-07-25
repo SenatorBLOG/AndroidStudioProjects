@@ -7,37 +7,44 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.breathe.ui.navigation.MainScreen
-import com.example.breathe.ui.theme.*
+import com.example.breathe.ui.screens.MeditationRegularityScreen
+import com.example.breathe.ui.screens.ProfileScreen
+import com.example.breathe.ui.screens.StatsScreen
+import com.example.breathe.ui.theme.AppColors
+import com.example.breathe.ui.theme.BreatheTheme
+import com.example.breathe.ui.theme.ForestThemeColors
+import com.example.breathe.ui.theme.OceanThemeColors
+import com.example.breathe.ui.theme.SunsetThemeColors
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.breathe.ui.screens.MeditationRegularityScreen
-import com.example.breathe.ui.screens.ProfileScreen
-import com.example.breathe.ui.screens.StatsScreen
-import dagger.hilt.android.AndroidEntryPoint
 
 // DataStore для сохранения настроек
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
@@ -108,7 +115,7 @@ fun BottomNavigationBar(navController: NavHostController, colors: AppColors) {
 
     NavigationBar(
         modifier = Modifier
-            .height(55.dp)
+            .height(70.dp)
             .background(colors.primary),
         containerColor = colors.onPrimary,
         contentColor = colors.title

@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Ferry Tickets App</string>
+    
+    <string-array name="txtTrip">
+        <item>To Catalina Island</item>
+        <item>To Long Beach</item>
+    </string-array>
+</resources>

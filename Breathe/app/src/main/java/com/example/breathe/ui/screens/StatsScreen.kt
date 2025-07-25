@@ -18,6 +18,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
@@ -139,32 +141,38 @@ fun StatsScreen(colors: AppColors, navController: NavController, modifier: Modif
                 navController = navController
             )
 
-            // KPI Cards
+            // KPI Cards Section
+            // В StatsScreen, вместо текущих двух Row с StatCard
             Spacer(modifier = Modifier.height(24.dp))
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.height(120.dp).weight(1f, fill = true)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp) // Фиксированная высота для всех карточек
+                    .padding(horizontal = 16.dp), // Добавляем горизонтальный отступ для Row
+                horizontalArrangement = Arrangement.spacedBy(8.dp) // Отступы между карточками
             ) {
                 StatCard(
                     title = "Total\nMeditation",
                     value = viewModel.formatMinutesToClock(state.totalMeditationMinutes),
                     onClick = { showKpiDialog = "Total Meditation" },
-                    colors = colors
+                    colors = colors,
+                    modifier = Modifier.weight(1f)
                 )
                 StatCard(
                     title = "Best\nStreak",
                     value = "${state.bestStreakDays} days",
                     onClick = { showKpiDialog = "Best Streak" },
-                    colors = colors
+                    colors = colors,
+                    modifier = Modifier.weight(1f)
+                )
+                StatCard(
+                    title = "Sessions\nThis Week",
+                    value = "${state.sessionsThisWeek}",
+                    onClick = { showKpiDialog = "Sessions This Week" },
+                    colors = colors,
+                    modifier = Modifier.weight(1f)
                 )
             }
-            Spacer(modifier = Modifier.height(16.dp))
-            StatCard(
-                title = "Sessions\nThis Week",
-                value = "${state.sessionsThisWeek} sessions",
-                onClick = { showKpiDialog = "Sessions This Week" },
-                colors = colors
-            )
 
             // Session History
             Spacer(modifier = Modifier.height(24.dp))
@@ -191,7 +199,7 @@ fun StatsScreen(colors: AppColors, navController: NavController, modifier: Modif
             AddSessionDialog(
                 onDismiss = { showAddSessionDialog = false },
                 onConfirm = { duration ->
-                    val nowMillis = ZonedDateTime.now(ZoneId.of("America/Los_Angeles")).toInstant().toEpochMilli()
+                    val nowMillis = ZonedDateTime.now(ZoneId.systemDefault()).toInstant().toEpochMilli()
                     viewModel.saveSession(duration * 60, nowMillis)
                     showAddSessionDialog = false
                 },
@@ -267,28 +275,23 @@ fun MeditationGraph(
         else -> sessions.size.coerceAtMost(MAX_DEFAULT_DAYS).coerceAtLeast(1)
     }
 
-    val now = ZonedDateTime.now(ZoneId.of("America/Los_Angeles")).toLocalDate()
-
+    val now = ZonedDateTime.now(ZoneId.systemDefault()).toLocalDate()
     val dateRange = remember(numberOfDays) {
         (0 until numberOfDays).map { now.minusDays(it.toLong()) }.reversed()
     }
 
-
     val dailySummaries = remember(sessions, dateRange) {
         dateRange.map { date ->
-            val sessionsOnDate = sessions.filter { session ->
-                val sessionDate = toLocalDate(session.date)
-                android.util.Log.d("MeditationGraph", "Session date: $sessionDate, Target date: $date")
-                sessionDate == date
-            }
+            val sessionsOnDate = sessions.filter { toLocalDate(it.date) == date }
             val totalDuration = sessionsOnDate.sumOf { it.duration.toLong() }.toFloat() / 60f
             val firstSession = sessionsOnDate.minByOrNull { it.date }
             val lastSession = sessionsOnDate.maxByOrNull { it.date }
-            val firstSessionEpochMilli = firstSession?.date
-            val lastSessionEndEpochMilli = lastSession?.let { it.date + (it.duration * 1000L) }
-            DailyMeditationSummary(date, totalDuration, firstSessionEpochMilli, lastSessionEndEpochMilli).also {
-                android.util.Log.d("MeditationGraph", "Date: ${it.date}, Duration: ${it.totalDurationMinutes}, Sessions: ${sessionsOnDate.size}")
-            }
+            DailyMeditationSummary(
+                date,
+                totalDuration,
+                firstSession?.date,
+                lastSession?.let { it.date + (it.duration * 1000L) }
+            )
         }
     }
 
@@ -299,184 +302,220 @@ fun MeditationGraph(
     val density = LocalDensity.current
     var graphCanvasSize by remember { mutableStateOf(Size.Zero) }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .height(220.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(colors.surface.copy(alpha = 0.2f))
-            .pointerInput(Unit) {
-                detectTransformGestures { _, pan, zoom, _ ->
-                    val newScale = (scale * zoom).coerceIn(0.5f, 3f)
-                    onScaleChange(newScale, offset + pan)
-                }
-            }
+            .padding(horizontal = 16.dp)
     ) {
-        // Time scale on the left
-        Column(
+        Box(
             modifier = Modifier
-                .width(40.dp)
-                .fillMaxHeight()
-                .padding(vertical = GraphVerticalPadding),
-            verticalArrangement = Arrangement.SpaceBetween
+                .fillMaxWidth()
+                .height(220.dp)
+                .clip(RoundedCornerShape(16.dp))
+                .background(colors.surface.copy(alpha = 0.2f))
+                .pointerInput(Unit) {
+                    detectTransformGestures { _, pan, zoom, _ ->
+                        val newScale = (scale * zoom).coerceIn(0.5f, 3f)
+                        onScaleChange(newScale, offset + pan)
+                    }
+                }
         ) {
-            val timeSteps = listOf(60, 45, 30, 15, 0)
-            timeSteps.forEach { time ->
-                Text(
-                    text = "$time",
-                    color = colors.text,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.align(Alignment.End)
-                )
-            }
-        }
-
-        // Определяем переменные до Canvas
-        val barAreaWidthPx = remember(graphCanvasSize.width, numberOfDays) {
-            if (graphCanvasSize.width > 0f && numberOfDays > 0) graphCanvasSize.width / numberOfDays else 0f
-        }
-        val canvasActualHeight = graphCanvasSize.height // Используем сохраненный размер
-
-        // Graph Canvas
-        Canvas(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(start = HorizontalPadding, end = GraphVerticalPadding, top = GraphVerticalPadding, bottom = GraphBottomLabelHeight)
-                .onSizeChanged { graphCanvasSize = Size(it.width.toFloat(), it.height.toFloat()) }
-        ) {
-            val canvasActualWidth = size.width
-            val barWidthPx = barAreaWidthPx / BAR_SPACING_RATIO
-            val barSpacingPx = barAreaWidthPx - barWidthPx
-
-            dailySummaries.forEachIndexed { index, summary ->
-                val barHeight = (summary.totalDurationMinutes / maxDurationDisplay * canvasActualHeight * GRAPH_CONTENT_HEIGHT_SCALE) * scale
-                val x = index * barAreaWidthPx + (barSpacingPx / 2) + offset.x
-
-                if (x + barWidthPx > 0 && x < canvasActualWidth) {
-                    drawPath(
-                        path = Path().apply {
-                            moveTo(x, size.height)
-                            lineTo(x, size.height - barHeight)
-                            lineTo(x + barWidthPx, size.height - barHeight)
-                            lineTo(x + barWidthPx, size.height)
-                            close()
-                        },
-                        color = if (selectedBar == index) colors.primary.copy(alpha = 0.8f) else colors.primary
+            // Временная шкала слева
+            Column(
+                modifier = Modifier
+                    .width(40.dp)
+                    .fillMaxHeight()
+                    .padding(vertical = GraphVerticalPadding),
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                listOf(60, 45, 30, 15, 0).forEach { time ->
+                    Text(
+                        text = "$time",
+                        color = colors.text,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.align(Alignment.End)
                     )
                 }
             }
-        }
 
-        // Day labels
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(start = HorizontalPadding, end = GraphVerticalPadding, bottom = 8.dp)
-                .align(Alignment.BottomCenter),
-            horizontalArrangement = Arrangement.SpaceAround
-        ) {
-            val barAreaWidthDp = with(density) { (graphCanvasSize.width / numberOfDays).toDp() }
-            dailySummaries.forEach { summary ->
-                val dayLabel = if (period == PERIOD_7_DAYS) {
-                    summary.date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault())
-                } else {
-                    summary.date.dayOfMonth.toString()
+            // Холст графика
+            Canvas(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(start = HorizontalPadding, end = GraphVerticalPadding, top = GraphVerticalPadding, bottom = GraphBottomLabelHeight)
+                    .onSizeChanged { graphCanvasSize = Size(it.width.toFloat(), it.height.toFloat()) }
+            ) {
+                val barAreaWidthPx = if (numberOfDays > 0) size.width / numberOfDays else 0f
+                val barWidthPx = barAreaWidthPx / BAR_SPACING_RATIO
+                val barSpacingPx = barAreaWidthPx - barWidthPx
+
+                // Сетка
+                listOf(0f, 0.25f, 0.5f, 0.75f, 1f).forEach { ratio ->
+                    drawLine(
+                        color = colors.text.copy(alpha = 0.2f),
+                        start = Offset(0f, size.height * (1 - ratio)),
+                        end = Offset(size.width, size.height * (1 - ratio)),
+                        strokeWidth = 1.dp.toPx()
+                    )
                 }
-                Text(
-                    text = dayLabel,
-                    color = colors.text,
-                    style = MaterialTheme.typography.bodySmall,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.width(barAreaWidthDp)
-                )
+
+                dailySummaries.forEachIndexed { index, summary ->
+                    val barHeight = (summary.totalDurationMinutes / maxDurationDisplay * size.height * GRAPH_CONTENT_HEIGHT_SCALE) * scale
+                    val x = index * barAreaWidthPx + (barSpacingPx / 2) + offset.x
+
+                    if (x + barWidthPx > 0 && x < size.width) {
+                        drawRoundRect(
+                            color = if (selectedBar == index) colors.primary.copy(alpha = 0.8f) else colors.primary,
+                            topLeft = Offset(x, size.height - barHeight),
+                            size = Size(barWidthPx, barHeight),
+                            cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx())
+                        )
+                    }
+                }
             }
-        }
 
-        // Tooltip for selected bar
-        selectedBar?.let { index ->
-            if (index < dailySummaries.size) {
-                val summary = dailySummaries[index]
-                val barCenterX = (index * barAreaWidthPx + barAreaWidthPx / 2 + offset.x)
-                    .coerceIn(0f, graphCanvasSize.width - 100f)
-                val barTopY = canvasActualHeight - (summary.totalDurationMinutes / maxDurationDisplay * canvasActualHeight * GRAPH_CONTENT_HEIGHT_SCALE) * scale
-                val tooltipY = (barTopY - 40f).coerceIn(0f, canvasActualHeight - 50f)
+            // Метки дней
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = HorizontalPadding, end = GraphVerticalPadding, bottom = 8.dp)
+                    .align(Alignment.BottomCenter),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                dailySummaries.forEachIndexed { index, summary ->
+                    if (period == PERIOD_7_DAYS || (period == PERIOD_30_DAYS && index % 5 == 0)) {
+                        val dayLabel = if (period == PERIOD_7_DAYS) {
+                            summary.date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault())
+                        } else {
+                            summary.date.dayOfMonth.toString()
+                        }
+                        Text(
+                            text = dayLabel,
+                            color = colors.text,
+                            style = MaterialTheme.typography.bodySmall,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .width(32.dp)
+                                .rotate(45f)
+                        )
+                    }
+                }
+            }
 
-                Box(
-                    modifier = Modifier
-                        .offset { IntOffset((barCenterX - 50).toInt(), tooltipY.toInt()) }
-                        .background(colors.surface, RoundedCornerShape(8.dp))
-                        .padding(8.dp)
-                ) {
-                    Column {
-                        Text(
-                            text = "${summary.formattedDate}: ${"%.1f".format(summary.totalDurationMinutes)} min",
-                            color = colors.text,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                        Text(
-                            text = "Start: ${summary.formatStartTime()}",
-                            color = colors.text,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                        Text(
-                            text = "End: ${summary.formatEndTime()}",
-                            color = colors.text,
-                            style = MaterialTheme.typography.bodySmall
-                        )
+            // Всплывающая подсказка
+            selectedBar?.let { index ->
+                if (index < dailySummaries.size) {
+                    val summary = dailySummaries[index]
+                    val barAreaWidthPx = graphCanvasSize.width / numberOfDays
+                    val barCenterX = (index * barAreaWidthPx + barAreaWidthPx / 2 + offset.x)
+                        .coerceIn(0f, graphCanvasSize.width - 100f)
+                    val barTopY = graphCanvasSize.height - (summary.totalDurationMinutes / maxDurationDisplay * graphCanvasSize.height * GRAPH_CONTENT_HEIGHT_SCALE) * scale
+                    val tooltipY = (barTopY - 40f).coerceIn(0f, graphCanvasSize.height - 50f)
+
+                    Box(
+                        modifier = Modifier
+                            .offset { IntOffset((barCenterX - 50).toInt(), tooltipY.toInt()) }
+                            .background(colors.surface, RoundedCornerShape(8.dp))
+                            .padding(8.dp)
+                    ) {
+                        Column {
+                            Text(
+                                text = "${summary.formattedDate}: ${"%.1f".format(summary.totalDurationMinutes)} min",
+                                color = colors.text,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                            Text(
+                                text = "Start: ${summary.formatStartTime()}",
+                                color = colors.text,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                            Text(
+                                text = "End: ${summary.formatEndTime()}",
+                                color = colors.text,
+                                style = MaterialTheme.typography.bodySmall
+                            )
+                        }
                     }
                 }
             }
         }
 
-        // Link to Meditation Regularity
+        // Ссылка на Meditation Regularity (вынесена под график)
         Text(
             text = "View Meditation Regularity",
             color = colors.primary,
             style = MaterialTheme.typography.bodySmall,
             modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(8.dp)
+                .padding(top = 8.dp)
+                .align(Alignment.End)
                 .clickable { navController.navigate("meditation_regularity") }
         )
     }
 }
-/* [END GRAPH SECTION] */
 
 /**
  * Reusable card for displaying KPI statistics.
  */
 @Composable
-fun StatCard(title: String, value: String, onClick: () -> Unit, colors: AppColors) {
+fun StatCard(
+    title: String,
+    value: String,
+    onClick: () -> Unit,
+    colors: AppColors,
+    modifier: Modifier = Modifier // Убедись, что modifier принимается
+) {
     Card(
-        modifier = Modifier
-            .fillMaxHeight()
+        modifier = modifier // Используем переданный modifier (который будет содержать .weight(1f) или .fillMaxWidth())
+            .fillMaxHeight() // Эта строка нужна, чтобы карточка занимала всю высоту, когда она в Row с фиксированной высотой
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = colors.surface)
     ) {
         Column(
             modifier = Modifier
-                .padding(16.dp)
-                .fillMaxSize(),
+                // Уменьшаем padding для большей плотности, как в SettingItem
+                .padding(vertical = 12.dp, horizontal = 12.dp) // БЫЛО 16.dp, СТАЛО 12.dp
+                .fillMaxSize(), // Заполняем всю доступную область карточки
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center // Центрируем содержимое по вертикали
         ) {
-            Text(
-                text = title,
-                color = colors.text,
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = value,
-                color = colors.value,
-                style = MaterialTheme.typography.headlineSmall,
-                textAlign = TextAlign.Center
-            )
+            // Заголовок
+            Box(
+                modifier = Modifier
+                    // Используем fillMaxWidth() и wrapContentHeight()
+                    // чтобы Box подстраивался под текст, но растягивался по ширине
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = title.uppercase(), // Все заглавные буквы
+                    color = colors.label, // Цвет для метки
+                    style = MaterialTheme.typography.labelSmall, // Заголовок
+                    textAlign = TextAlign.Center,
+                    // Дополнительный модификатор для центрирования текста в случае переноса строки
+                    modifier = Modifier.padding(bottom = 4.dp) // Небольшой отступ снизу
+                )
+            }
+            // Спейсер между заголовком и значением
+            Spacer(modifier = Modifier.height(4.dp)) // Уменьшен спейсер
+
+            // Значение
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = value,
+                    color = colors.value, // Цвет для значения
+                    style = MaterialTheme.typography.bodyMedium, // Крупнее для выделения
+                    textAlign = TextAlign.Center
+                )
+            }
         }
     }
 }
-
 /**
  * LazyColumn displaying meditation session history.
  * [START TABLE SECTION]
@@ -594,7 +633,15 @@ fun AddSessionDialog(
         },
         confirmButton = {
             TextButton(onClick = {
-                duration.toLongOrNull()?.let { if (it > 0) onConfirm(it) }
+                val durationMinutes = duration.toLongOrNull()
+                if (durationMinutes != null && durationMinutes > 0) {
+                    val now = ZonedDateTime.now(ZoneId.systemDefault())
+                    val nowMillis = now.toInstant().toEpochMilli()
+                    android.util.Log.d("AddSessionDialog", "Confirm clicked: duration=$durationMinutes, date=${now.toLocalDate()}, timestamp=$nowMillis")
+                    onConfirm(durationMinutes)
+                } else {
+                    android.util.Log.w("AddSessionDialog", "Invalid duration entered: $duration")
+                }
             }) {
                 Text("Confirm", color = colors.primary)
             }
