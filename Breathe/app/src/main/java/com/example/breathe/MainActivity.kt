@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
@@ -92,7 +93,7 @@ class MainActivity : ComponentActivity() {
                         composable("stats") { StatsScreen(
                             colors,
                             navController,
-                            Modifier.padding(innerPadding)
+                            Modifier.fillMaxSize()
                         ) }
                         composable("profile") { ProfileScreen(
                             colors,

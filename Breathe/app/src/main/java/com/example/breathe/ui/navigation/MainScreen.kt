@@ -24,6 +24,9 @@ import androidx.navigation.NavHostController
 import com.example.breathe.ui.theme.*
 import com.example.breathe.viewmodel.StatsViewModel
 import kotlinx.coroutines.delay
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 // Модели данных для дыхания
 data class BreathingPattern(
@@ -52,6 +55,7 @@ fun MainScreen(colors: AppColors,
     val scale = remember { Animatable(1.0f) }
     var currentPhase by remember { mutableStateOf(Phase.INHALE) }
     val viewModel: StatsViewModel = hiltViewModel()
+    val scrollState = rememberScrollState()
 
     val patterns = mapOf(
         "4-7-8" to BreathingPattern(4000, 7000, 8000, 0),
@@ -132,12 +136,13 @@ fun MainScreen(colors: AppColors,
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(scrollState)
                 .systemBarsPadding()
                 .padding(10.dp),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(64.dp))
+            Spacer(modifier = Modifier.height(32.dp))
             Text(
                 text = "Breathe Better",
                 color = colors.title,
@@ -268,7 +273,7 @@ fun MainScreen(colors: AppColors,
             modifier = Modifier
                 .statusBarsPadding()
                 .align(Alignment.TopEnd)
-                .padding(end = 32.dp, top = 32.dp)
+                .padding(end = 18.dp, top = 18.dp)
         ) {
             Icon(
                 imageVector = Icons.Default.Settings,

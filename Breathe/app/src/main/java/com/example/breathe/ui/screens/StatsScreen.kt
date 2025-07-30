@@ -94,107 +94,146 @@ fun StatsScreen(colors: AppColors, navController: NavController, modifier: Modif
     var graphOffset by remember { mutableStateOf(Offset(0f, 0f)) }
     var selectedBar by remember { mutableStateOf<Int?>(null) }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .systemBarsPadding()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Header
-            Text(
-                text = "Statistics",
-                color = colors.title,
-                style = MaterialTheme.typography.headlineLarge
-            )
-            Text(
-                text = "Meditation Progress",
-                color = colors.subtitle,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-
-            // Period Selector
-            Spacer(modifier = Modifier.height(16.dp))
-            PeriodSelector(
-                selectedPeriod = selectedPeriod,
-                onPeriodSelected = { selectedPeriod = it },
-                colors = colors
-            )
-
-            // Interactive Graph
-            Spacer(modifier = Modifier.height(16.dp))
-            MeditationGraph(
-                sessions = sessions,
-                period = selectedPeriod,
-                colors = colors,
-                scale = graphScale,
-                offset = graphOffset,
-                selectedBar = selectedBar,
-                onScaleChange = { scale, offset ->
-                    graphScale = scale.coerceIn(0.5f, 3f)
-                    graphOffset = offset
-                },
-                onBarSelected = { selectedBar = it },
-                navController = navController
-            )
-
-            // KPI Cards Section
-            // В StatsScreen, вместо текущих двух Row с StatCard
-            Spacer(modifier = Modifier.height(24.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp) // Фиксированная высота для всех карточек
-                    .padding(horizontal = 16.dp), // Добавляем горизонтальный отступ для Row
-                horizontalArrangement = Arrangement.spacedBy(8.dp) // Отступы между карточками
-            ) {
-                StatCard(
-                    title = "Total\nMeditation",
-                    value = viewModel.formatMinutesToClock(state.totalMeditationMinutes),
-                    onClick = { showKpiDialog = "Total Meditation" },
-                    colors = colors,
-                    modifier = Modifier.weight(1f)
-                )
-                StatCard(
-                    title = "Best\nStreak",
-                    value = "${state.bestStreakDays} days",
-                    onClick = { showKpiDialog = "Best Streak" },
-                    colors = colors,
-                    modifier = Modifier.weight(1f)
-                )
-                StatCard(
-                    title = "Sessions\nThis Week",
-                    value = "${state.sessionsThisWeek}",
-                    onClick = { showKpiDialog = "Sessions This Week" },
-                    colors = colors,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            // Session History
-            Spacer(modifier = Modifier.height(24.dp))
-            SessionHistory(
-                sessions = sessions,
-                colors = colors,
-                period = selectedPeriod
-            )
-
-            // Add Session Button
+    // Using Scaffold to place the floating button correctly
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        containerColor = colors.background, // Setting the background for the entire screen
+        floatingActionButton = {
             FloatingActionButton(
                 onClick = { showAddSessionDialog = true },
-                modifier = Modifier
-                    .align(Alignment.End)
-                    .padding(16.dp),
                 containerColor = colors.primary
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Add Session", tint = colors.title)
             }
         }
+    ) { innerPadding ->
+        // We use one LazyColumn for the entire screen content
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding), // It is important to apply padding from Scaffold
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // 1. Headline
+            item {
+                Spacer(modifier = Modifier.height(32.dp))
+                Text(
+                    text = "Statistics",
+                    color = colors.title,
+                    style = MaterialTheme.typography.headlineLarge
+                )
+                Text(
+                    text = "Meditation Progress",
+                    color = colors.subtitle,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
-        // Dialogs
+            // 2. Period selector
+            item {
+                PeriodSelector(
+                    selectedPeriod = selectedPeriod,
+                    onPeriodSelected = { selectedPeriod = it },
+                    colors = colors
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            // 3. Schedule
+            item {
+                MeditationGraph(
+                    sessions = sessions,
+                    period = selectedPeriod,
+                    colors = colors,
+                    scale = graphScale,
+                    offset = graphOffset,
+                    selectedBar = selectedBar,
+                    onScaleChange = { scale, offset ->
+                        graphScale = scale.coerceIn(0.5f, 3f)
+                        graphOffset = offset
+                    },
+                    onBarSelected = { selectedBar = it },
+                    navController = navController
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            // 4. KPI cards
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp)
+                        .padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    StatCard(
+                        title = "Total\nMeditation",
+                        value = viewModel.formatMinutesToClock(state.totalMeditationMinutes),
+                        onClick = { showKpiDialog = "Total Meditation" },
+                        colors = colors,
+                        modifier = Modifier.weight(1f)
+                    )
+                    StatCard(
+                        title = "Best\nStreak",
+                        value = "${state.bestStreakDays} days",
+                        onClick = { showKpiDialog = "Best Streak" },
+                        colors = colors,
+                        modifier = Modifier.weight(1f)
+                    )
+                    StatCard(
+                        title = "Sessions\nThis Week",
+                        value = "${state.sessionsThisWeek}",
+                        onClick = { showKpiDialog = "Sessions This Week" },
+                        colors = colors,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            // 5. Headline for the story
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 32.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Date",
+                        color = colors.text,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = "Duration",
+                        color = colors.text,
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+
+            // 6. Session history (now part of the main LazyColumn)
+            val filteredSessions = when (selectedPeriod) {
+                PERIOD_7_DAYS -> sessions.filter { toLocalDate(it.date) >= LocalDate.now().minusDays(7) }
+                PERIOD_30_DAYS -> sessions.filter { toLocalDate(it.date) >= LocalDate.now().minusDays(30) }
+                else -> sessions
+            }
+            items(filteredSessions) { session ->
+                SessionCard(session, colors)
+            }
+
+            // Add an indentation at the bottom so that the last element doesn't stick to the edge
+            item {
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        }
+
+        // Dialogues remain outside of LazyColumn, but inside Scaffold
         if (showAddSessionDialog) {
             AddSessionDialog(
                 onDismiss = { showAddSessionDialog = false },
@@ -216,7 +255,6 @@ fun StatsScreen(colors: AppColors, navController: NavController, modifier: Modif
         }
     }
 }
-
 /**
  * Dropdown menu for selecting the time period for statistics.
  */
@@ -516,57 +554,6 @@ fun StatCard(
         }
     }
 }
-/**
- * LazyColumn displaying meditation session history.
- * [START TABLE SECTION]
- */
-@Composable
-fun SessionHistory(sessions: List<MeditationSession>, colors: AppColors, period: String) {
-    val filteredSessions = when (period) {
-        PERIOD_7_DAYS -> sessions.filter { toLocalDate(it.date) >= LocalDate.now().minusDays(7) }
-        PERIOD_30_DAYS -> sessions.filter { toLocalDate(it.date) >= LocalDate.now().minusDays(30) }
-        else -> sessions
-    }
-    Column {
-        // Header row
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(
-                text = "Date",
-                color = colors.text,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = "Duration",
-                color = colors.text,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.weight(1f)
-            )
-        }
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(200.dp),
-            contentPadding = PaddingValues(vertical = 8.dp)
-        ) {
-            items(filteredSessions) { session ->
-                AnimatedVisibility(
-                    visible = true,
-                    enter = fadeIn(),
-                    exit = fadeOut()
-                ) {
-                    SessionCard(session, colors)
-                }
-            }
-        }
-    }
-}
-/* [END TABLE SECTION] */
 
 /**
  * Card displaying a single meditation session.

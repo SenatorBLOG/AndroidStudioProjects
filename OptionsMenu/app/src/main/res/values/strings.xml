@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">OptionsMenu</string>
+    <string name="menu_setting">Settings</string>
+    <string name="menu_one">One</string>
+    <string name="menu_two">Two</string>
+    <string name="menu_activity_one">Activity One</string>
+    <string name="menu_activity_two">Activity Two</string>
+    <string name="delete">Delete</string>
+    <string name="search">Search</string>
+    <string name="settings">Settings</string>
+    <string name="edit">Edit</string>
+    <string name="exit">Exit</string>
+</resources>

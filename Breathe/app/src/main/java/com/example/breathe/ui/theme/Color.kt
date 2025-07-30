@@ -33,7 +33,7 @@ val OceanThemeColors = AppColors(
 )
 
 val ForestThemeColors = AppColors(
-    background = Color(0xFF1A2F1F),
+    background = Color(0xFF0E2118),
     surface = Color(0xFF2A442C),
     primary = Color(0xFF4CAF50),
     onPrimary = Color(0xFF1A2F1F),
@@ -48,7 +48,7 @@ val ForestThemeColors = AppColors(
 )
 
 val SunsetThemeColors = AppColors(
-    background = Color(0xFF3F2A1D),
+    background = Color(0xFF311E0A),
     surface = Color(0xFF5A3F2A),
     primary = Color(0xFFFF5722),
     onPrimary = Color(0xFF3F2A1D),
