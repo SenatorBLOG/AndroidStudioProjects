@@ -5,6 +5,6 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "meditation_sessions")
 data class MeditationSession(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val duration: Int, // длительность в секундах
-    val date: Long     // дата в формате timestamp
+    val duration: Int, // duration in seconds
+    val date: Long     // date in timestamp format
 )

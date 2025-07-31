@@ -1,8 +1,5 @@
 package com.example.breathe.ui.screens
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -22,10 +19,8 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.IntOffset
@@ -111,7 +106,7 @@ fun StatsScreen(colors: AppColors, navController: NavController, modifier: Modif
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding), // It is important to apply padding from Scaffold
+                .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // 1. Headline
@@ -337,7 +332,6 @@ fun MeditationGraph(
         (dailySummaries.maxOfOrNull { it.totalDurationMinutes } ?: 0f).coerceAtLeast(1f)
     }
 
-    val density = LocalDensity.current
     var graphCanvasSize by remember { mutableStateOf(Size.Zero) }
 
     Column(
@@ -358,7 +352,7 @@ fun MeditationGraph(
                     }
                 }
         ) {
-            // Временная шкала слева
+            // Time scale on the left
             Column(
                 modifier = Modifier
                     .width(40.dp)
@@ -376,7 +370,7 @@ fun MeditationGraph(
                 }
             }
 
-            // Холст графика
+            // Graph canvas
             Canvas(
                 modifier = Modifier
                     .fillMaxSize()
@@ -387,7 +381,7 @@ fun MeditationGraph(
                 val barWidthPx = barAreaWidthPx / BAR_SPACING_RATIO
                 val barSpacingPx = barAreaWidthPx - barWidthPx
 
-                // Сетка
+                // Grid
                 listOf(0f, 0.25f, 0.5f, 0.75f, 1f).forEach { ratio ->
                     drawLine(
                         color = colors.text.copy(alpha = 0.2f),
@@ -412,7 +406,7 @@ fun MeditationGraph(
                 }
             }
 
-            // Метки дней
+            // Day labels
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -440,7 +434,7 @@ fun MeditationGraph(
                 }
             }
 
-            // Всплывающая подсказка
+            // Tooltip
             selectedBar?.let { index ->
                 if (index < dailySummaries.size) {
                     val summary = dailySummaries[index]
@@ -478,7 +472,7 @@ fun MeditationGraph(
             }
         }
 
-        // Ссылка на Meditation Regularity (вынесена под график)
+        // Link to Meditation Regularity (placed below the graph)
         Text(
             text = "View Meditation Regularity",
             color = colors.primary,
@@ -500,44 +494,39 @@ fun StatCard(
     value: String,
     onClick: () -> Unit,
     colors: AppColors,
-    modifier: Modifier = Modifier // Убедись, что modifier принимается
+    modifier: Modifier = Modifier
 ) {
     Card(
-        modifier = modifier // Используем переданный modifier (который будет содержать .weight(1f) или .fillMaxWidth())
-            .fillMaxHeight() // Эта строка нужна, чтобы карточка занимала всю высоту, когда она в Row с фиксированной высотой
+        modifier = modifier
+            .fillMaxHeight()
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(containerColor = colors.surface)
     ) {
         Column(
             modifier = Modifier
-                // Уменьшаем padding для большей плотности, как в SettingItem
-                .padding(vertical = 12.dp, horizontal = 12.dp) // БЫЛО 16.dp, СТАЛО 12.dp
-                .fillMaxSize(), // Заполняем всю доступную область карточки
+                .padding(vertical = 12.dp, horizontal = 12.dp)
+                .fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center // Центрируем содержимое по вертикали
+            verticalArrangement = Arrangement.Center
         ) {
-            // Заголовок
+            // Header
             Box(
                 modifier = Modifier
-                    // Используем fillMaxWidth() и wrapContentHeight()
-                    // чтобы Box подстраивался под текст, но растягивался по ширине
                     .fillMaxWidth()
                     .wrapContentHeight(),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = title.uppercase(), // Все заглавные буквы
-                    color = colors.label, // Цвет для метки
-                    style = MaterialTheme.typography.labelSmall, // Заголовок
+                    text = title.uppercase(),
+                    color = colors.label,
+                    style = MaterialTheme.typography.labelSmall,
                     textAlign = TextAlign.Center,
-                    // Дополнительный модификатор для центрирования текста в случае переноса строки
-                    modifier = Modifier.padding(bottom = 4.dp) // Небольшой отступ снизу
+                    modifier = Modifier.padding(bottom = 4.dp)
                 )
             }
-            // Спейсер между заголовком и значением
-            Spacer(modifier = Modifier.height(4.dp)) // Уменьшен спейсер
+            Spacer(modifier = Modifier.height(4.dp))
 
-            // Значение
+            // Values
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -546,8 +535,8 @@ fun StatCard(
             ) {
                 Text(
                     text = value,
-                    color = colors.value, // Цвет для значения
-                    style = MaterialTheme.typography.bodyMedium, // Крупнее для выделения
+                    color = colors.value,
+                    style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center
                 )
             }

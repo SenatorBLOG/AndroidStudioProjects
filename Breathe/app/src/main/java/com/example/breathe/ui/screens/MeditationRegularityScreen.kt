@@ -31,7 +31,7 @@ fun MeditationRegularityScreen(colors: AppColors, navController: NavController) 
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        // Кнопка "Back" вверху
+        // "Back" button at the top
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -46,7 +46,7 @@ fun MeditationRegularityScreen(colors: AppColors, navController: NavController) 
             }
         }
 
-        // Основной контент со статистикой
+        // Main content with statistics
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -57,7 +57,7 @@ fun MeditationRegularityScreen(colors: AppColors, navController: NavController) 
                 style = MaterialTheme.typography.headlineLarge
             )
 
-            // Детальная статистика
+            // Detailed statistics
             Text(
                 text = "Total Meditation Time: ${viewModel.formatMinutesToClock(state.totalMeditationMinutes)}",
                 color = colors.text,
@@ -76,7 +76,7 @@ fun MeditationRegularityScreen(colors: AppColors, navController: NavController) 
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.padding(top = 8.dp)
             )
-            // В будущем можно добавить графики или дополнительные метрики
+            // In the future, you can add graphs or additional metrics
         }
     }
 }

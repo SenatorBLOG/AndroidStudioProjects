@@ -12,9 +12,9 @@ data class AppColors(
     val label: Color,
     val value: Color,
     val text: Color,
-    val glowOuter: Color, // Внешнее свечение
-    val glowInner: Color, // Внутреннее свечение
-    val glowBackground: Color, // Фон для внутреннего свечения: Color // Пульсирующее свечение
+    val glowOuter: Color,
+    val glowInner: Color,
+    val glowBackground: Color,
 )
 
 val OceanThemeColors = AppColors(

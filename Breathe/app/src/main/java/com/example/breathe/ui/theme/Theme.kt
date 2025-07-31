@@ -13,7 +13,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.example.breathe.R
 
-// Определение кастомного шрифта (если вы добавили Montserrat)
+// Define a custom font (added Montserrat)
 val MontserratFontFamily = FontFamily(
     Font(R.font.montserrat_thin, FontWeight.Thin),
     Font(R.font.montserrat_thinitalic, FontWeight.Thin, FontStyle.Italic),
@@ -36,30 +36,30 @@ val MontserratFontFamily = FontFamily(
 )
 
 
-// Определение типографики
+// Define typography
 val AppTypography = Typography(
-    // Заголовок (например, "Breathe Better")
+    // Title (e.g., "Breathe Better")
     headlineLarge = TextStyle(
-        fontFamily = MontserratFontFamily, // Используйте кастомный шрифт или уберите для системного
+        fontFamily = MontserratFontFamily, // Use custom font or remove for system default
         fontWeight = FontWeight.Medium,
         fontSize = 34.sp,
         lineHeight = 34.sp
     ),
-    // Подзаголовок (например, "Meditation for Sleep & Relaxation")
+    // Subtitle (e.g., "Meditation for Sleep & Relaxation")
     titleMedium = TextStyle(
         fontFamily = MontserratFontFamily,
         fontWeight = FontWeight.Light,
         fontSize = 18.sp,
         lineHeight = 20.sp
     ),
-    // Текст внутри круга (например, "Вдох")
+    // Text inside the circle (e.g., "Inhale")
     bodyLarge = TextStyle(
         fontFamily = MontserratFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 32.sp,
         lineHeight = 28.sp
     ),
-    // Метки настроек (например, "Длительность")
+    // Settings labels (e.g., "Duration")
     labelSmall = TextStyle(
         fontFamily = MontserratFontFamily,
         fontWeight = FontWeight.W500,
@@ -67,21 +67,21 @@ val AppTypography = Typography(
         lineHeight = 16.sp,
         textAlign = TextAlign.Center
     ),
-    // Значения настроек (например, "10 min")
+    // Settings values (e.g., "10 min")
     bodyMedium = TextStyle(
         fontFamily = MontserratFontFamily,
         fontWeight = FontWeight.W500,
         fontSize = 20.sp,
         lineHeight = 22.sp
     ),
-    // Текст кнопки (например, "Начать")
+    // Button text (e.g., "Start")
     labelLarge = TextStyle(
         fontFamily = MontserratFontFamily,
         fontWeight = FontWeight.Medium,
         fontSize = 22.sp,
         lineHeight = 24.sp
     ),
-    // Текст в диалогах (например, заголовок "Выберите длительность" и опции)
+    // Text in dialogs (e.g., title "Select Duration" and options)
     titleSmall = TextStyle(
         fontFamily = MontserratFontFamily,
         fontWeight = FontWeight.Medium,

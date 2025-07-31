@@ -12,7 +12,6 @@ class BreatheApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        // Этот вызов создаст файл и вызовет onCreate-callback
         database.openHelper.writableDatabase
     }
 }

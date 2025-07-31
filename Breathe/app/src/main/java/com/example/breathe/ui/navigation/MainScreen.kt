@@ -20,7 +20,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import com.example.breathe.ui.theme.*
 import com.example.breathe.viewmodel.StatsViewModel
 import kotlinx.coroutines.delay
@@ -28,7 +27,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 
-// Модели данных для дыхания
+// Daata models for breathing pattern
 data class BreathingPattern(
     val inhale: Long,
     val holdAfterInhale: Long,
@@ -43,7 +42,8 @@ enum class Phase {
 @Composable
 fun MainScreen(colors: AppColors,
                onThemeChange: (String) -> Unit,
-               modifier: Modifier) {
+               modifier: Modifier = Modifier
+              ) {
     var duration by remember { mutableStateOf("10 min") }
     var breathingPattern by remember { mutableStateOf("4-7-8") }
     var showDurationDialog by remember { mutableStateOf(false) }
@@ -64,7 +64,7 @@ fun MainScreen(colors: AppColors,
 
     val pattern = patterns[breathingPattern] ?: BreathingPattern(4000, 0, 4000, 0)
 
-    // Анимация дыхания
+    // Breathing animation
     LaunchedEffect(isRunning) {
         if (isRunning) {
             while (isRunning) {
@@ -89,7 +89,7 @@ fun MainScreen(colors: AppColors,
         }
     }
 
-    // Таймер длительности
+    // Duration timer
     LaunchedEffect(isRunning) {
         if (isRunning) {
             val totalDurationMillis = when (duration) {
@@ -156,7 +156,7 @@ fun MainScreen(colors: AppColors,
             )
             Spacer(modifier = Modifier.height(64.dp))
 
-            // Круг дыхания
+            // The Breathing circle
             Box(
                 modifier = Modifier
                     .size(250.dp)
@@ -210,7 +210,7 @@ fun MainScreen(colors: AppColors,
                     }
                 }
             }
-            //Коробки
+            //Boxes
             Spacer(modifier = Modifier.height(64.dp))
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -231,7 +231,7 @@ fun MainScreen(colors: AppColors,
                 SettingItem(
                     title = "Sound",
                     value = "Voice",
-                    onClick = { /* TODO */ },
+                    onClick = { /* TODO implement breathing support*/ },
                     colors = colors
                 )
             }
@@ -267,7 +267,7 @@ fun MainScreen(colors: AppColors,
             }
         }
 
-        // Иконка настроек
+        // Setting icon
         IconButton(
             onClick = { showSettingsDialog = true },
             modifier = Modifier
@@ -282,7 +282,7 @@ fun MainScreen(colors: AppColors,
             )
         }
 
-        // Диалоги
+        // Dialogs
         if (showSettingsDialog) {
             SettingsDialog(
                 onDismiss = { showSettingsDialog = false },
@@ -310,7 +310,7 @@ fun MainScreen(colors: AppColors,
     }
 }
 
-// Отдельные функции для диалогов
+// separate functions of dialogs
 @Composable
 fun SettingsDialog(onDismiss: () -> Unit, onThemeClick: () -> Unit) {
     AlertDialog(

@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.Instant
@@ -27,7 +26,9 @@ import javax.inject.Inject
 data class StatsState(
     val totalMeditationMinutes: Int = 0,
     val bestStreakDays: Int = 0,
-    val sessionsThisWeek: Int = 0
+    val sessionsThisWeek: Int = 0,
+    val totalSessions: Int = 0,
+    val averageSessionDuration: Int = 0
 )
 
 @HiltViewModel
@@ -129,15 +130,14 @@ class StatsViewModel @Inject constructor(
         }
 
         // Sessions this week
-        // Определяем начало текущей недели (например, понедельник)
         val today = LocalDate.now(ZoneId.systemDefault())
-        val startOfWeek = today.with(DayOfWeek.MONDAY) // Это уже начало недели
+        val startOfWeek = today.with(DayOfWeek.MONDAY) // Beginning of the week
 
         Log.d("StatsViewModel", "Calculating sessions for week starting: $startOfWeek (today: $today)")
 
         val thisWeekCount = list.count { session ->
             val sessionDate = toLocalDate(session.date)
-            // sessionDate >= startOfWeek && sessionDate <= today.plusDays(1) // Учитываем текущий день
+            // sessionDate >= startOfWeek && sessionDate <= today.plusDays(1) // current day
             sessionDate >= startOfWeek && sessionDate <= today
         }
 
@@ -156,7 +156,7 @@ class StatsViewModel @Inject constructor(
         Instant.ofEpochMilli(timestamp)
             .atZone(ZoneId.systemDefault())
             .toLocalDate().also {
-                // Log.d("StatsViewModel", "Converted timestamp $timestamp to $it") // Убрать лишний лог, чтобы не засорять
+                // Log.d("StatsViewModel", "Converted timestamp $timestamp to $it")
             }
 
     /**

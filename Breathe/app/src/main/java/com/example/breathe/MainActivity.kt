@@ -47,7 +47,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-// DataStore для сохранения настроек
+// DataStore for saving settings
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -57,11 +57,11 @@ class MainActivity : ComponentActivity() {
             val context = LocalContext.current
             val themeKey = stringPreferencesKey("theme")
             val themeFlow: Flow<String> = context.dataStore.data.map { preferences ->
-                preferences[themeKey] ?: "Ocean" // По умолчанию "Ocean"
+                preferences[themeKey] ?: "Ocean" // Default to "Ocean"
             }
             val currentTheme by themeFlow.collectAsState(initial = "Ocean")
 
-            // Выбор цветовой темы
+            // Color theme selection
             val colors = when (currentTheme) {
                 "Forest" -> ForestThemeColors
                 "Sunset" -> SunsetThemeColors
@@ -98,7 +98,7 @@ class MainActivity : ComponentActivity() {
                         composable("profile") { ProfileScreen(
                             colors,
                             navController,
-                            Modifier.padding(innerPadding)
+                            Modifier.fillMaxSize()
                         ) }
                         composable("meditation_regularity") { MeditationRegularityScreen(
                             colors = colors, navController = navController) }
