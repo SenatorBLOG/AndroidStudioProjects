@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Network Security Configuration
+    - Blocks all cleartext (HTTP) traffic in release builds.
+    - HTTPS is always required for the production API (breatheonline.app).
+    - Debug builds retain cleartext access for local dev servers.
+-->
+<network-security-config>
+
+    <!-- Production: HTTPS only, no cleartext permitted -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">breatheonline.app</domain>
+    </domain-config>
+
+    <!-- Debug only: allow cleartext to localhost for local API testing -->
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="user" />
+        </trust-anchors>
+        <domain-config cleartextTrafficPermitted="true">
+            <domain includeSubdomains="true">localhost</domain>
+            <domain includeSubdomains="true">10.0.2.2</domain>
+        </domain-config>
+    </debug-overrides>
+
+</network-security-config>

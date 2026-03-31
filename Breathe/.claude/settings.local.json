@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:breatheonline.app)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(find 'C:\\\\Users\\\\Mikhail Senatorov\\\\Documents\\\\Douglas\\\\Breathe\\\\frontend/src' -type f \\\\\\(-name *.tsx -o -name *.ts -o -name *.css \\\\\\))",
+      "Bash(./gradlew assembleDebug)",
+      "Bash(JAVA_HOME=\"/c/Program Files/Android/Android Studio/jbr\" ./gradlew assembleDebug)",
+      "Bash(JAVA_HOME=\"/c/Program Files/Android/Android Studio/jbr\" ./gradlew :app:compileDebugKotlin)",
+      "Bash(find 'C:\\\\Users\\\\Mikhail Senatorov\\\\Documents\\\\GitHub\\\\AndroidStudioProjects\\\\Breathe' -name package.json -not -path */node_modules/*)",
+      "Bash(find 'C:\\\\Users\\\\Mikhail Senatorov\\\\Documents\\\\GitHub\\\\AndroidStudioProjects\\\\Breathe' -name *.tsx -not -path */node_modules/*)",
+      "Bash(find /c/Users/Mikhail Senatorov/Documents/GitHub/AndroidStudioProjects/Breathe -name *Chart* -type f)",
+      "Bash(JAVA_HOME=\"C:/Program Files/Android/Android Studio/jbr\" ./gradlew assembleDebug)",
+      "Bash(JAVA_HOME=\"C:/Program Files/Android/Android Studio/jbr\" ./gradlew installDebug)",
+      "Bash(cmd /c \"gradlew.bat assembleDebug 2>&1\")",
+      "Bash(cmd /c \"gradlew.bat assembleDebug\")",
+      "Bash(findstr /i \"error\\\\|warning\\\\|fail\\\\|exception\\\\|unresolved\\\\|cannot\")",
+      "Bash(cmd /c \"gradlew.bat assembleDebug 2>&1 > build_output.txt\")",
+      "Bash(findstr /i \"error\")",
+      "Bash(./gradlew.bat assembleDebug)",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Users/**)",
+      "Bash(export JAVA_HOME=\"/c/Program Files/Android/Android Studio/jbr\")",
+      "Bash(export PATH=\"$JAVA_HOME/bin:$PATH\")",
+      "Bash(./gradlew clean:*)",
+      "Bash(./gradlew compileDebugKotlin --no-build-cache)",
+      "Bash(./gradlew assembleDebug --no-build-cache --rerun-tasks)",
+      "Bash(JAVA_HOME=\"/c/Program Files/Android/Android Studio/jbr\" PATH=\"$JAVA_HOME/bin:$PATH\" cd \"C:/Users/Mikhail Senatorov/Documents/GitHub/AndroidStudioProjects/Breathe\")",
+      "Bash(JAVA_HOME=\"/c/Program Files/Android/Android Studio/jbr\" PATH=\"$JAVA_HOME/bin:$PATH\" ./gradlew compileDebugKotlin --no-build-cache)",
+      "Bash(find 'C:\\\\Users\\\\Mikhail Senatorov\\\\Documents\\\\GitHub\\\\AndroidStudioProjects\\\\Breathe' -name *.properties -o -name *.gradle -o -name *.toml -o -name .gitignore)",
+      "Bash(find . -maxdepth 3 -name *.properties -o -name .gitignore)",
+      "Bash(find app/src/main/res/mipmap* -type f)"
+    ]
+  }
+}

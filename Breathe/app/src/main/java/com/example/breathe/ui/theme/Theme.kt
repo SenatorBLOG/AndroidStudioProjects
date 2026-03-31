@@ -1,107 +1,77 @@
 package com.example.breathe.ui.theme
 
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.sp
-import com.example.breathe.R
+import androidx.compose.runtime.CompositionLocalProvider
 
-// Define a custom font (added Montserrat)
-val MontserratFontFamily = FontFamily(
-    Font(R.font.montserrat_thin, FontWeight.Thin),
-    Font(R.font.montserrat_thinitalic, FontWeight.Thin, FontStyle.Italic),
-    Font(R.font.montserrat_extralight, FontWeight.ExtraLight),
-    Font(R.font.montserrat_extralightitalic, FontWeight.ExtraLight, FontStyle.Italic),
-    Font(R.font.montserrat_light, FontWeight.Light),
-    Font(R.font.montserrat_lightitalic, FontWeight.Light, FontStyle.Italic),
-    Font(R.font.montserrat_regular, FontWeight.Normal),
-    Font(R.font.montserrat_italic, FontWeight.Normal, FontStyle.Italic),
-    Font(R.font.montserrat_medium, FontWeight.Medium),
-    Font(R.font.montserrat_mediumitalic, FontWeight.Medium, FontStyle.Italic),
-    Font(R.font.montserrat_semibold, FontWeight.SemiBold),
-    Font(R.font.montserrat_semibolditalic, FontWeight.SemiBold, FontStyle.Italic),
-    Font(R.font.montserrat_bold, FontWeight.Bold),
-    Font(R.font.montserrat_bolditalic, FontWeight.Bold, FontStyle.Italic),
-    Font(R.font.montserrat_extrabold, FontWeight.ExtraBold),
-    Font(R.font.montserrat_extrabolditalic, FontWeight.ExtraBold, FontStyle.Italic),
-    Font(R.font.montserrat_black, FontWeight.Black),
-    Font(R.font.montserrat_blackitalic, FontWeight.Black, FontStyle.Italic)
-)
-
-
-// Define typography
-val AppTypography = Typography(
-    // Title (e.g., "Breathe Better")
-    headlineLarge = TextStyle(
-        fontFamily = MontserratFontFamily, // Use custom font or remove for system default
-        fontWeight = FontWeight.Medium,
-        fontSize = 34.sp,
-        lineHeight = 34.sp
-    ),
-    // Subtitle (e.g., "Meditation for Sleep & Relaxation")
-    titleMedium = TextStyle(
-        fontFamily = MontserratFontFamily,
-        fontWeight = FontWeight.Light,
-        fontSize = 18.sp,
-        lineHeight = 20.sp
-    ),
-    // Text inside the circle (e.g., "Inhale")
-    bodyLarge = TextStyle(
-        fontFamily = MontserratFontFamily,
-        fontWeight = FontWeight.Medium,
-        fontSize = 32.sp,
-        lineHeight = 28.sp
-    ),
-    // Settings labels (e.g., "Duration")
-    labelSmall = TextStyle(
-        fontFamily = MontserratFontFamily,
-        fontWeight = FontWeight.W500,
-        fontSize = 12.sp,
-        lineHeight = 16.sp,
-        textAlign = TextAlign.Center
-    ),
-    // Settings values (e.g., "10 min")
-    bodyMedium = TextStyle(
-        fontFamily = MontserratFontFamily,
-        fontWeight = FontWeight.W500,
-        fontSize = 20.sp,
-        lineHeight = 22.sp
-    ),
-    // Button text (e.g., "Start")
-    labelLarge = TextStyle(
-        fontFamily = MontserratFontFamily,
-        fontWeight = FontWeight.Medium,
-        fontSize = 22.sp,
-        lineHeight = 24.sp
-    ),
-    // Text in dialogs (e.g., title "Select Duration" and options)
-    titleSmall = TextStyle(
-        fontFamily = MontserratFontFamily,
-        fontWeight = FontWeight.Medium,
-        fontSize = 20.sp,
-        lineHeight = 26.sp
-    )
-)
-
+/**
+ * Main app theme. Dark-only (meditation apps live in the dark).
+ *
+ * Usage:
+ *   BreatheTheme(colors = OceanThemeColors) { ... }
+ *
+ * Inside any composable, access the current custom palette via:
+ *   val colors = LocalAppColors.current
+ */
 @Composable
-fun BreatheTheme(colors: AppColors, content: @Composable () -> Unit) {
+fun BreatheTheme(
+    colors: AppColors = DefaultDarkColors,
+    content: @Composable () -> Unit,
+) {
+    // Map our custom AppColors onto every Material3 color role so that M3
+    // system components (AlertDialog, Switch, TopAppBar, etc.) stay on-brand.
     val colorScheme = darkColorScheme(
-        primary = colors.primary,
-        onPrimary = colors.onPrimary,
-        background = colors.background,
-        surface = colors.surface
+        // ── Primary action color ──────────────────────────────────────────────
+        primary             = colors.primary,
+        onPrimary           = colors.onPrimary,
+        primaryContainer    = colors.primary.copy(alpha = 0.18f),
+        onPrimaryContainer  = colors.title,
+
+        // ── Secondary / accent ────────────────────────────────────────────────
+        secondary           = colors.subtitle,
+        onSecondary         = colors.background,
+        secondaryContainer  = colors.surface,
+        onSecondaryContainer = colors.text,
+
+        // ── Tertiary (value highlight) ────────────────────────────────────────
+        tertiary            = colors.value,
+        onTertiary          = colors.onPrimary,
+        tertiaryContainer   = colors.surface,
+        onTertiaryContainer = colors.text,
+
+        // ── Backgrounds & surfaces ────────────────────────────────────────────
+        background          = colors.background,
+        onBackground        = colors.text,
+        surface             = colors.surface,
+        onSurface           = colors.title,
+        surfaceVariant      = colors.surface,       // cards, chips bg
+        onSurfaceVariant    = colors.subtitle,      // secondary text on cards
+
+        // ── Outlines ──────────────────────────────────────────────────────────
+        outline             = colors.subtitle.copy(alpha = 0.40f),
+        outlineVariant      = colors.subtitle.copy(alpha = 0.18f),
+
+        // ── Error ─────────────────────────────────────────────────────────────
+        error               = ErrorRed,
+        onError             = ErrorDark,
+        errorContainer      = ErrorRed.copy(alpha = 0.18f),
+        onErrorContainer    = ErrorRed,
+
+        // ── Inverse (snackbars, tooltips) ─────────────────────────────────────
+        inverseSurface      = colors.title,
+        inverseOnSurface    = colors.background,
+        inversePrimary      = colors.primary.copy(alpha = 0.80f),
+
+        // ── Scrim (modal overlays) ────────────────────────────────────────────
+        scrim               = Navy950.copy(alpha = 0.65f),
     )
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = AppTypography,
-        content = content
-    )
+    CompositionLocalProvider(LocalAppColors provides colors) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography  = AppTypography,
+            content     = content,
+        )
+    }
 }

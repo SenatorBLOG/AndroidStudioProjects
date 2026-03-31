@@ -1,3 +1,80 @@
 <resources>
     <string name="app_name">Breathe</string>
+
+    <!-- Greetings -->
+    <string name="greeting_morning">Good morning</string>
+    <string name="greeting_afternoon">Good afternoon</string>
+    <string name="greeting_evening">Good evening</string>
+
+    <!-- Home screen -->
+    <string name="tagline">breathe · relax · sleep</string>
+    <string name="section_quick_exercises">QUICK EXERCISES</string>
+    <string name="section_recent_sessions">RECENT SESSIONS</string>
+    <string name="btn_view_all">View all</string>
+    <string name="featured_title">Take a moment</string>
+    <string name="featured_subtitle">to breathe</string>
+    <string name="btn_start_breathing">Start breathing →</string>
+    <string name="stat_label_today">Today</string>
+    <string name="stat_label_streak">Streak</string>
+    <string name="stat_unit_min">min</string>
+    <string name="stat_unit_days">days</string>
+    <string name="no_sessions_yet">No sessions yet</string>
+    <string name="no_sessions_hint">Complete a breathing exercise\nto see your history here</string>
+    <string name="btn_retry">Retry</string>
+
+    <!-- Breathe screen -->
+    <string name="cd_back">Back</string>
+    <string name="phase_inhale">Inhale\u2026</string>
+    <string name="phase_hold">Hold\u2026</string>
+    <string name="phase_exhale">Exhale\u2026</string>
+    <string name="btn_end_session">End Session</string>
+    <string name="exit_dialog_title">End session?</string>
+    <string name="exit_dialog_body_with_progress">You\'ve been breathing for %1$s.\nYour session will end early and progress will be saved.</string>
+    <string name="exit_dialog_body_no_progress">End your session early?</string>
+    <string name="exit_dialog_confirm">End Session</string>
+    <string name="exit_dialog_dismiss">Continue</string>
+    <string name="cd_complete">Complete</string>
+    <string name="session_complete">Session Complete</string>
+    <string name="btn_done">Done</string>
+
+    <!-- Profile screen -->
+    <string name="profile_title">Profile</string>
+    <string name="profile_subtitle">Your account &amp; settings</string>
+    <string name="section_stats">STATS</string>
+    <string name="stat_sessions">Sessions</string>
+    <string name="stat_minutes">Minutes</string>
+    <string name="stat_current_streak">Current Streak</string>
+    <string name="stat_longest_streak">Longest Streak</string>
+    <string name="section_settings">SETTINGS</string>
+    <string name="setting_theme">Theme</string>
+    <string name="theme_ocean">Ocean</string>
+    <string name="theme_forest">Forest</string>
+    <string name="theme_sunset">Sunset</string>
+    <string name="setting_notifications">Notifications</string>
+    <string name="setting_notifications_hint">Daily breathing reminders</string>
+    <string name="btn_sign_out">Sign Out</string>
+    <string name="reminder_time_label">Reminder time</string>
+    <string name="reminder_time_title">Set reminder time</string>
+    <string name="reminder_approximate_hint">Approximate — grant exact alarm permission for precision</string>
+
+    <!-- Notification content -->
+    <string name="notification_title">Time to breathe</string>
+    <string name="notification_body">Take a moment for your daily breathing exercise</string>
+
+    <!-- Stats screen -->
+    <string name="stats_title">Statistics</string>
+    <string name="stats_subtitle">Your progress</string>
+
+    <!-- History screen -->
+    <string name="history_title">History</string>
+    <string name="history_subtitle">Your breathing sessions</string>
+    <string name="history_empty_title">No sessions yet</string>
+    <string name="history_empty_hint">Start breathing to record\nyour first session!</string>
+    <string name="btn_try_again">Try again</string>
+
+    <!-- Plurals -->
+    <plurals name="cycle_count">
+        <item quantity="one">%d cycle</item>
+        <item quantity="other">%d cycles</item>
+    </plurals>
 </resources>

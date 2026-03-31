@@ -5,6 +5,9 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "meditation_sessions")
 data class MeditationSession(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val duration: Int, // duration in seconds
-    val date: Long     // date in timestamp format
+    val duration: Int,               // seconds
+    val date: Long,                  // epoch milliseconds
+    val isSynced: Boolean = false,   // true once successfully POSTed to API
+    val remoteId: String?  = null,   // MongoDB _id returned by POST /sessions
+    val type: String       = "deep", // API type key: "4-7-8", "box", "deep", "energy"
 )

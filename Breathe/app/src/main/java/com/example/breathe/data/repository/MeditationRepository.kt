@@ -15,7 +15,15 @@ class MeditationRepository @Inject constructor(
     fun getTotalsByDay(): Flow<List<DayTotal>> =
         dao.getTotalsByDay()
 
-    suspend fun insertSession(session: MeditationSession) {
+    suspend fun insertSession(session: MeditationSession): Long =
         dao.insertSession(session)
-    }
+
+    suspend fun markAsSynced(id: Long) =
+        dao.markAsSynced(id)
+
+    suspend fun updateRemoteId(id: Long, remoteId: String) =
+        dao.updateRemoteId(id, remoteId)
+
+    suspend fun getUnsyncedSessions(): List<MeditationSession> =
+        dao.getUnsyncedSessions()
 }

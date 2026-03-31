@@ -27,12 +27,40 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 
-// Daata models for breathing pattern
+// Data models for breathing pattern
 data class BreathingPattern(
     val inhale: Long,
     val holdAfterInhale: Long,
     val exhale: Long,
     val holdAfterExhale: Long
+)
+
+private data class TechniqueInfo(
+    val type:        String,
+    val emoji:       String,
+    val name:        String,
+    val patternStr:  String,
+    val description: String,
+)
+
+private val ALL_PATTERNS = mapOf(
+    "4-7-8"     to BreathingPattern(4000, 7000, 8000, 0),
+    "box"       to BreathingPattern(4000, 4000, 4000, 4000),
+    "wimhof"    to BreathingPattern(2000, 1000, 2000, 1000),
+    "coherent"  to BreathingPattern(5000, 0,    5000, 1000),
+    "belly"     to BreathingPattern(4000, 0,    6000, 2000),
+    "morning"   to BreathingPattern(4000, 4000, 4000, 0),
+    "alternate" to BreathingPattern(4000, 4000, 4000, 2000),
+)
+
+private val TECHNIQUES = listOf(
+    TechniqueInfo("4-7-8",     "🌙", "4-7-8 Breathing",   "4 · 7 · 8",      "Deep sleep aid · Stress relief"),
+    TechniqueInfo("box",       "⬜", "Box Breathing",      "4 · 4 · 4 · 4",  "Focus under pressure · Reduce anxiety"),
+    TechniqueInfo("wimhof",    "🔥", "Wim Hof Method",     "2 · 1 · 2 · 1",  "Energy boost · Cold resistance"),
+    TechniqueInfo("coherent",  "💙", "Coherent Breathing", "5 · 0 · 5 · 1",  "Heart rate variability · Deep calm"),
+    TechniqueInfo("belly",     "🌀", "Belly Breathing",    "4 · 0 · 6 · 2",  "Activate parasympathetic · Full relaxation"),
+    TechniqueInfo("morning",   "☀️", "Morning Ritual",     "4 · 4 · 4",      "Energise · Set a calm baseline for the day"),
+    TechniqueInfo("alternate", "☯️", "Alternate Nostril",  "4 · 4 · 4 · 2",  "Balance nervous system · Sharpen focus"),
 )
 
 enum class Phase {
@@ -57,12 +85,8 @@ fun MainScreen(colors: AppColors,
     val viewModel: StatsViewModel = hiltViewModel()
     val scrollState = rememberScrollState()
 
-    val patterns = mapOf(
-        "4-7-8" to BreathingPattern(4000, 7000, 8000, 0),
-        "Box Breathing\n4-4-4-4" to BreathingPattern(4000, 4000, 4000, 4000)
-    )
-
-    val pattern = patterns[breathingPattern] ?: BreathingPattern(4000, 0, 4000, 0)
+    val pattern = ALL_PATTERNS[breathingPattern] ?: ALL_PATTERNS["4-7-8"]!!
+    val patternDisplayName = TECHNIQUES.find { it.type == breathingPattern }?.name ?: breathingPattern
 
     // Breathing animation
     LaunchedEffect(isRunning) {
@@ -224,7 +248,7 @@ fun MainScreen(colors: AppColors,
                 )
                 SettingItem(
                     title = "Breathing\nPattern",
-                    value = breathingPattern,
+                    value = patternDisplayName,
                     onClick = { showPatternDialog = true },
                     colors = colors
                 )
@@ -265,6 +289,37 @@ fun MainScreen(colors: AppColors,
                     color = colors.title
                 )
             }
+
+            // ── Technique picker ─────────────────────────────────────────────
+            Spacer(modifier = Modifier.height(36.dp))
+            Text(
+                text  = "CHOOSE TECHNIQUE",
+                style = MaterialTheme.typography.labelSmall,
+                color = colors.subtitle,
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .padding(bottom = 12.dp),
+            )
+            TECHNIQUES.forEach { tech ->
+                TechniqueRow(
+                    tech       = tech,
+                    isActive   = breathingPattern == tech.type,
+                    colors     = colors,
+                    onClick    = {
+                        breathingPattern = tech.type
+                        isRunning = true
+                        remainingTime = when (duration) {
+                            "5 min"  -> 5  * 60 * 1000L
+                            "10 min" -> 10 * 60 * 1000L
+                            "15 min" -> 15 * 60 * 1000L
+                            "20 min" -> 20 * 60 * 1000L
+                            else     -> 10 * 60 * 1000L
+                        }
+                    },
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            Spacer(modifier = Modifier.height(32.dp))
         }
 
         // Setting icon
@@ -406,13 +461,13 @@ fun PatternDialog(onDismiss: () -> Unit, onPatternSelected: (String) -> Unit) {
         title = { Text("Choose Breathing Pattern", style = MaterialTheme.typography.titleSmall) },
         text = {
             Column {
-                listOf("4-7-8", "Box Breathing").forEach { option ->
+                TECHNIQUES.forEach { tech ->
                     Text(
-                        text = option,
+                        text = "${tech.emoji}  ${tech.name}",
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable {
-                                onPatternSelected(option)
+                                onPatternSelected(tech.type)
                                 onDismiss()
                             }
                             .padding(16.dp),
@@ -470,6 +525,53 @@ fun SettingItem(
                 color = colors.value,
                 style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center
+            )
+        }
+    }
+}
+
+@Composable
+private fun TechniqueRow(
+    tech:     TechniqueInfo,
+    isActive: Boolean,
+    colors:   AppColors,
+    onClick:  () -> Unit,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = if (isActive) colors.primary.copy(alpha = 0.18f) else colors.surface,
+                shape = RoundedCornerShape(16.dp),
+            )
+            .clickable(onClick = onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+    ) {
+        Text(text = tech.emoji, style = MaterialTheme.typography.bodyLarge)
+        Spacer(modifier = Modifier.width(14.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text  = tech.name,
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (isActive) colors.primary else colors.title,
+            )
+            Text(
+                text  = tech.patternStr,
+                style = MaterialTheme.typography.labelSmall,
+                color = colors.primary.copy(alpha = if (isActive) 1f else 0.7f),
+            )
+            Text(
+                text  = tech.description,
+                style = MaterialTheme.typography.labelSmall,
+                color = colors.subtitle,
+            )
+        }
+        if (isActive) {
+            Text(
+                text  = "▶",
+                color = colors.primary,
+                style = MaterialTheme.typography.bodySmall,
             )
         }
     }

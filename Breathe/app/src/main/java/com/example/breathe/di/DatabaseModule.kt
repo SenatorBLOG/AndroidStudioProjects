@@ -5,6 +5,8 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.breathe.data.local.AppDatabase
+import com.example.breathe.data.local.MIGRATION_1_2
+import com.example.breathe.data.local.MIGRATION_2_3
 import com.example.breathe.data.local.dao.MeditationDao
 import com.example.breathe.data.repository.MeditationRepository
 import dagger.Module
@@ -24,10 +26,13 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             "meditation_database"
-        ).addCallback(object : RoomDatabase.Callback() {
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+        .addCallback(object : RoomDatabase.Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
-                android.util.Log.d("DatabaseModule", "Database created at ${context.getDatabasePath("meditation_database")}")
+                if (com.example.breathe.BuildConfig.DEBUG) {
+                    android.util.Log.d("DatabaseModule", "DB created: ${context.getDatabasePath("meditation_database")}")
+                }
             }
         }).build()
         return db
