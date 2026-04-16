@@ -18,6 +18,7 @@ data class AppColors(
     val glowOuter: Color,
     val glowInner: Color,
     val glowBackground: Color,
+    val isLight: Boolean = false,
 )
 
 // ── Shared palette tokens ─────────────────────────────────────────────────────
@@ -89,37 +90,63 @@ val OceanThemeColors = AppColors(
 // ── Forest theme ──────────────────────────────────────────────────────────────
 
 val ForestThemeColors = AppColors(
-    background    = Color(0xFF0B1A11),
-    surface       = Color(0xFF152B1C),
-    primary       = Color(0xFF4CAF50),
-    onPrimary     = Color(0xFF1A2F1F),
-    title         = Color(0xFFE8F5E9),
-    subtitle      = Color(0xFFA5D6A7),
-    label         = Color(0xFFA5D6A7),
-    value         = Color(0xFFE8F5E9),
-    text          = Color(0xFFE8F5E9),
-    glowOuter     = Color(0xFF4CAF50).copy(alpha = 0.35f),
-    glowInner     = Color(0xFF4CAF50).copy(alpha = 0.70f),
-    glowBackground = Color(0xFF4CAF50).copy(alpha = 0.10f),
+    background    = Color(0xFF08120D),
+    surface       = Color(0xFF122018),
+    primary       = Color(0xFF2D6A4F),
+    onPrimary     = Color(0xFFE6F0E9),
+    title         = Color(0xFFE7F2EA),
+    subtitle      = Color(0xFF9BB7A6),
+    label         = Color(0xFF9BB7A6),
+    value         = Color(0xFFD7E8DB),
+    text          = Color(0xFFD7E8DB),
+    glowOuter     = Color(0xFF4C8B6B).copy(alpha = 0.30f),
+    glowInner     = Color(0xFF4C8B6B).copy(alpha = 0.62f),
+    glowBackground = Color(0xFF4C8B6B).copy(alpha = 0.08f),
 )
 
 // ── Sunset theme ──────────────────────────────────────────────────────────────
 
 val SunsetThemeColors = AppColors(
-    background    = Color(0xFF150D05),
-    surface       = Color(0xFF221508),
-    primary       = Color(0xFFFF5722),
-    onPrimary     = Color(0xFF3F2A1D),
-    title         = Color(0xFFFFF8E1),
-    subtitle      = Color(0xFFFFB74D),
-    label         = Color(0xFFFFB74D),
-    value         = Color(0xFFFFF8E1),
-    text          = Color(0xFFFFF8E1),
-    glowOuter     = Color(0xFFFF5722).copy(alpha = 0.35f),
-    glowInner     = Color(0xFFFF5722).copy(alpha = 0.70f),
-    glowBackground = Color(0xFFFF5722).copy(alpha = 0.10f),
+    background    = Color(0xFF16100C),
+    surface       = Color(0xFF241914),
+    primary       = Color(0xFFC46A4A),
+    onPrimary     = Color(0xFFFFF3EA),
+    title         = Color(0xFFFFF3EA),
+    subtitle      = Color(0xFFD8A58B),
+    label         = Color(0xFFD8A58B),
+    value         = Color(0xFFF7DDD0),
+    text          = Color(0xFFF7DDD0),
+    glowOuter     = Color(0xFFD78C6A).copy(alpha = 0.30f),
+    glowInner     = Color(0xFFD78C6A).copy(alpha = 0.60f),
+    glowBackground = Color(0xFFD78C6A).copy(alpha = 0.08f),
+)
+
+// ── Day (light) theme ─────────────────────────────────────────────────────────
+
+val DayThemeColors = AppColors(
+    background     = Color(0xFFF5F7FA),
+    surface        = Color(0xFFFFFFFF),
+    primary        = Color(0xFF0D9488),   // teal-600
+    onPrimary      = Color(0xFFFFFFFF),
+    title          = Color(0xFF111827),   // gray-900
+    subtitle       = Color(0xFF6B7280),   // gray-500
+    label          = Color(0xFF6B7280),
+    value          = Color(0xFF0D9488),
+    text           = Color(0xFF374151),   // gray-700
+    glowOuter      = Color(0xFF0D9488).copy(alpha = 0.18f),
+    glowInner      = Color(0xFF0D9488).copy(alpha = 0.45f),
+    glowBackground = Color(0xFF0D9488).copy(alpha = 0.06f),
+    isLight        = true,
 )
 
 // ── CompositionLocal — screens read current theme without passing params ──────
 
 val LocalAppColors = staticCompositionLocalOf<AppColors> { DefaultDarkColors }
+
+// ── Sleep stage palette ───────────────────────────────────────────────────────
+
+val SleepDeep   = Color(0xFF3840E1)
+val SleepLight  = Color(0xFF0E8BF5)
+val SleepRem    = Color(0xFF21C6FF)
+val SleepAwake  = Color(0xFFB7E6FF)
+val SleepAccent = Color(0xFF7C4DFF)
