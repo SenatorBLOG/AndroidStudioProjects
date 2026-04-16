@@ -32,7 +32,9 @@ object Route {
     const val BREATHE               = "breathe/{exerciseType}"   // template — used in NavHost
     const val MEDITATION            = "meditation"
     const val PROFILE               = "profile"
-    const val HISTORY               = "history"
+    const val HISTORY               = "history?initialTab={initialTab}"
+    fun history(initialTab: String? = null): String =
+        if (initialTab != null) "history?initialTab=$initialTab" else "history"
     const val MEDITATION_REGULARITY = "meditation_regularity"
     const val SESSION_HISTORY       = "session_history"
     const val FAQ                   = "faq"
@@ -42,6 +44,9 @@ object Route {
     const val GLOBE                 = "globe"
     const val INTERACTIVE           = "interactive"
     const val ARTICLE               = "article?url={url}"
+    const val HEALTH_STATS          = "health_stats"
+    const val ACHIEVEMENTS          = "achievements"
+    const val ACHIEVEMENT_DETAIL    = "achievements/{slug}"
 
     /** Build a filled breathe path, e.g. Route.breathe("4-7-8") → "breathe/4-7-8" */
     fun breathe(type: String = "4-7-8") = "breathe/$type"
@@ -53,14 +58,15 @@ object Route {
     /** Build an article WebView path — URL is encoded to survive Navigation route parsing. */
     fun article(url: String) =
         "article?url=${URLEncoder.encode(url, "UTF-8")}"
+
+    fun achievement(slug: String) = "achievements/$slug"
 }
 
 /** Routes where the bottom bar should be visible. */
 private val BOTTOM_BAR_ROUTES = setOf(
     Route.HOME,
-    Route.MUSIC,
     Route.MEDITATION,
-    Route.GLOBE,
+    Route.HISTORY,
     Route.PROFILE,
 )
 
@@ -136,7 +142,6 @@ fun AppNavGraph(
                     navController = navController,
                     colors        = colors,
                     exerciseType  = exerciseType,
-                    onThemeChange = onThemeChange,
                 )
             }
             composable(Route.MEDITATION) {
@@ -144,7 +149,6 @@ fun AppNavGraph(
                     navController = navController,
                     colors        = colors,
                     exerciseType  = "4-7-8",
-                    onThemeChange = onThemeChange,
                 )
             }
             composable(Route.PROFILE) {
@@ -154,14 +158,25 @@ fun AppNavGraph(
                     onThemeChange = onThemeChange,
                 )
             }
-            composable(Route.HISTORY) {
-                StatsScreen(colors = colors, navController = navController, modifier = Modifier)
+            composable(
+                route = Route.HISTORY,
+                arguments = listOf(navArgument("initialTab") {
+                    type = NavType.StringType; defaultValue = ""; nullable = true
+                }),
+            ) { backStack ->
+                val initialTab = backStack.arguments?.getString("initialTab").orEmpty()
+                StatsScreen(
+                    colors = colors,
+                    navController = navController,
+                    initialTab = if (initialTab == "sleep") 1 else 0,
+                    modifier = Modifier,
+                )
             }
             composable(Route.MEDITATION_REGULARITY) {
                 MeditationRegularityScreen(colors = colors, navController = navController)
             }
             composable(Route.SESSION_HISTORY) {
-                HistoryScreen(navController = navController, colors = colors)
+                HistoryScreen(colors = colors)
             }
             composable(Route.FAQ) {
                 FaqScreen(colors = colors, navController = navController)
@@ -180,6 +195,22 @@ fun AppNavGraph(
             }
             composable(Route.INTERACTIVE) {
                 InteractiveScreen(navController = navController, colors = colors)
+            }
+            composable(Route.HEALTH_STATS) {
+                HealthStatsScreen(navController = navController, colors = colors)
+            }
+            composable(Route.ACHIEVEMENTS) {
+                AchievementsScreen(navController = navController, colors = colors)
+            }
+            composable(
+                route = Route.ACHIEVEMENT_DETAIL,
+                arguments = listOf(navArgument("slug") { type = NavType.StringType }),
+            ) { backStack ->
+                AchievementDetailScreen(
+                    slug = backStack.arguments?.getString("slug").orEmpty(),
+                    navController = navController,
+                    colors = colors,
+                )
             }
             composable(
                 route     = Route.ARTICLE,

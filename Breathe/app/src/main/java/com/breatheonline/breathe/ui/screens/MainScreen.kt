@@ -1,26 +1,40 @@
-package com.breatheonline.breathe.ui.screens
+﻿package com.breatheonline.breathe.ui.screens
 
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Forum
-import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -28,93 +42,149 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.breatheonline.breathe.ui.theme.AppColors
 
-// ── Tab model ─────────────────────────────────────────────────────────────────
-
 private data class BottomTab(
-    val route:    String,
-    val label:    String,
-    val icon:     ImageVector,
+    val route: String,
+    val label: String,
+    val icon: ImageVector,
     val isCenter: Boolean = false,
 )
 
 private val TABS = listOf(
-    BottomTab(Route.HOME,       "Home",    Icons.Default.Home),
-    BottomTab(Route.MUSIC,      "Music",   Icons.Default.MusicNote),
-    BottomTab(Route.MEDITATION, "Breathe", Icons.Default.Spa,      isCenter = true),
-    BottomTab(Route.GLOBE,      "Community", Icons.Default.Forum),
-    BottomTab(Route.PROFILE,    "Profile", Icons.Default.Person),
+    BottomTab(Route.HOME, "Home", Icons.Default.Home),
+    BottomTab(Route.MEDITATION, "Breathe", Icons.Default.Spa, isCenter = true),
+    BottomTab(Route.HISTORY, "Stats", Icons.Default.BarChart),
+    BottomTab(Route.PROFILE, "Profile", Icons.Default.Person),
 )
 
-// ── Bottom navigation bar ─────────────────────────────────────────────────────
+private val BottomBarShellHeight = 84.dp
 
 @Composable
 fun MainBottomBar(
     navController: NavController,
-    currentRoute:  String?,
+    currentRoute: String?,
     colors: AppColors,
 ) {
-    NavigationBar(
-        modifier       = Modifier.height(72.dp),
-        containerColor = colors.surface,
-        contentColor   = colors.title,
-        tonalElevation = 0.dp,
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .height(BottomBarShellHeight)
+            .padding(horizontal = 20.dp, vertical = 10.dp),
     ) {
-        TABS.forEach { tab ->
-            val selected = currentRoute == tab.route
-
-            NavigationBarItem(
-                selected = selected,
-                onClick  = {
-                    navController.navigate(tab.route) {
-                        popUpTo(Route.HOME) { saveState = true }
-                        launchSingleTop = true
-                        restoreState    = true
-                    }
-                },
-                icon = {
-                    if (tab.isCenter) {
-                        Box(
-                            modifier = Modifier
-                                .size(52.dp)
-                                .shadow(if (selected) 8.dp else 4.dp, CircleShape)
-                                .background(colors.primary, CircleShape),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            Icon(
-                                imageVector        = tab.icon,
-                                contentDescription = tab.label,
-                                tint               = Color.White,
-                                modifier           = Modifier.size(24.dp),
-                            )
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(horizontal = 6.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.Bottom,
+        ) {
+            TABS.forEach { tab ->
+                val selected = currentRoute == tab.route
+                NavItem(
+                    tab = tab,
+                    selected = selected,
+                    colors = colors,
+                    onClick = {
+                        // For HISTORY, navigate via the helper so the optional query arg is omitted
+                        val navRoute = if (tab.route == Route.HISTORY) Route.history() else tab.route
+                        navController.navigate(navRoute) {
+                            popUpTo(Route.HOME) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
                         }
-                    } else {
-                        Icon(
-                            imageVector        = tab.icon,
-                            contentDescription = tab.label,
-                        )
-                    }
-                },
-                label = {
-                    Text(
-                        text       = tab.label,
-                        fontSize   = 10.sp,
-                        color      = when {
-                            tab.isCenter -> colors.primary
-                            selected     -> colors.primary
-                            else         -> colors.subtitle
-                        },
-                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                    },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun NavItem(
+    tab: BottomTab,
+    selected: Boolean,
+    colors: AppColors,
+    onClick: () -> Unit,
+) {
+    val scale by animateFloatAsState(
+        targetValue = if (selected && tab.isCenter) 1.08f else if (selected) 1.04f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessMedium,
+        ),
+        label = "navItemScale_${tab.route}",
+    )
+
+    val interactionSource = remember { MutableInteractionSource() }
+
+    if (tab.isCenter) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .width(68.dp)
+                .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
+                .graphicsLayer { scaleX = scale; scaleY = scale }
+                .offset(y = (-4).dp),
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(50.dp)
+                    .shadow(
+                        elevation = if (selected) 12.dp else 8.dp,
+                        shape = CircleShape,
+                        ambientColor = colors.primary.copy(alpha = 0.42f),
+                        spotColor = colors.primary.copy(alpha = 0.42f),
                     )
-                },
-                alwaysShowLabel = true,
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor   = colors.primary,
-                    unselectedIconColor = colors.subtitle,
-                    selectedTextColor   = colors.primary,
-                    unselectedTextColor = colors.subtitle,
-                    indicatorColor      = if (tab.isCenter) Color.Transparent
-                                         else colors.primary.copy(alpha = 0.15f),
-                ),
+                    .clip(CircleShape)
+                    .background(colors.primary),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = tab.icon,
+                    contentDescription = tab.label,
+                    tint = Color.White,
+                    modifier = Modifier.size(22.dp),
+                )
+            }
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = tab.label,
+                fontSize = 10.sp,
+                color = if (selected) colors.primary else colors.subtitle,
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+            )
+        }
+    } else {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .width(64.dp)
+                .clickable(interactionSource = interactionSource, indication = null, onClick = onClick)
+                .graphicsLayer { scaleX = scale; scaleY = scale },
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                if (selected) {
+                    Box(
+                        modifier = Modifier
+                            .size(34.dp)
+                            .clip(CircleShape)
+                            .background(colors.primary.copy(alpha = 0.12f)),
+                    )
+                }
+                Icon(
+                    imageVector = tab.icon,
+                    contentDescription = tab.label,
+                    tint = if (selected) colors.primary else colors.subtitle,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = tab.label,
+                fontSize = 10.sp,
+                color = if (selected) colors.primary else colors.subtitle,
+                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
             )
         }
     }

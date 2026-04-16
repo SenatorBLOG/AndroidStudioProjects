@@ -11,11 +11,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 fun StatsScreen(
     colors: AppColors,
     navController: NavController,
+    initialTab: Int = 0,
     modifier: Modifier = Modifier,
     viewModel: StatsViewModel = hiltViewModel(),
 ) = com.breatheonline.breathe.ui.screens.stats.StatsScreen(
     colors = colors,
     navController = navController,
+    initialTab = initialTab,
     modifier = modifier,
     viewModel = viewModel,
 )

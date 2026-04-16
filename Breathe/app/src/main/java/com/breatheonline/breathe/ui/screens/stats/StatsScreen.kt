@@ -35,12 +35,13 @@ import com.breatheonline.breathe.viewmodel.StatsViewModel
 fun StatsScreen(
     colors: AppColors,
     navController: NavController,
+    initialTab: Int = 0,
     modifier: Modifier = Modifier,
     viewModel: StatsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
     var period by remember { mutableStateOf(0) }  // 0=Week 1=Month 2=Year
-    var topTab by remember { mutableStateOf(0) }  // 0=Meditation 1=Sleep
+    var topTab by remember { mutableStateOf(initialTab) }  // 0=Meditation 1=Sleep
 
     Column(
         modifier = modifier
