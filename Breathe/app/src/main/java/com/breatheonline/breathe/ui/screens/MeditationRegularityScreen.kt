@@ -1,0 +1,82 @@
+package com.breatheonline.breathe.ui.screens
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
+import com.breatheonline.breathe.ui.theme.AppColors
+import com.breatheonline.breathe.viewmodel.StatsViewModel
+
+@Composable
+fun MeditationRegularityScreen(colors: AppColors, navController: NavController) {
+    val viewModel: StatsViewModel = hiltViewModel()
+    val state = viewModel.state.collectAsState().value
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        // "Back" button at the top
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
+        ) {
+            IconButton(onClick = { navController.popBackStack() }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = colors.primary
+                )
+            }
+        }
+
+        // Main content with statistics
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Meditation Regularity",
+                color = colors.title,
+                style = MaterialTheme.typography.headlineLarge
+            )
+
+            // Detailed statistics
+            Text(
+                text = "Total Meditation Time: ${viewModel.formatMinutesToClock(state.totalMeditationMinutes)}",
+                color = colors.text,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(top = 16.dp)
+            )
+            Text(
+                text = "Best Streak: ${state.bestStreakDays} days",
+                color = colors.text,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+            Text(
+                text = "Sessions This Week: ${state.sessionsThisWeek}",
+                color = colors.text,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+            // In the future, you can add graphs or additional metrics
+        }
+    }
+}
