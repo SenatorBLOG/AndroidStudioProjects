@@ -43,4 +43,16 @@ class SleepAggregationsTest {
         val mins = com.breatheonline.breathe.utils.clockMinutesOrNull("2026-04-16T22:35:00Z")
         assertEquals(true, mins != null)
     }
+
+    @Test fun `buildSleepDayView handles missing stages`() {
+        val dto = com.breatheonline.breathe.data.models.SleepDayDto(
+            date = "2026-04-16",
+            duration = 480,
+            deepSleepMin = 96, remSleepMin = 120, lightSleepMin = 240, awakeMin = 24,
+        )
+        val view = com.breatheonline.breathe.utils.buildSleepDayView(dto, history7d = listOf(dto), avgSleepingHrBpm = 54)
+        assertEquals(480, view.durationMin)
+        assertEquals(true, view.stages.isEmpty())
+        assertEquals("Excellent", view.qualityLabel)
+    }
 }

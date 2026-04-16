@@ -1,6 +1,16 @@
 package com.breatheonline.breathe.utils
 
+import com.breatheonline.breathe.data.models.SleepDayDto
+import com.breatheonline.breathe.viewmodel.DayClockPoint
+import com.breatheonline.breathe.viewmodel.DayScorePoint
+import com.breatheonline.breathe.viewmodel.DayStageStack
+import com.breatheonline.breathe.viewmodel.SleepDayView
+import com.breatheonline.breathe.viewmodel.SleepMonthView
+import com.breatheonline.breathe.viewmodel.SleepScheduleAggregate
+import com.breatheonline.breathe.viewmodel.SleepWeekView
+import com.breatheonline.breathe.viewmodel.StageTotals
 import java.time.Instant
+import java.time.LocalDate
 import java.time.ZoneId
 import kotlin.math.min
 import kotlin.math.sqrt
@@ -52,4 +62,100 @@ fun clockMinutesOrNull(iso: String?, zoneId: ZoneId = ZoneId.systemDefault()): I
         val t = Instant.parse(iso).atZone(zoneId).toLocalTime()
         t.hour * 60 + t.minute
     }.getOrNull()
+}
+
+private fun formatClock(min: Int?): String =
+    if (min == null) "--:--" else "%02d:%02d".format(min / 60, min % 60)
+
+fun buildSleepDayView(
+    dto: SleepDayDto,
+    history7d: List<SleepDayDto>,
+    avgSleepingHrBpm: Int?,
+): SleepDayView {
+    val deep = dto.deepSleepMin ?: 0
+    val light = dto.lightSleepMin ?: 0
+    val rem = dto.remSleepMin ?: 0
+    val awake = dto.awakeMin ?: 0
+    val score = dto.score ?: computeSleepScore(dto.duration, deep, rem, awake)
+    val avg7d = if (history7d.isEmpty()) dto.duration else history7d.map { it.duration }.average().toInt()
+    val delta = dto.duration - avg7d
+    return SleepDayView(
+        date = parseHealthDate(dto.date) ?: LocalDate.now(),
+        durationMin = dto.duration,
+        bedtime = formatClock(clockMinutesOrNull(dto.bedtime)),
+        wakeTime = formatClock(clockMinutesOrNull(dto.wakeTime)),
+        stages = dto.stages.orEmpty(),
+        stageTotals = StageTotals(deep, light, rem, awake),
+        score = score,
+        qualityLabel = qualityLabelFor(score),
+        avgSleepingHrBpm = avgSleepingHrBpm,
+        deltaVsAvg7dMin = delta,
+    )
+}
+
+fun buildSleepWeekView(
+    days: List<SleepDayDto>,
+    prevWeekAvgDurationMin: Int?,
+    prevWeekAvgScore: Int?,
+    rangeLabel: String,
+): SleepWeekView {
+    val points = days.map { dto ->
+        DayScorePoint(
+            date = parseHealthDate(dto.date) ?: LocalDate.now(),
+            score = dto.score ?: computeSleepScore(dto.duration, dto.deepSleepMin ?: 0, dto.remSleepMin ?: 0, dto.awakeMin ?: 0),
+        )
+    }
+    val avg = points.mapNotNull { it.score }.takeIf { it.isNotEmpty() }?.average()?.toInt() ?: 0
+    val scoreDelta = prevWeekAvgScore?.let { avg - it }
+    val stacks = days.map { dto ->
+        DayStageStack(
+            date = parseHealthDate(dto.date) ?: LocalDate.now(),
+            deepMin = dto.deepSleepMin ?: 0,
+            lightMin = dto.lightSleepMin ?: 0,
+            remMin = dto.remSleepMin ?: 0,
+            awakeMin = dto.awakeMin ?: 0,
+        )
+    }
+    val idealAvg = days.map { it.duration }.takeIf { it.isNotEmpty() }?.average()?.toInt() ?: 0
+    val idealDelta = prevWeekAvgDurationMin?.let { idealAvg - it }
+    val schedule = buildSchedule(days)
+    return SleepWeekView(rangeLabel, points, avg, scoreDelta, schedule, stacks, idealAvg, idealDelta)
+}
+
+fun buildSleepMonthView(
+    days: List<SleepDayDto>,
+    baselineScore: Int?,
+    prevMonthAvgDurationMin: Int?,
+    prevMonthAvgScore: Int?,
+    monthLabel: String,
+): SleepMonthView {
+    val weekView = buildSleepWeekView(days, prevMonthAvgDurationMin, prevMonthAvgScore, monthLabel)
+    return SleepMonthView(
+        monthLabel = monthLabel,
+        scorePoints = weekView.scorePoints,
+        scoreAvg = weekView.scoreAvg,
+        scoreBaseline = baselineScore,
+        scoreDeltaVsPrevMonth = weekView.scoreDeltaVsPrevWeek,
+        schedule = weekView.schedule,
+        idealDuration = weekView.idealDuration,
+        idealAvgMin = weekView.idealAvgMin,
+        idealDeltaVsPrevMonthMin = weekView.idealDeltaVsPrevWeekMin,
+    )
+}
+
+private fun buildSchedule(days: List<SleepDayDto>): SleepScheduleAggregate {
+    val fallSeries = days.map { DayClockPoint(parseHealthDate(it.date) ?: LocalDate.now(), clockMinutesOrNull(it.bedtime)) }
+    val wakeSeries = days.map { DayClockPoint(parseHealthDate(it.date) ?: LocalDate.now(), clockMinutesOrNull(it.wakeTime)) }
+    val fallMinutes = fallSeries.mapNotNull { it.minOfDay }
+    val wakeMinutes = wakeSeries.mapNotNull { it.minOfDay }
+    return SleepScheduleAggregate(
+        avgFallAsleepMinOfDay = fallMinutes.takeIf { it.isNotEmpty() }?.average()?.toInt(),
+        latestFallAsleepMinOfDay = fallMinutes.maxOrNull(),
+        avgWakeMinOfDay = wakeMinutes.takeIf { it.isNotEmpty() }?.average()?.toInt(),
+        earliestWakeMinOfDay = wakeMinutes.minOrNull(),
+        fallAsleepSeries = fallSeries,
+        wakeSeries = wakeSeries,
+        fallAsleepRegularity = regularityOf(fallMinutes),
+        wakeRegularity = regularityOf(wakeMinutes),
+    )
 }
