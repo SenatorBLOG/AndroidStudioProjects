@@ -3,16 +3,27 @@ package com.breatheonline.breathe.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.breatheonline.breathe.data.api.ApiService
+import com.breatheonline.breathe.data.models.HrDayDto
+import com.breatheonline.breathe.data.models.HrvDayDto
 import com.breatheonline.breathe.data.models.MeditationSession
 import com.breatheonline.breathe.data.models.NlpInsights
 import com.breatheonline.breathe.data.models.RemoteSession
-import com.example.breathe.data.repository.MeditationRepository
+import com.breatheonline.breathe.data.models.SleepDayDto
+import com.breatheonline.breathe.data.models.SleepInsightFeedback
+import com.breatheonline.breathe.data.repository.MeditationRepository
+import com.breatheonline.breathe.data.repository.SleepInsightFeedbackRepository
+import com.breatheonline.breathe.utils.mergeHeartRateDays
+import com.breatheonline.breathe.utils.mergeSleepDays
+import com.breatheonline.breathe.utils.parseHealthDate
+import com.breatheonline.breathe.utils.SessionCalculations
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
@@ -80,6 +91,26 @@ data class HeatCell(
     val intensity: Float,
 )
 
+data class SleepTimelinePoint(
+    val date: LocalDate,
+    val durationMin: Int,
+    val bedtimeLabel: String,
+    val wakeLabel: String,
+    val isEstimatedSchedule: Boolean,
+)
+
+data class SleepStats(
+    val timeline: List<SleepTimelinePoint> = emptyList(),
+    val avgSleep7dMin: Int? = null,
+    val latestSleepMin: Int? = null,
+    val avgHrv7d: Int? = null,
+    val sleepHeartRate: Int? = null,
+    val avgTemperatureC: Float? = null,
+    val deepSleepMin: Int? = null,
+    val remSleepMin: Int? = null,
+    val awakeCount: Int? = null,
+)
+
 // ── UI State ───────────────────────────────────────────────────────────────────
 
 data class StatsState(
@@ -94,6 +125,12 @@ data class StatsState(
     val todayMinutes:           Int               = 0,
     val avgCalmness:            Float             = 0f,
     val avgFocus:               Float             = 0f,
+    // Sleep D/W/M views
+    val sleepView:              SleepView         = SleepView.DAY,
+    val selectedSleepDate:      LocalDate         = LocalDate.now(),
+    val sleepDayView:           SleepDayView?     = null,
+    val sleepWeekView:          SleepWeekView?    = null,
+    val sleepMonthView:         SleepMonthView?   = null,
     // Existing chart data
     val weeklyData:             List<DayMinutes>  = emptyList(),
     val monthlyData:            List<DayMinutes>  = emptyList(),
@@ -115,6 +152,9 @@ data class StatsState(
     val insights:               List<InsightCard> = emptyList(),
     val nlpInsights:            NlpInsights?      = null,
     val health:                 HealthSummary?    = null,
+    val sleepStats:             SleepStats        = SleepStats(),
+    val sleepInsight:           String            = "",
+    val sleepInsightFeedback:   Int?              = null,
 )
 
 // ── ViewModel ──────────────────────────────────────────────────────────────────
@@ -123,6 +163,7 @@ data class StatsState(
 class StatsViewModel @Inject constructor(
     private val repository: MeditationRepository,
     private val apiService: ApiService,
+    private val sleepInsightFeedbackRepository: SleepInsightFeedbackRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(StatsState())
@@ -131,8 +172,19 @@ class StatsViewModel @Inject constructor(
     private val _sessions = MutableStateFlow<List<MeditationSession>>(emptyList())
     val sessions: StateFlow<List<MeditationSession>> = _sessions.asStateFlow()
 
+    private val sleepInsightKey = "daily_sleep_insight"
+
+    // Caches to skip recomputation when input data hasn't changed
+    private var lastLocalList: List<MeditationSession>? = null
+    private var lastRemoteList: List<RemoteSession>? = null
+
+    // Sleep aggregation caches
+    private var allSleepCache: List<com.breatheonline.breathe.data.models.SleepDayDto> = emptyList()
+    private var allHrCache: List<com.breatheonline.breathe.data.models.HrDayDto> = emptyList()
+
     init {
         observeLocal()
+        observeSleepInsightFeedback()
         viewModelScope.launch { fetchRemote() }
         viewModelScope.launch { fetchNlp() }
         viewModelScope.launch { fetchHealth() }
@@ -142,6 +194,8 @@ class StatsViewModel @Inject constructor(
         viewModelScope.launch {
             repository.getAllSessions().collect { list ->
                 _sessions.value = list
+                if (list == lastLocalList) return@collect
+                lastLocalList = list
                 updateFromLocal(list)
             }
         }
@@ -150,13 +204,26 @@ class StatsViewModel @Inject constructor(
     private suspend fun fetchRemote() {
         runCatching { apiService.getSessions() }
             .onSuccess { resp ->
-                if (resp.isSuccessful) updateFromRemote(resp.body() ?: emptyList())
-                else _state.update { it.copy(isLoading = false) }
+                if (resp.isSuccessful) {
+                    val body = resp.body() ?: emptyList()
+                    if (body != lastRemoteList) {
+                        lastRemoteList = body
+                        updateFromRemote(body)
+                    }
+                } else _state.update { it.copy(isLoading = false) }
             }
             .onFailure { _state.update { it.copy(isLoading = false) } }
     }
 
     fun refresh() = viewModelScope.launch { fetchRemote() }
+
+    private fun observeSleepInsightFeedback() {
+        viewModelScope.launch {
+            sleepInsightFeedbackRepository.observeFeedback(sleepInsightKey).collect { feedback ->
+                _state.update { it.copy(sleepInsightFeedback = feedback?.sentiment) }
+            }
+        }
+    }
 
     private suspend fun fetchNlp() {
         runCatching { apiService.getNlpInsights() }
@@ -172,29 +239,106 @@ class StatsViewModel @Inject constructor(
                 val connected = resp.body()?.filter { it.connected && it.data != null }
                 if (connected.isNullOrEmpty()) return@onSuccess
 
-                val allSleep = connected.flatMap { it.data!!.sleep ?: emptyList() }
-                    .sortedByDescending { it.date }.take(7)
+                val allSleep = mergeSleepDays(connected.flatMap { it.data!!.sleep ?: emptyList() }).takeLast(14)
                 val allHrv   = connected.flatMap { it.data!!.hrv ?: emptyList() }
-                    .sortedByDescending { it.date }.take(7)
-                val allHr    = connected.flatMap { it.data!!.heartRate ?: emptyList() }
-                    .sortedByDescending { it.date }
+                    .distinctBy { it.date }
+                    .sortedBy { it.date }
+                    .takeLast(14)
+                val allHr    = mergeHeartRateDays(connected.flatMap { it.data!!.heartRate ?: emptyList() }).takeLast(14)
 
-                val avgSleep  = if (allSleep.isEmpty()) null else allSleep.map { it.duration }.average().toInt()
-                val avgHrv    = if (allHrv.isEmpty())  null else allHrv.mapNotNull { it.rmssd }.average().toInt()
-                val restingHr = allHr.firstOrNull { it.restingRate != null }?.restingRate
+                allSleepCache = allSleep
+                allHrCache = allHr
+                recomputeSleepViews()
+
+                val last7Sleep = allSleep.takeLast(7)
+                val avgSleep  = if (last7Sleep.isEmpty()) null else last7Sleep.map { it.duration }.average().toInt()
+                val avgHrv    = allHrv.takeLast(7).mapNotNull { it.rmssd }.takeIf { it.isNotEmpty() }?.average()?.toInt()
+                val restingHr = allHr.lastOrNull { it.restingRate != null }?.restingRate
                 val recovery  = avgHrv?.let { hrv -> ((hrv - 20f) / 80f * 100f).toInt().coerceIn(0, 100) }
+                val sleepStats = buildSleepStats(allSleep, allHrv, allHr)
+                val sleepInsight = buildSleepInsight(sleepStats)
 
-                if (avgSleep == null && avgHrv == null && restingHr == null) return@onSuccess
+                if (avgSleep == null && avgHrv == null && restingHr == null && sleepStats.timeline.isEmpty()) return@onSuccess
                 _state.update {
-                    it.copy(health = HealthSummary(
-                        avgSleep7dMin = avgSleep,
-                        avgHrv7d      = avgHrv,
-                        restingHr     = restingHr,
-                        recoveryScore = recovery,
-                        sources       = connected.map { conn -> conn.provider },
-                    ))
+                    it.copy(
+                        health = HealthSummary(
+                            avgSleep7dMin = avgSleep,
+                            avgHrv7d      = avgHrv,
+                            restingHr     = restingHr,
+                            recoveryScore = recovery,
+                            sources       = connected.map { conn -> conn.provider },
+                        ),
+                        sleepStats = sleepStats,
+                        sleepInsight = sleepInsight,
+                    )
                 }
             }
+    }
+
+    fun setSleepView(view: SleepView) {
+        _state.update { it.copy(sleepView = view) }
+        recomputeSleepViews()
+    }
+
+    fun setSleepDate(date: LocalDate) {
+        _state.update { it.copy(selectedSleepDate = date) }
+        recomputeSleepViews()
+    }
+
+    private fun recomputeSleepViews() {
+        val days = allSleepCache
+        if (days.isEmpty()) return
+        val hrBpm: Int? = allHrCache.lastOrNull()?.restingRate
+
+        val selected = _state.value.selectedSleepDate
+        val selectedStr = selected.toString()
+        val dayDto = days.firstOrNull { it.date == selectedStr } ?: days.last()
+        val history7d = days.takeLast(7)
+        val dayView = com.breatheonline.breathe.utils.buildSleepDayView(dayDto, history7d, hrBpm)
+
+        val weekDays = days.filter { com.breatheonline.breathe.utils.parseHealthDate(it.date)?.let { d -> d >= selected.minusDays(6) && d <= selected } == true }
+        val prevWeekDays = days.filter { com.breatheonline.breathe.utils.parseHealthDate(it.date)?.let { d -> d >= selected.minusDays(13) && d < selected.minusDays(6) } == true }
+        val rangeLabel = "${selected.minusDays(6)} – $selected"
+        val weekView = com.breatheonline.breathe.utils.buildSleepWeekView(
+            days = weekDays,
+            prevWeekAvgDurationMin = prevWeekDays.map { it.duration }.takeIf { it.isNotEmpty() }?.average()?.toInt(),
+            prevWeekAvgScore = prevWeekDays.mapNotNull { it.score }.takeIf { it.isNotEmpty() }?.average()?.toInt(),
+            rangeLabel = rangeLabel,
+        )
+
+        val monthStart = selected.withDayOfMonth(1)
+        val monthEnd = selected.withDayOfMonth(selected.lengthOfMonth())
+        val monthDays = days.filter { com.breatheonline.breathe.utils.parseHealthDate(it.date)?.let { d -> d in monthStart..monthEnd } == true }
+        val prevMonthStart = monthStart.minusMonths(1)
+        val prevMonthEnd = prevMonthStart.withDayOfMonth(prevMonthStart.lengthOfMonth())
+        val prevMonthDays = days.filter { com.breatheonline.breathe.utils.parseHealthDate(it.date)?.let { d -> d in prevMonthStart..prevMonthEnd } == true }
+        val monthLabel = selected.format(java.time.format.DateTimeFormatter.ofPattern("MMM yyyy"))
+        val baselineScore = days.takeLast(90).mapNotNull { it.score }.takeIf { it.size >= 14 }?.average()?.toInt()
+        val monthView = com.breatheonline.breathe.utils.buildSleepMonthView(
+            days = monthDays,
+            baselineScore = baselineScore,
+            prevMonthAvgDurationMin = prevMonthDays.map { it.duration }.takeIf { it.isNotEmpty() }?.average()?.toInt(),
+            prevMonthAvgScore = prevMonthDays.mapNotNull { it.score }.takeIf { it.isNotEmpty() }?.average()?.toInt(),
+            monthLabel = monthLabel,
+        )
+
+        _state.update {
+            it.copy(sleepDayView = dayView, sleepWeekView = weekView, sleepMonthView = monthView)
+        }
+    }
+
+    fun setSleepInsightFeedback(isPositive: Boolean) {
+        val insightText = _state.value.sleepInsight.ifBlank { return }
+        viewModelScope.launch {
+            sleepInsightFeedbackRepository.upsert(
+                SleepInsightFeedback(
+                    insightKey = sleepInsightKey,
+                    insightText = insightText,
+                    sentiment = if (isPositive) 1 else -1,
+                    createdAt = System.currentTimeMillis(),
+                )
+            )
+        }
     }
 
     fun saveSession(duration: Long, date: Long, type: String = "deep") {
@@ -207,7 +351,7 @@ class StatsViewModel @Inject constructor(
 
     // ── Stats from local Room ──────────────────────────────────────────────────
 
-    private fun updateFromLocal(list: List<MeditationSession>) {
+    private suspend fun updateFromLocal(list: List<MeditationSession>) = withContext(Dispatchers.Default) {
         val today = LocalDate.now(ZoneId.systemDefault())
         val dates = list.map { epochToDate(it.date) }.toSet()
         val last7 = list.filter { epochToDate(it.date) >= today.minusDays(6) }
@@ -230,8 +374,8 @@ class StatsViewModel @Inject constructor(
                 totalMeditationMinutes = list.sumOf { s -> s.duration } / 60,
                 totalSessions          = list.size,
                 averageSessionDuration = if (list.isEmpty()) 0 else list.sumOf { s -> s.duration } / list.size,
-                bestStreakDays         = computeBestStreak(dates),
-                currentStreak          = computeCurrentStreak(dates, today),
+                bestStreakDays         = SessionCalculations.computeLongestStreak(dates),
+                currentStreak          = SessionCalculations.computeCurrentStreak(dates, today),
                 sessionsThisWeek       = list.count { s -> epochToDate(s.date) >= today.with(DayOfWeek.MONDAY) },
                 todayMinutes           = list.filter { s -> epochToDate(s.date) == today }.sumOf { s -> s.duration } / 60,
                 weeklyData             = buildWeeklyLocal(list, today),
@@ -241,8 +385,8 @@ class StatsViewModel @Inject constructor(
                 durationBuckets        = DurationBuckets(bs, bm, bl, be),
                 consistencyPct         = activeDays7 * 100 / 7,
                 sessionsPrev7d         = prev7.size,
-                avgSessionMin7d        = if (last7.isEmpty()) 0 else last7.sumOf { it.duration } / last7.size / 60,
-                avgSessionMinPrev7d    = if (prev7.isEmpty()) 0 else prev7.sumOf { it.duration } / prev7.size / 60,
+                avgSessionMin7d        = if (last7.isEmpty()) 0 else last7.sumOf { s -> s.duration } / last7.size / 60,
+                avgSessionMinPrev7d    = if (prev7.isEmpty()) 0 else prev7.sumOf { s -> s.duration } / prev7.size / 60,
                 weekdayAverages        = buildWeekdayAveragesLocal(list, today),
                 heatmap28              = buildHeatmap28Local(list, today),
             )
@@ -251,8 +395,8 @@ class StatsViewModel @Inject constructor(
 
     // ── Stats from API ─────────────────────────────────────────────────────────
 
-    private fun updateFromRemote(list: List<RemoteSession>) {
-        if (list.isEmpty()) { _state.update { it.copy(isLoading = false) }; return }
+    private suspend fun updateFromRemote(list: List<RemoteSession>) = withContext(Dispatchers.Default) {
+        if (list.isEmpty()) { _state.update { it.copy(isLoading = false) }; return@withContext }
 
         val today     = LocalDate.now(ZoneId.systemDefault())
         val startWeek = today.with(DayOfWeek.MONDAY)
@@ -284,8 +428,8 @@ class StatsViewModel @Inject constructor(
                 totalMeditationMinutes = totalMin,
                 totalSessions          = list.size,
                 totalCycles            = totalCyc,
-                bestStreakDays         = computeBestStreak(dates),
-                currentStreak          = computeCurrentStreak(dates, today),
+                bestStreakDays         = SessionCalculations.computeLongestStreak(dates),
+                currentStreak          = SessionCalculations.computeCurrentStreak(dates, today),
                 sessionsThisWeek       = list.count { s -> remoteToDate(s.completedAt) >= startWeek },
                 todayMinutes           = list.filter { s -> remoteToDate(s.completedAt) == today }
                     .sumOf { s -> (s.sessionLength?.toInt() ?: (s.duration / 60)) },
@@ -300,10 +444,14 @@ class StatsViewModel @Inject constructor(
                 moodStats              = buildMoodStats(list),
                 consistencyPct         = activeDays7 * 100 / 7,
                 sessionsPrev7d         = prev7.size,
-                avgSessionMin7d        = if (last7.isEmpty()) 0
-                    else last7.sumOf { s -> (s.sessionLength?.toInt() ?: (s.duration / 60)) } / last7.size,
-                avgSessionMinPrev7d    = if (prev7.isEmpty()) 0
-                    else prev7.sumOf { s -> (s.sessionLength?.toInt() ?: (s.duration / 60)) } / prev7.size,
+                avgSessionMin7d        = run {
+                    val valid = last7.map { s -> s.sessionLength?.toInt() ?: (s.duration / 60) }.filter { it > 0 }
+                    if (valid.isEmpty()) 0 else valid.sum() / valid.size
+                },
+                avgSessionMinPrev7d    = run {
+                    val valid = prev7.map { s -> s.sessionLength?.toInt() ?: (s.duration / 60) }.filter { it > 0 }
+                    if (valid.isEmpty()) 0 else valid.sum() / valid.size
+                },
                 weekdayAverages        = buildWeekdayAverages(list, today),
                 heatmap28              = buildHeatmap28(list, today),
                 moodPoints             = moodPoints,
@@ -512,6 +660,59 @@ class StatsViewModel @Inject constructor(
 
     // ── Helpers ────────────────────────────────────────────────────────────────
 
+    private fun buildSleepStats(
+        sleepDays: List<SleepDayDto>,
+        hrvDays: List<HrvDayDto>,
+        hrDays: List<HrDayDto>,
+    ): SleepStats {
+        val timeline = sleepDays.takeLast(7).mapNotNull { day ->
+            val date = parseApiDate(day.date) ?: return@mapNotNull null
+            SleepTimelinePoint(
+                date = date,
+                durationMin = day.duration,
+                bedtimeLabel = "",
+                wakeLabel = "",
+                isEstimatedSchedule = false,
+            )
+        }
+        val avgSleep7d   = sleepDays.takeLast(7).map { it.duration }.takeIf { it.isNotEmpty() }?.average()?.toInt()
+        val avgHrv7d     = hrvDays.takeLast(7).mapNotNull { it.rmssd }.takeIf { it.isNotEmpty() }?.average()?.toInt()
+        val hr           = hrDays.lastOrNull()?.restingRate ?: hrDays.lastOrNull()?.avgRate
+        val lastNight    = sleepDays.lastOrNull()
+        // Use the most recent night's stage data; fall back to 7-day sum if stages present
+        val deepSleepMin  = lastNight?.deepSleepMin
+            ?: sleepDays.takeLast(7).mapNotNull { it.deepSleepMin }.takeIf { it.isNotEmpty() }?.average()?.toInt()
+        val remSleepMin   = lastNight?.remSleepMin
+            ?: sleepDays.takeLast(7).mapNotNull { it.remSleepMin }.takeIf { it.isNotEmpty() }?.average()?.toInt()
+        val awakeMin      = lastNight?.awakeMin?.takeIf { it > 0 }
+        return SleepStats(
+            timeline        = timeline,
+            avgSleep7dMin   = avgSleep7d,
+            latestSleepMin  = lastNight?.duration,
+            avgHrv7d        = avgHrv7d,
+            sleepHeartRate  = hr,
+            avgTemperatureC = null,
+            deepSleepMin    = deepSleepMin,
+            remSleepMin     = remSleepMin,
+            awakeCount      = awakeMin,
+        )
+    }
+
+    private fun buildSleepInsight(stats: SleepStats): String {
+        val avgSleep = stats.avgSleep7dMin
+        val latest = stats.latestSleepMin
+        return when {
+            avgSleep == null && latest == null ->
+                "Daily sleep insight: connect sleep data to start building your nightly baseline."
+            avgSleep != null && avgSleep >= 480 ->
+                "Daily sleep insight: your recent sleep is holding near ${formatSleepDuration(avgSleep)}. Keep bedtime consistent."
+            avgSleep != null ->
+                "Daily sleep insight: you're averaging ${formatSleepDuration(avgSleep)}. Aim for a slightly earlier wind-down tonight."
+            else ->
+                "Daily sleep insight: last night landed at ${formatSleepDuration(latest!!)}. Try to repeat the same sleep window."
+        }
+    }
+
     private fun typeLabel(type: String) = when {
         type.startsWith("custom_") -> "Custom Breathing"
         else -> when (type) {
@@ -532,34 +733,20 @@ class StatsViewModel @Inject constructor(
         "morning" -> "🌅"; "afternoon" -> "☀️"; "evening" -> "🌆"; "night" -> "🌙"; else -> "⏰"
     }
 
-    private fun computeCurrentStreak(dates: Set<LocalDate>, today: LocalDate): Int {
-        val start = when {
-            dates.contains(today)              -> today
-            dates.contains(today.minusDays(1)) -> today.minusDays(1)
-            else                               -> return 0
-        }
-        var n = 0; var day = start
-        while (dates.contains(day)) { n++; day = day.minusDays(1) }
-        return n
-    }
-
-    private fun computeBestStreak(dates: Set<LocalDate>): Int {
-        if (dates.isEmpty()) return 0
-        var best = 0; var cur = 0; var prev: LocalDate? = null
-        for (d in dates.sorted()) {
-            cur = if (prev == null || d == prev!!.plusDays(1)) cur + 1 else 1
-            if (cur > best) best = cur
-            prev = d
-        }
-        return best
-    }
-
     private fun epochToDate(millis: Long): LocalDate =
         Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
 
     private fun remoteToDate(completedAt: String): LocalDate = try {
         Instant.parse(completedAt).atZone(ZoneId.systemDefault()).toLocalDate()
     } catch (_: Exception) { LocalDate.now() }
+
+    private fun parseApiDate(raw: String): LocalDate? = parseHealthDate(raw)
+
+    fun formatSleepDuration(min: Int): String {
+        val h = min / 60
+        val m = min % 60
+        return if (m == 0) "${h}h" else "${h}h ${m}m"
+    }
 
     fun formatMinutesToClock(min: Int): String {
         val h = min / 60; val m = min % 60
