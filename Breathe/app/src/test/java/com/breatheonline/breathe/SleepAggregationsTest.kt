@@ -55,4 +55,16 @@ class SleepAggregationsTest {
         assertEquals(true, view.stages.isEmpty())
         assertEquals("Excellent", view.qualityLabel)
     }
+
+    @Test fun `insight triggers short sleep rule`() {
+        val view = com.breatheonline.breathe.viewmodel.SleepDayView(
+            date = java.time.LocalDate.of(2026, 4, 16),
+            durationMin = 330, bedtime = "01:30", wakeTime = "07:00",
+            stages = emptyList(),
+            stageTotals = com.breatheonline.breathe.viewmodel.StageTotals(50, 180, 50, 50),
+            score = 45, qualityLabel = "Fair", avgSleepingHrBpm = null, deltaVsAvg7dMin = null,
+        )
+        val msg = com.breatheonline.breathe.utils.buildLocalInsight(view, com.breatheonline.breathe.utils.Regularity.REGULAR)
+        assertEquals(true, msg.contains("6 час"))
+    }
 }
