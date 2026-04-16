@@ -1,6 +1,9 @@
 package com.breatheonline.breathe.utils
 
+import java.time.Instant
+import java.time.ZoneId
 import kotlin.math.min
+import kotlin.math.sqrt
 
 /**
  * Score components (weighted out of 100):
@@ -31,4 +34,22 @@ fun qualityLabelFor(score: Int): String = when {
     score < 60 -> "Fair"
     score < 80 -> "Good"
     else -> "Excellent"
+}
+
+enum class Regularity { REGULAR, IRREGULAR, UNKNOWN }
+
+fun regularityOf(minutes: List<Int>, thresholdMin: Double = 45.0): Regularity {
+    if (minutes.size < 5) return Regularity.UNKNOWN
+    val mean = minutes.average()
+    val variance = minutes.map { (it - mean) * (it - mean) }.average()
+    val stdev = sqrt(variance)
+    return if (stdev <= thresholdMin) Regularity.REGULAR else Regularity.IRREGULAR
+}
+
+fun clockMinutesOrNull(iso: String?, zoneId: ZoneId = ZoneId.systemDefault()): Int? {
+    if (iso == null) return null
+    return runCatching {
+        val t = Instant.parse(iso).atZone(zoneId).toLocalTime()
+        t.hour * 60 + t.minute
+    }.getOrNull()
 }

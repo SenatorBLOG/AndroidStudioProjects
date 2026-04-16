@@ -23,4 +23,24 @@ class SleepAggregationsTest {
         val s = computeSleepScore(durationMin = 720, deepMin = 200, remMin = 200, awakeMin = 0)
         assertEquals(100, s)
     }
+
+    @Test fun `regularity is UNKNOWN when too few samples`() {
+        assertEquals(com.breatheonline.breathe.utils.Regularity.UNKNOWN,
+            com.breatheonline.breathe.utils.regularityOf(listOf(1380, 1390)))
+    }
+
+    @Test fun `regularity is REGULAR when stdev below 45 min`() {
+        assertEquals(com.breatheonline.breathe.utils.Regularity.REGULAR,
+            com.breatheonline.breathe.utils.regularityOf(listOf(1380, 1385, 1395, 1400, 1405)))
+    }
+
+    @Test fun `regularity is IRREGULAR when stdev above 45 min`() {
+        assertEquals(com.breatheonline.breathe.utils.Regularity.IRREGULAR,
+            com.breatheonline.breathe.utils.regularityOf(listOf(1380, 1260, 120, 1200, 1400)))
+    }
+
+    @Test fun `isoTimestamp to clock minutes`() {
+        val mins = com.breatheonline.breathe.utils.clockMinutesOrNull("2026-04-16T22:35:00Z")
+        assertEquals(true, mins != null)
+    }
 }
