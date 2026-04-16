@@ -331,6 +331,33 @@ data class IntegrationDataDto(
     val heartRate: List<HrDayDto>?
 )
 
-data class SleepDayDto(val date: String, val duration: Int)
+enum class SleepStage { DEEP, LIGHT, REM, AWAKE }
+
+data class SleepStageSegment(
+    @SerializedName("startMin") val startMin: Int,
+    @SerializedName("endMin")   val endMin: Int,
+    @SerializedName("stage")    val stage: SleepStage,
+)
+
+data class SleepDayDto(
+    @SerializedName("date")          val date:          String,
+    @SerializedName("duration")      val duration:      Int,
+    @SerializedName("deepSleepMin")  val deepSleepMin:  Int? = null,
+    @SerializedName("remSleepMin")   val remSleepMin:   Int? = null,
+    @SerializedName("lightSleepMin") val lightSleepMin: Int? = null,
+    @SerializedName("awakeMin")      val awakeMin:      Int? = null,
+    @SerializedName("bedtime")       val bedtime:       String? = null,
+    @SerializedName("wakeTime")      val wakeTime:      String? = null,
+    @SerializedName("stages")        val stages:        List<SleepStageSegment>? = null,
+    @SerializedName("score")         val score:         Int? = null,
+)
 data class HrvDayDto(val date: String, val rmssd: Double?)
 data class HrDayDto(val date: String, val restingRate: Int?, val avgRate: Int?)
+
+// Request body for POST /integrations/apple-health (also used for Health Connect import)
+data class HealthConnectImportRequest(
+    val sleep:     List<SleepDayDto>,
+    val hrv:       List<HrvDayDto>,
+    val heartRate: List<HrDayDto>,
+    val steps:     Int? = null,
+)
