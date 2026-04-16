@@ -105,6 +105,11 @@ class AiCoachViewModel @Inject constructor(
         }
     }
 
+    fun sendPrefilled(prompt: String) {
+        if (prompt.isBlank()) return
+        send(prompt)
+    }
+
     fun reset() {
         _state.value = AiCoachUiState()
         addCoachMessage(WELCOME_ID, WELCOME_TEXT)
