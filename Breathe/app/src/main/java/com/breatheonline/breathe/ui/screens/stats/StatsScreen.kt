@@ -67,26 +67,29 @@ fun StatsScreen(
             StatsTopTabs(selected = topTab, onSelect = { topTab = it }, colors = colors)
         }
 
-        if (state.isLoading) {
-            ShimmerStatScreen(modifier = Modifier.fillMaxWidth().padding(top = 16.dp))
-            return@Column
-        }
-
         if (topTab == 0) {
-            MeditationStatsContent(
-                state         = state,
-                period        = period,
-                onPeriodSelect = { period = it },
-                colors        = colors,
-                navController = navController,
-            )
+            if (state.isLoading) {
+                ShimmerStatScreen(modifier = Modifier.fillMaxWidth().padding(top = 16.dp))
+            } else {
+                MeditationStatsContent(
+                    state         = state,
+                    period        = period,
+                    onPeriodSelect = { period = it },
+                    colors        = colors,
+                    navController = navController,
+                )
+            }
         } else {
-            SleepStatsContent(
-                state = state,
-                onViewChange = { viewModel.setSleepView(it) },
-                onConnect = { navController.navigate(Route.PROFILE) },
-                colors = colors,
-            )
+            if (state.isLoading && state.sleepDayView == null) {
+                ShimmerStatScreen(modifier = Modifier.fillMaxWidth().padding(top = 16.dp))
+            } else {
+                SleepStatsContent(
+                    state = state,
+                    onViewChange = { viewModel.setSleepView(it) },
+                    onConnect = { navController.navigate(Route.PROFILE) },
+                    colors = colors,
+                )
+            }
         }
 
         if (com.breatheonline.breathe.ui.components.AiCoachLauncher.open.value) {
