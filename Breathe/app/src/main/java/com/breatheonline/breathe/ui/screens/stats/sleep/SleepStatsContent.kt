@@ -1,13 +1,17 @@
 package com.breatheonline.breathe.ui.screens.stats.sleep
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.breatheonline.breathe.ui.screens.stats.common.PeriodTabs
 import com.breatheonline.breathe.ui.theme.AppColors
@@ -20,6 +24,7 @@ import com.breatheonline.breathe.viewmodel.StatsState
 internal fun SleepStatsContent(
     state: StatsState,
     onViewChange: (SleepView) -> Unit,
+    onConnect: () -> Unit,
     colors: AppColors,
     modifier: Modifier = Modifier,
 ) {
@@ -35,7 +40,7 @@ internal fun SleepStatsContent(
                 },
                 colors = colors,
             )
-            else -> Text("No sleep data yet", color = colors.subtitle)
+            else -> EmptySleepCard(onConnect = onConnect, colors = colors)
         }
         Spacer(Modifier.height(16.dp))
         PeriodTabs(
@@ -59,6 +64,25 @@ internal fun SleepStatsContent(
                 ),
                 colors = colors,
             )
+        }
+    }
+}
+
+@Composable
+private fun EmptySleepCard(onConnect: () -> Unit, colors: AppColors) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(colors.surface)
+            .padding(24.dp),
+    ) {
+        Text("No sleep data yet", color = colors.title)
+        Spacer(Modifier.height(8.dp))
+        Text("Connect Health Connect in Profile → Devices to start tracking.", color = colors.subtitle)
+        Spacer(Modifier.height(12.dp))
+        TextButton(onClick = onConnect) {
+            Text("Open Profile")
         }
     }
 }

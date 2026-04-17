@@ -23,6 +23,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.breatheonline.breathe.R
 import com.breatheonline.breathe.ui.components.ShimmerStatScreen
+import com.breatheonline.breathe.ui.screens.Route
 import com.breatheonline.breathe.ui.screens.stats.common.StatsTopTabs
 import com.breatheonline.breathe.ui.screens.stats.meditation.MeditationStatsContent
 import com.breatheonline.breathe.ui.screens.stats.sleep.SleepStatsContent
@@ -83,6 +84,7 @@ fun StatsScreen(
             SleepStatsContent(
                 state = state,
                 onViewChange = { viewModel.setSleepView(it) },
+                onConnect = { navController.navigate(Route.PROFILE) },
                 colors = colors,
             )
         }
