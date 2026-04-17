@@ -25,7 +25,7 @@ import com.breatheonline.breathe.R
 import com.breatheonline.breathe.ui.components.ShimmerStatScreen
 import com.breatheonline.breathe.ui.screens.stats.common.StatsTopTabs
 import com.breatheonline.breathe.ui.screens.stats.meditation.MeditationStatsContent
-import com.breatheonline.breathe.ui.screens.stats.sleep.LegacySleepStatsContent
+import com.breatheonline.breathe.ui.screens.stats.sleep.SleepStatsContent
 import com.breatheonline.breathe.ui.theme.AppColors
 import com.breatheonline.breathe.viewmodel.StatsViewModel
 
@@ -80,10 +80,20 @@ fun StatsScreen(
                 navController = navController,
             )
         } else {
-            LegacySleepStatsContent(
+            SleepStatsContent(
                 state = state,
+                onViewChange = { viewModel.setSleepView(it) },
                 colors = colors,
-                onSleepInsightFeedback = viewModel::setSleepInsightFeedback,
+            )
+        }
+
+        if (com.breatheonline.breathe.ui.components.AiCoachLauncher.open.value) {
+            val prompt = com.breatheonline.breathe.ui.components.AiCoachLauncher.pendingPrompt.value
+            com.breatheonline.breathe.ui.components.AiCoachBottomSheet(
+                onDismiss = { com.breatheonline.breathe.ui.components.AiCoachLauncher.dismiss() },
+                navController = navController,
+                colors = colors,
+                initialPrompt = prompt,
             )
         }
     }

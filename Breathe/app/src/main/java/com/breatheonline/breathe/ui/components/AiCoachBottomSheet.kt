@@ -76,6 +76,7 @@ fun AiCoachBottomSheet(
     onDismiss:     () -> Unit,
     navController: NavController,
     colors: AppColors,
+    initialPrompt: String? = null,
     viewModel: AiCoachViewModel = hiltViewModel(),
 ) {
     val state     by viewModel.state.collectAsState()
@@ -91,6 +92,9 @@ fun AiCoachBottomSheet(
     // On first open, jump to last message immediately
     LaunchedEffect(Unit) {
         if (state.messages.isNotEmpty()) listState.scrollToItem(state.messages.lastIndex)
+    }
+    LaunchedEffect(initialPrompt) {
+        if (!initialPrompt.isNullOrBlank()) viewModel.sendPrefilled(initialPrompt)
     }
 
     ModalBottomSheet(
