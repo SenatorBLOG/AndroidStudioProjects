@@ -1,15 +1,50 @@
+# ── Gradle ────────────────────────────────────────────────────────────────────
+.gradle/
+build/
+**/build/
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+
+# ── Local config (secrets, signing) ───────────────────────────────────────────
 local.properties
+*.keystore
+*.jks
+
+# ── IntelliJ / Android Studio ─────────────────────────────────────────────────
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.idea/.gitignore
+captures/
+
+# ── NDK / CMake ───────────────────────────────────────────────────────────────
+.externalNativeBuild/
+.cxx/
+
+# ── macOS ─────────────────────────────────────────────────────────────────────
+.DS_Store
+
+# ── Windows ───────────────────────────────────────────────────────────────────
+Thumbs.db
+desktop.ini
+
+# ── Generated / release artifacts ─────────────────────────────────────────────
+*.aab
+*.apk
+*.ap_
+
+# ── Node (leftover Cesium experiment — not used by the app) ──────────────────
+node_modules/
+package.json
+package-lock.json
+
+# ── Debug artifacts / stray files ─────────────────────────────────────────────
+socket_*
+*.class
+java.base/
+com/
+.android-home/
+.kotlin/
+/*.png
