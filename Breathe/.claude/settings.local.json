@@ -31,7 +31,28 @@
       "Bash(JAVA_HOME=\"/c/Program Files/Android/Android Studio/jbr\" PATH=\"$JAVA_HOME/bin:$PATH\" ./gradlew compileDebugKotlin --no-build-cache)",
       "Bash(find 'C:\\\\Users\\\\Mikhail Senatorov\\\\Documents\\\\GitHub\\\\AndroidStudioProjects\\\\Breathe' -name *.properties -o -name *.gradle -o -name *.toml -o -name .gitignore)",
       "Bash(find . -maxdepth 3 -name *.properties -o -name .gitignore)",
-      "Bash(find app/src/main/res/mipmap* -type f)"
+      "Bash(find app/src/main/res/mipmap* -type f)",
+      "Bash(xargs grep:*)",
+      "mcp__ide__getDiagnostics",
+      "Skill(codex:rescue)",
+      "Bash(node:*)",
+      "Bash(curl:*)",
+      "Bash(cmd.exe /c \"dir \\\\\"C:\\\\Users\\\\Mikhail Senatorov\\\\\"\")",
+      "Bash(cmd.exe /c \"dir \\\\\"C:\\\\Users\\\\Mikhail Senatorov\\\\Documents\\\\\"\")",
+      "Bash(cmd.exe /c \"dir /s /b \\\\\"C:\\\\Users\\\\Mikhail Senatorov\\\\Documents\\\\\"\")",
+      "Bash(cmd.exe /c \"dir /ad /b \\\\\"C:\\\\Users\\\\Mikhail Senatorov\\\\\"\")",
+      "Bash(cmd.exe /c \"dir /ad /b \\\\\"C:\\\\Users\\\\Mikhail Senatorov\\\\Documents\\\\\"\")",
+      "Bash(powershell.exe -NoProfile -Command \"Get-ChildItem 'C:\\\\Users\\\\Mikhail Senatorov' -Depth 3 -Directory | Select-Object -ExpandProperty FullName\")",
+      "Bash(powershell.exe -NoProfile -Command \"Get-ChildItem 'C:\\\\Users\\\\Mikhail Senatorov\\\\IdeaProjects' -Depth 3 -Directory | Select-Object -ExpandProperty FullName\")",
+      "Bash(powershell.exe -NoProfile -Command \"Get-ChildItem 'C:\\\\Users\\\\Mikhail Senatorov\\\\Nextcloud' -Depth 4 -Directory | Select-Object -ExpandProperty FullName\")",
+      "Bash(powershell.exe -NoProfile -Command 'Get-ChildItem '\\\\''C:\\\\Users\\\\Mikhail Senatorov\\\\Desktop'\\\\'' -Depth 3 | Where-Object { $_.Name -match '\\\\''breathe|douglas|api'\\\\'' } | Select-Object FullName')",
+      "Bash(powershell.exe -NoProfile -Command \"Get-ChildItem 'C:\\\\Users\\\\Mikhail Senatorov\\\\Downloads' -Depth 3 -Directory | Select-Object -ExpandProperty FullName\")",
+      "WebFetch(domain:dl.google.com)",
+      "WebFetch(domain:maven.google.com)",
+      "Bash(sort -t: -k2 -rn)",
+      "Bash(python -m json.tool)",
+      "Read(//c/Program Files \\(x86\\)/Git/bin/**)",
+      "Bash(where bash:*)"
     ]
   }
 }

@@ -50,7 +50,7 @@ data class RemoteSession(
     @SerializedName("_id")              val id:               String,
     @SerializedName("type")             val type:             String?,
     @SerializedName("duration")         val duration:         Int,
-    @SerializedName("completedAt")      val completedAt:      String,
+    @SerializedName("completedAt")      val completedAt:      String? = null,
     @SerializedName("sessionLength")    val sessionLength:    Double? = null,
     @SerializedName("cycles")           val cycles:           Int?    = null,
     @SerializedName("moodBefore")       val moodBefore:       Int?    = null,
@@ -63,8 +63,11 @@ data class RemoteSession(
     @SerializedName("timeOfDay")        val timeOfDay:        String? = null,
     @SerializedName("notes")            val notes:            String? = null,
     @SerializedName("technique")        val technique:        String? = null,
-    @SerializedName("sessionDate")      val sessionDate:      String? = null
-)
+    @SerializedName("sessionDate")      val sessionDate:      String? = null,
+) {
+    /** Resolves the best available timestamp across old (sessionDate) and new (completedAt) schema. */
+    val effectiveDate: String get() = completedAt ?: sessionDate ?: ""
+}
 
 data class CreateSessionRequest(
     @SerializedName("type") val type: String,

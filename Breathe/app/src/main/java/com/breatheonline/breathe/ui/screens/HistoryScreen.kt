@@ -24,14 +24,17 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Air
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.CropSquare
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Spa
+import androidx.compose.material.icons.filled.WifiOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -55,14 +58,16 @@ import com.breatheonline.breathe.viewmodel.SessionsStatus
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.format.FormatStyle
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 @Composable
 fun HistoryScreen(
-    navController: NavController,
     colors: AppColors,
+    navController: NavController? = null,
     viewModel: HistoryViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
@@ -74,31 +79,60 @@ fun HistoryScreen(
             .systemBarsPadding(),
     ) {
         // ── Header ────────────────────────────────────────────────────────────
-        Column(Modifier.padding(horizontal = 20.dp, vertical = 24.dp)) {
-            Text(
-                text  = stringResource(R.string.history_title),
-                style = MaterialTheme.typography.headlineLarge,
-                color = colors.title,
-            )
-            Text(
-                text     = stringResource(R.string.history_subtitle),
-                style    = MaterialTheme.typography.titleMedium,
-                color    = colors.subtitle,
-                modifier = Modifier.padding(top = 4.dp),
-            )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier          = Modifier
+                .fillMaxWidth()
+                .padding(start = 4.dp, end = 20.dp, top = 8.dp, bottom = 4.dp),
+        ) {
+            if (navController != null) {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(
+                        imageVector        = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.btn_back),
+                        tint               = colors.primary,
+                    )
+                }
+            } else {
+                Spacer(Modifier.width(16.dp))
+            }
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text  = stringResource(R.string.history_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = colors.title,
+                )
+                val sessionCount = state.sessions.size
+                val subtitle = if (sessionCount > 0)
+                    "$sessionCount ${stringResource(R.string.history_sessions_count)}"
+                else
+                    stringResource(R.string.history_subtitle)
+                Text(
+                    text  = subtitle,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = colors.subtitle,
+                )
+            }
         }
 
         // ── Content ───────────────────────────────────────────────────────────
         when (val status = state.status) {
 
             is SessionsStatus.Loading -> {
+                val shimmerTransition = rememberInfiniteTransition(label = "shimmer")
+                val shimmerAlpha by shimmerTransition.animateFloat(
+                    initialValue  = 0.25f,
+                    targetValue   = 0.60f,
+                    animationSpec = infiniteRepeatable(tween(850, easing = LinearEasing), RepeatMode.Reverse),
+                    label         = "shimmerAlpha",
+                )
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(horizontal = 20.dp),
                 ) {
                     repeat(5) {
-                        ShimmerRow(colors)
+                        ShimmerRow(colors, shimmerAlpha)
                         Spacer(Modifier.height(10.dp))
                     }
                 }
@@ -146,6 +180,13 @@ fun HistoryScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier            = Modifier.padding(40.dp),
                     ) {
+                        Icon(
+                            imageVector        = Icons.Filled.WifiOff,
+                            contentDescription = null,
+                            tint               = colors.subtitle.copy(alpha = 0.5f),
+                            modifier           = Modifier.size(48.dp),
+                        )
+                        Spacer(Modifier.height(16.dp))
                         Text(
                             text      = status.message,
                             style     = MaterialTheme.typography.bodyMedium,
@@ -228,7 +269,7 @@ private fun SessionHistoryRow(session: RemoteSession, colors: AppColors) {
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(
-                    text     = formatDateTime(session.completedAt),
+                    text     = formatDateTime(session.effectiveDate),
                     style    = MaterialTheme.typography.labelSmall,
                     color    = colors.subtitle,
                     modifier = Modifier.padding(top = 3.dp),
@@ -248,14 +289,7 @@ private fun SessionHistoryRow(session: RemoteSession, colors: AppColors) {
 // ── Shimmer skeleton ──────────────────────────────────────────────────────────
 
 @Composable
-private fun ShimmerRow(colors: AppColors) {
-    val transition = rememberInfiniteTransition(label = "shimmer")
-    val alpha by transition.animateFloat(
-        initialValue  = 0.25f,
-        targetValue   = 0.60f,
-        animationSpec = infiniteRepeatable(tween(850, easing = LinearEasing), RepeatMode.Reverse),
-        label         = "shimmerAlpha",
-    )
+private fun ShimmerRow(colors: AppColors, alpha: Float) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -298,43 +332,52 @@ private fun ShimmerRow(colors: AppColors) {
 // ── Pure helpers ──────────────────────────────────────────────────────────────
 
 private fun typeIcon(type: String?): ImageVector = when (type) {
-    "box"    -> Icons.Filled.CropSquare
-    "deep"   -> Icons.Filled.Spa
-    "energy" -> Icons.Filled.Bolt
-    else     -> Icons.Filled.Air   // "4-7-8" and unknown/null
+    "box"       -> Icons.Filled.CropSquare
+    "deep"      -> Icons.Filled.Spa
+    "energy"    -> Icons.Filled.Bolt
+    "wimhof"    -> Icons.Filled.Bolt
+    "coherent"  -> Icons.Filled.Spa
+    "belly"     -> Icons.Filled.Air
+    "morning"   -> Icons.Filled.Spa
+    "alternate" -> Icons.Filled.Air
+    else        -> Icons.Filled.Air   // "4-7-8" and unknown/null
 }
 
+@Composable
 private fun typeLabel(type: String?): String = when {
-    type == null               -> "Breathing"
-    type.startsWith("custom_") -> "Custom Breathing"
+    type == null               -> stringResource(R.string.history_session_breathing)
+    type.startsWith("custom_") -> stringResource(R.string.history_session_custom)
     else -> when (type) {
-        "4-7-8"     -> "4-7-8 Breathing"
-        "box"       -> "Box Breathing"
-        "wimhof"    -> "Wim Hof Method"
-        "coherent"  -> "Coherent Breathing"
-        "belly"     -> "Belly Breathing"
-        "morning"   -> "Morning Ritual"
-        "alternate" -> "Alternate Nostril"
-        "deep"      -> "Deep Relaxation"
-        "energy"    -> "Energising Breath"
-        else        -> type.replaceFirstChar { it.uppercase() }
+        "4-7-8"     -> stringResource(R.string.history_session_4_7_8)
+        "box"       -> stringResource(R.string.history_session_box)
+        "wimhof"    -> stringResource(R.string.history_session_wim_hof)
+        "coherent"  -> stringResource(R.string.history_session_coherent)
+        "belly"     -> stringResource(R.string.history_session_belly)
+        "morning"   -> stringResource(R.string.history_session_morning)
+        "alternate" -> stringResource(R.string.history_session_alternate)
+        "deep"      -> stringResource(R.string.history_session_deep)
+        "energy"    -> stringResource(R.string.history_session_energising)
+        else        -> stringResource(R.string.history_session_breathing)
     }
 }
 
+@Composable
 private fun fmtMin(seconds: Int): String {
     val m = seconds / 60
-    return if (m < 1) "<1 min" else "$m min"
+    return if (m < 1) stringResource(R.string.history_less_than_minute) else "$m ${stringResource(R.string.stat_unit_min)}"
 }
 
-private fun formatDateTime(completedAt: String): String = try {
-    val instant = Instant.parse(completedAt)
+@Composable
+private fun formatDateTime(completedAt: String): String {
+    val instant = runCatching { Instant.parse(completedAt) }.getOrNull() ?: return completedAt
     val zdt     = instant.atZone(ZoneId.systemDefault())
     val date    = zdt.toLocalDate()
     val today   = LocalDate.now()
-    val timeStr = zdt.format(DateTimeFormatter.ofPattern("h:mm a"))
-    when (date) {
-        today               -> "Today · $timeStr"
-        today.minusDays(1)  -> "Yesterday · $timeStr"
-        else                -> "${date.format(DateTimeFormatter.ofPattern("MMM d, yyyy"))} · $timeStr"
+    val locale  = Locale.getDefault()
+    val timeStr = zdt.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT).withLocale(locale))
+    return when (date) {
+        today              -> "${stringResource(R.string.history_today)} · $timeStr"
+        today.minusDays(1) -> "${stringResource(R.string.history_yesterday)} · $timeStr"
+        else               -> "${date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale))} · $timeStr"
     }
-} catch (_: Exception) { completedAt }
+}

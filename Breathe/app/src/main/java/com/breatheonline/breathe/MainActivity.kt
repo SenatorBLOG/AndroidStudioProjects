@@ -2,8 +2,8 @@ package com.breatheonline.breathe
 
 import android.content.Context
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -18,12 +18,13 @@ import androidx.navigation.compose.rememberNavController
 import com.breatheonline.breathe.ui.screens.AppNavGraph
 import com.breatheonline.breathe.ui.screens.Route
 import com.breatheonline.breathe.ui.theme.BreatheTheme
+import com.breatheonline.breathe.ui.theme.DayThemeColors
 import com.breatheonline.breathe.ui.theme.ForestThemeColors
 import com.breatheonline.breathe.ui.theme.OceanThemeColors
 import com.breatheonline.breathe.ui.theme.SunsetThemeColors
 import com.breatheonline.breathe.utils.AuthEventBus
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -31,7 +32,7 @@ import kotlinx.coroutines.launch
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,6 +49,7 @@ class MainActivity : ComponentActivity() {
             val colors = when (currentTheme) {
                 "Forest" -> ForestThemeColors
                 "Sunset" -> SunsetThemeColors
+                "Day"    -> DayThemeColors
                 else     -> OceanThemeColors
             }
 
@@ -65,7 +67,7 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     colors        = colors,
                     onThemeChange = { newTheme ->
-                        CoroutineScope(Dispatchers.IO).launch {
+                        lifecycleScope.launch(Dispatchers.IO) {
                             context.dataStore.edit { it[themeKey] = newTheme }
                         }
                     },

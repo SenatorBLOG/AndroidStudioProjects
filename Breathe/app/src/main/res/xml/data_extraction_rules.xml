@@ -1,19 +1,27 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-   Sample data extraction rules file; uncomment and customize as necessary.
-   See https://developer.android.com/about/versions/12/backup-restore#xml-changes
-   for details.
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Android 12+ cloud-backup and device-transfer rules.
+    See https://developer.android.com/about/versions/12/backup-restore#xml-changes
+
+    secure_auth.xml stores the JWT behind an AES-256 Android Keystore key.
+    The Keystore key is device-specific — it cannot be cloud-backed or transferred.
+    Restoring the encrypted file without its key causes GeneralSecurityException → crash.
+    Excluding it means users simply log in again on a new device, which is safe.
+
+    Room DB (meditation_database) is excluded because sessions are re-synced from the
+    API on login; transferring a potentially stale binary DB offers no real benefit.
 -->
 <data-extraction-rules>
     <cloud-backup>
-        <!-- TODO: Use <include> and <exclude> to control what is backed up.
-        <include .../>
-        <exclude .../>
-        -->
+        <exclude domain="sharedpref" path="secure_auth.xml" />
+        <exclude domain="database"   path="meditation_database" />
+        <exclude domain="database"   path="meditation_database-shm" />
+        <exclude domain="database"   path="meditation_database-wal" />
     </cloud-backup>
-    <!--
     <device-transfer>
-        <include .../>
-        <exclude .../>
+        <exclude domain="sharedpref" path="secure_auth.xml" />
+        <exclude domain="database"   path="meditation_database" />
+        <exclude domain="database"   path="meditation_database-shm" />
+        <exclude domain="database"   path="meditation_database-wal" />
     </device-transfer>
-    -->
 </data-extraction-rules>

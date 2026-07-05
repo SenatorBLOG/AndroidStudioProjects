@@ -22,7 +22,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -48,7 +48,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
+import com.breatheonline.breathe.R
 import com.breatheonline.breathe.ui.components.AuthTextField
 import com.breatheonline.breathe.ui.components.PasswordTextField
 import com.breatheonline.breathe.ui.theme.AppColors
@@ -87,6 +89,10 @@ fun RegisterScreen(
     }
 
     val isLoading = registerState is AuthUiState.Loading
+    val nameErrMsg    = stringResource(R.string.register_name_error)
+    val emailErrMsg   = stringResource(R.string.login_email_error)
+    val passErrMsg    = stringResource(R.string.login_password_error)
+    val confirmErrMsg = stringResource(R.string.register_passwords_no_match)
 
     Box(
         modifier = Modifier
@@ -117,13 +123,13 @@ fun RegisterScreen(
                 ) {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
-                            imageVector        = Icons.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            imageVector        = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.cd_back),
                             tint               = colors.primary,
                         )
                     }
                     Text(
-                        text     = "Create Account",
+                        text     = stringResource(R.string.register_title),
                         style    = MaterialTheme.typography.headlineSmall,
                         color    = colors.title,
                         modifier = Modifier.padding(start = 8.dp),
@@ -132,7 +138,7 @@ fun RegisterScreen(
 
                 // ── Subtitle ──────────────────────────────────────────────────
                 Text(
-                    text      = "Start your mindfulness journey",
+                    text      = stringResource(R.string.register_subtitle),
                     style     = MaterialTheme.typography.titleMedium,
                     color     = colors.subtitle,
                     textAlign = TextAlign.Center,
@@ -145,7 +151,7 @@ fun RegisterScreen(
                 AuthTextField(
                     value = name,
                     onValueChange = { name = it; nameError = null },
-                    label = "Full Name",
+                    label = stringResource(R.string.register_full_name),
                     error = nameError,
                     keyboardOptions = KeyboardOptions(
                         capitalization = KeyboardCapitalization.Words,
@@ -164,7 +170,7 @@ fun RegisterScreen(
                 AuthTextField(
                     value = email,
                     onValueChange = { email = it; emailError = null },
-                    label = "Email",
+                    label = stringResource(R.string.login_email),
                     error = emailError,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Email,
@@ -183,7 +189,7 @@ fun RegisterScreen(
                 PasswordTextField(
                     value = password,
                     onValueChange = { password = it; passError = null },
-                    label = "Password",
+                    label = stringResource(R.string.login_password),
                     error = passError,
                     imeAction = ImeAction.Next,
                     keyboardActions = KeyboardActions(
@@ -199,7 +205,7 @@ fun RegisterScreen(
                 PasswordTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it; confirmError = null },
-                    label = "Confirm Password",
+                    label = stringResource(R.string.register_confirm_password),
                     error = confirmError,
                     imeAction = ImeAction.Done,
                     keyboardActions = KeyboardActions(
@@ -207,6 +213,10 @@ fun RegisterScreen(
                             focusManager.clearFocus()
                             submitRegister(
                                 name, email, password, confirmPassword,
+                                nameErr    = nameErrMsg,
+                                emailErr   = emailErrMsg,
+                                passErr    = passErrMsg,
+                                confirmErr = confirmErrMsg,
                                 onNameError = { nameError = it },
                                 onEmailError = { emailError = it },
                                 onPassError = { passError = it },
@@ -241,6 +251,10 @@ fun RegisterScreen(
                     onClick = {
                         focusManager.clearFocus()
                         submitRegister(name, email, password, confirmPassword,
+                            nameErr    = nameErrMsg,
+                            emailErr   = emailErrMsg,
+                            passErr    = passErrMsg,
+                            confirmErr = confirmErrMsg,
                             onNameError    = { nameError    = it },
                             onEmailError   = { emailError   = it },
                             onPassError    = { passError    = it },
@@ -266,7 +280,7 @@ fun RegisterScreen(
                         )
                     } else {
                         Text(
-                            text  = "Create Account",
+                            text  = stringResource(R.string.register_create_button),
                             style = MaterialTheme.typography.labelLarge,
                             color = colors.onPrimary,
                         )
@@ -282,12 +296,12 @@ fun RegisterScreen(
                 ) {
                     Row {
                         Text(
-                            text  = "Already have an account? ",
+                            text  = "${stringResource(R.string.register_have_account)} ",
                             style = MaterialTheme.typography.bodySmall,
                             color = colors.subtitle,
                         )
                         Text(
-                            text  = "Sign In",
+                            text  = stringResource(R.string.register_sign_in_link),
                             style = MaterialTheme.typography.bodySmall,
                             color = colors.primary,
                         )
@@ -305,6 +319,10 @@ private fun submitRegister(
     email: String,
     password: String,
     confirmPassword: String,
+    nameErr: String,
+    emailErr: String,
+    passErr: String,
+    confirmErr: String,
     onNameError: (String?) -> Unit,
     onEmailError: (String?) -> Unit,
     onPassError: (String?) -> Unit,
@@ -313,19 +331,19 @@ private fun submitRegister(
 ) {
     var ok = true
     if (name.isBlank()) {
-        onNameError("Name cannot be empty")
+        onNameError(nameErr)
         ok = false
     }
     if (email.isBlank() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-        onEmailError("Enter a valid email address")
+        onEmailError(emailErr)
         ok = false
     }
     if (password.length < 6) {
-        onPassError("Password must be at least 6 characters")
+        onPassError(passErr)
         ok = false
     }
     if (confirmPassword != password) {
-        onConfirmError("Passwords do not match")
+        onConfirmError(confirmErr)
         ok = false
     }
     if (ok) onValid()

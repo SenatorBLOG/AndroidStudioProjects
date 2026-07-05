@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
 import java.io.IOException
 import java.time.Instant
+import java.time.ZoneId
 import javax.inject.Inject
 
 /**
@@ -42,18 +43,31 @@ class SessionRepository @Inject constructor(
         val unsynced = meditationRepo.getUnsyncedSessions()
         unsynced.forEach { session ->
             runCatching {
+                val instant     = Instant.ofEpochMilli(session.date)
+                val completedAt = instant.toString()
+                val sessionDate = instant.atZone(ZoneId.systemDefault()).toLocalDate().toString()
                 apiService.createSession(
                     CreateSessionRequest(
-                        type = session.type,
-                        sessionLength = (session.duration / 60).coerceAtLeast(1),
-                        cycles = 0,
-                        completedAt = Instant.ofEpochMilli(session.date).toString(),
-                        sessionDate = Instant.ofEpochMilli(session.date).toString(),
-                        noiseLevel = "",
+                        type             = session.type,
+                        sessionLength    = (session.duration / 60).coerceAtLeast(1),
+                        cycles           = session.cycles,
+                        completedAt      = completedAt,
+                        sessionDate      = sessionDate,
+                        timeOfDay        = session.timeOfDay,
+                        moodBefore       = session.moodBefore,
+                        moodAfter        = session.moodAfter,
+                        focusLevel       = session.focusLevel,
+                        stressLevel      = session.stressLevel,
+                        breathingDepth   = session.breathingDepth,
+                        calmnessScore    = session.calmnessScore,
+                        distractionCount = session.distractionCount,
+                        notes            = session.notes,
+                        noiseLevel       = session.noiseLevel,
                     )
                 )
             }.onSuccess { resp ->
                 if (resp.isSuccessful) {
+                    meditationRepo.markAsSynced(session.id.toLong())
                     resp.body()?.let { remote ->
                         meditationRepo.updateRemoteId(session.id.toLong(), remote.id)
                     }

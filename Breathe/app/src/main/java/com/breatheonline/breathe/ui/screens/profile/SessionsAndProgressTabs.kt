@@ -42,6 +42,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.breatheonline.breathe.R
 import com.breatheonline.breathe.data.models.RemoteSession
 import com.breatheonline.breathe.ui.theme.AppColors
 import com.breatheonline.breathe.viewmodel.ProfileState
@@ -58,7 +60,7 @@ internal fun SessionsTab(colors: AppColors, state: ProfileState) {
         val cutoff = System.currentTimeMillis() - 7L * 24 * 3600 * 1000
         state.sessions.count { s ->
             runCatching {
-                val dateStr = s.sessionDate ?: s.completedAt
+                val dateStr = s.effectiveDate
                 Instant.parse(dateStr).toEpochMilli() > cutoff
             }.getOrDefault(false)
         }
@@ -75,8 +77,8 @@ internal fun SessionsTab(colors: AppColors, state: ProfileState) {
         ) {
             BentoHero(
                 value    = "${state.totalSessions}",
-                label    = "SESSIONS",
-                subLabel = "total completed",
+                label    = stringResource(R.string.sessions_label),
+                subLabel = stringResource(R.string.sessions_total_completed),
                 icon     = Icons.Default.Spa,
                 colors   = colors,
                 modifier = Modifier.weight(1.5f).fillMaxHeight(),
@@ -87,14 +89,14 @@ internal fun SessionsTab(colors: AppColors, state: ProfileState) {
             ) {
                 BentoChip(
                     value    = "${state.currentStreak}d",
-                    label    = "STREAK",
+                    label    = stringResource(R.string.sessions_streak_label),
                     icon     = Icons.Default.Bolt,
                     colors   = colors,
                     modifier = Modifier.fillMaxWidth().weight(1f),
                 )
                 BentoChip(
                     value    = "${state.longestStreak}d",
-                    label    = "BEST",
+                    label    = stringResource(R.string.sessions_best_label),
                     icon     = Icons.Default.EmojiEvents,
                     colors   = colors,
                     modifier = Modifier.fillMaxWidth().weight(1f),
@@ -109,16 +111,16 @@ internal fun SessionsTab(colors: AppColors, state: ProfileState) {
         ) {
             BentoStat(
                 value    = "${state.totalMinutes}",
-                unit     = "min",
-                label    = "TOTAL",
+                unit     = stringResource(R.string.stat_unit_min),
+                label    = stringResource(R.string.sessions_total_label),
                 icon     = Icons.Default.AccessTime,
                 colors   = colors,
                 modifier = Modifier.weight(1f),
             )
             BentoStat(
                 value    = "$avgMinutes",
-                unit     = "min",
-                label    = "AVERAGE",
+                unit     = stringResource(R.string.stat_unit_min),
+                label    = stringResource(R.string.sessions_average_label),
                 icon     = Icons.Default.TrendingUp,
                 colors   = colors,
                 modifier = Modifier.weight(1f),
@@ -126,7 +128,7 @@ internal fun SessionsTab(colors: AppColors, state: ProfileState) {
             BentoStat(
                 value    = "$thisWeek",
                 unit     = "",
-                label    = "THIS WEEK",
+                label    = stringResource(R.string.sessions_this_week_label),
                 icon     = Icons.Default.DateRange,
                 colors   = colors,
                 modifier = Modifier.weight(1f),
@@ -139,7 +141,7 @@ internal fun SessionsTab(colors: AppColors, state: ProfileState) {
         } else {
             Spacer(Modifier.height(2.dp))
             Text(
-                text       = "Recent sessions",
+                text       = stringResource(R.string.sessions_recent_label),
                 style      = MaterialTheme.typography.labelMedium,
                 color      = colors.subtitle,
                 fontWeight = FontWeight.SemiBold,
@@ -334,9 +336,9 @@ private fun EmptySessionsCard(colors: AppColors) {
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             Text("🌬️", fontSize = 32.sp)
-            Text("No sessions yet", color = colors.title, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.sessions_no_sessions), color = colors.title, fontWeight = FontWeight.SemiBold)
             Text(
-                text      = "Complete a breathing session to see your history",
+                text      = stringResource(R.string.sessions_complete_to_see),
                 color     = colors.subtitle,
                 style     = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.Center,
@@ -376,7 +378,7 @@ private fun SessionItem(session: RemoteSession, colors: AppColors) {
                 fontWeight = FontWeight.SemiBold,
             )
             Text(
-                text  = formatDateTime(session.sessionDate ?: session.completedAt),
+                text  = formatDateTime(session.effectiveDate),
                 style = MaterialTheme.typography.labelSmall,
                 color = colors.subtitle,
             )
@@ -413,20 +415,20 @@ internal fun ProgressTab(colors: AppColors, state: ProfileState) {
         modifier            = Modifier.padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        SectionCard("Key Metrics", colors) {
+        SectionCard(stringResource(R.string.sessions_key_metrics), colors) {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                SessionStatCard("Sessions",       "${state.totalSessions}",  colors, Modifier.weight(1f))
-                SessionStatCard("Minutes",        "${state.totalMinutes}",   colors, Modifier.weight(1f))
+                SessionStatCard(stringResource(R.string.sessions_stat_sessions),       "${state.totalSessions}",  colors, Modifier.weight(1f))
+                SessionStatCard(stringResource(R.string.sessions_stat_minutes),        "${state.totalMinutes}",   colors, Modifier.weight(1f))
             }
             Spacer(Modifier.height(10.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                SessionStatCard("Current Streak", "${state.currentStreak}d", colors, Modifier.weight(1f))
-                SessionStatCard("Best Streak",    "${state.longestStreak}d", colors, Modifier.weight(1f))
+                SessionStatCard(stringResource(R.string.sessions_stat_current_streak), "${state.currentStreak}d", colors, Modifier.weight(1f))
+                SessionStatCard(stringResource(R.string.sessions_stat_best_streak),    "${state.longestStreak}d", colors, Modifier.weight(1f))
             }
         }
 
-        SectionCard("Weekly Goal", colors) {
-            Text("${(progress * 100).toInt()}% of weekly goal", color = colors.title, fontWeight = FontWeight.SemiBold)
+        SectionCard(stringResource(R.string.sessions_weekly_goal), colors) {
+            Text(stringResource(R.string.sessions_weekly_goal_pct, (progress * 100).toInt()), color = colors.title, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(8.dp))
             Box(
                 Modifier.fillMaxWidth().height(10.dp)
@@ -438,7 +440,7 @@ internal fun ProgressTab(colors: AppColors, state: ProfileState) {
                 )
             }
             Text(
-                text     = "Target: 70 min/week • Avg: $avgPerSession min/session",
+                text     = stringResource(R.string.sessions_weekly_goal_target, avgPerSession),
                 color    = colors.subtitle,
                 style    = MaterialTheme.typography.labelSmall,
                 modifier = Modifier.padding(top = 8.dp),

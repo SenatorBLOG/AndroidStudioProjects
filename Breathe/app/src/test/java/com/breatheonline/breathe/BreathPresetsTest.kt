@@ -1,7 +1,6 @@
-package com.example.breathe
+package com.breatheonline.breathe
 
 import com.breatheonline.breathe.viewmodel.BREATH_PRESETS
-import com.breatheonline.breathe.viewmodel.BreathPreset
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -13,8 +12,8 @@ import org.junit.Test
 class BreathPresetsTest {
 
     @Test
-    fun `BREATH_PRESETS contains exactly 6 presets`() {
-        assertEquals(6, BREATH_PRESETS.size)
+    fun `BREATH_PRESETS contains exactly 7 presets`() {
+        assertEquals(7, BREATH_PRESETS.size)
     }
 
     @Test
@@ -24,9 +23,9 @@ class BreathPresetsTest {
     }
 
     @Test
-    fun `all presets have non-blank labels`() {
+    fun `all presets have positive label resource ids`() {
         BREATH_PRESETS.forEach { preset ->
-            assertTrue("Preset '${preset.key}' has a blank label", preset.label.isNotBlank())
+            assertTrue("Preset '${preset.key}' has invalid labelRes", preset.labelRes > 0)
         }
     }
 
@@ -67,7 +66,10 @@ class BreathPresetsTest {
     @Test
     fun `box breathing preset is 4-4-4-4`() {
         val box = BREATH_PRESETS.first { it.key == "box" }
-        assertEquals(BreathPreset("box", "Box", 4, 4, 4, 4), box)
+        assertEquals(4, box.inhaleS)
+        assertEquals(4, box.hold1S)
+        assertEquals(4, box.exhaleS)
+        assertEquals(4, box.hold2S)
     }
 
     @Test

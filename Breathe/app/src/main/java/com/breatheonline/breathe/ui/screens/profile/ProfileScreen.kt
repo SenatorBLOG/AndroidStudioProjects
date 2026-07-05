@@ -1,11 +1,14 @@
 package com.breatheonline.breathe.ui.screens.profile
 
 import android.content.Context
+import androidx.compose.ui.res.stringResource
+import com.breatheonline.breathe.R
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Base64
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.health.connect.client.PermissionController
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -28,26 +31,36 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -56,8 +69,11 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.breatheonline.breathe.ui.icons.LucideAppIcons
 import com.breatheonline.breathe.ui.screens.Route
+import com.breatheonline.breathe.utils.SessionCalculations
 import com.breatheonline.breathe.ui.theme.AppColors
+import com.breatheonline.breathe.ui.theme.DayThemeColors
 import com.breatheonline.breathe.ui.theme.ForestThemeColors
 import com.breatheonline.breathe.ui.theme.SunsetThemeColors
 import com.breatheonline.breathe.viewmodel.ProfileViewModel
@@ -94,11 +110,29 @@ fun ProfileScreen(
     val currentTheme = when (colors.primary) {
         ForestThemeColors.primary -> "Forest"
         SunsetThemeColors.primary -> "Sunset"
+        DayThemeColors.primary    -> "Day"
         else                      -> "Ocean"
     }
 
     val avatarPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) avatarSrc = uriToBase64(context, uri)
+    }
+
+    val hcPermissionsLauncher = rememberLauncherForActivityResult(
+        PermissionController.createRequestPermissionResultContract()
+    ) { granted ->
+        viewModel.clearHcPermissionsRequest()
+        if (granted.containsAll(ProfileViewModel.HC_PERMISSIONS)) {
+            viewModel.importFromHealthConnect()
+        } else {
+            viewModel.onHcPermissionsDenied()
+        }
+    }
+
+    LaunchedEffect(state.needsHcPermissions) {
+        if (state.needsHcPermissions && state.healthConnectAvailable) {
+            hcPermissionsLauncher.launch(ProfileViewModel.HC_PERMISSIONS)
+        }
     }
 
     LaunchedEffect(state.userName, state.userEmail, state.avatar, state.height, state.weight, state.age, state.gender, state.goal) {
@@ -114,18 +148,21 @@ fun ProfileScreen(
         }
     }
 
-    val displayName = nickname.ifBlank {
-        state.userName.ifBlank { state.userEmail.substringBefore("@").ifBlank { "Your Profile" } }
-    }
-    val bmi = computeBmi(heightCm, weightKg)
-    val bmiLabel = bmi?.let {
-        when {
-            it < 18.5f -> "Underweight"
-            it < 25f   -> "Normal"
-            it < 30f   -> "Overweight"
-            else       -> "Obese"
+    // Re-check integration status when returning from OAuth browser tab
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) viewModel.onResumeFromOAuth()
         }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
+
+    val displayName = nickname.ifBlank {
+        state.userName.ifBlank { state.userEmail.substringBefore("@").ifBlank { stringResource(R.string.profile_title) } }
+    }
+    val bmi = SessionCalculations.computeBmi(heightCm.toFloatOrNull() ?: 0f, weightKg.toFloatOrNull() ?: 0f)
+    val bmiLabel = bmi?.let { SessionCalculations.bmiLabel(it) }
 
     Column(
         modifier = Modifier
@@ -135,8 +172,8 @@ fun ProfileScreen(
             .verticalScroll(rememberScrollState()),
     ) {
         Spacer(Modifier.height(20.dp))
-        Text("Profile",                                                                                                style = MaterialTheme.typography.headlineLarge, color = colors.title, modifier = Modifier.padding(horizontal = 20.dp))
-        Text("Everything in one place: profile, sessions, progress, challenges and devices.", style = MaterialTheme.typography.bodySmall,    color = colors.subtitle.copy(alpha = 0.85f), modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp))
+        Text(stringResource(R.string.profile_title), style = MaterialTheme.typography.headlineLarge, color = colors.title, modifier = Modifier.padding(horizontal = 20.dp))
+        Text(stringResource(R.string.profile_subtitle_full), style = MaterialTheme.typography.bodySmall, color = colors.subtitle.copy(alpha = 0.85f), modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp))
         Spacer(Modifier.height(18.dp))
 
         HeaderCard(
@@ -191,8 +228,27 @@ fun ProfileScreen(
             )
             TAB_SESSIONS   -> SessionsTab(colors = colors, state = state)
             TAB_PROGRESS   -> ProgressTab(colors = colors, state = state)
-            TAB_CHALLENGES -> ChallengesTab(colors = colors)
-            TAB_DEVICES    -> DevicesTab(colors = colors, state = state, onSync = { viewModel.syncIntegrations() })
+            TAB_CHALLENGES -> ChallengesTab(
+                colors              = colors,
+                availableChallenges = state.availableChallenges,
+                myChallenges        = state.myChallenges,
+                recommendation      = state.recommendation,
+                onJoin              = { slug -> viewModel.joinChallenge(slug) },
+                onCheckIn           = { id -> viewModel.checkInChallenge(id) },
+                onAbandon           = { id -> viewModel.abandonChallenge(id) },
+            )
+            TAB_DEVICES    -> DevicesTab(
+                colors              = colors,
+                state               = state,
+                onSync              = { viewModel.syncIntegrations() },
+                onConnect           = { provider, ctx -> viewModel.connectIntegration(provider, ctx) },
+                onDisconnect        = { provider -> viewModel.disconnectIntegration(provider) },
+                onSyncHealthConnect = { viewModel.importFromHealthConnect() },
+                onOpenHcSettings    = {
+                    val intent = android.content.Intent("androidx.health.ACTION_HEALTH_CONNECT_SETTINGS")
+                    context.startActivity(intent)
+                },
+            )
         }
 
         Spacer(Modifier.height(28.dp))
@@ -207,12 +263,12 @@ fun ProfileScreen(
                 .border(1.dp, Color(0x1FFF5555), RoundedCornerShape(16.dp))
                 .clickable {
                     viewModel.logout()
-                    navController.navigate("login") { popUpTo(0) { inclusive = true } }
+                    navController.navigate(Route.LOGIN) { popUpTo(0) { inclusive = true } }
                 }
                 .padding(vertical = 16.dp),
             contentAlignment = Alignment.Center,
         ) {
-            Text("Sign out", color = Color(0xFFFF7070), fontWeight = FontWeight.Medium, style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(R.string.profile_sign_out), color = Color(0xFFFF7070), fontWeight = FontWeight.Medium, style = MaterialTheme.typography.bodyMedium)
         }
 
         Spacer(Modifier.height(32.dp))
@@ -243,7 +299,7 @@ private fun HeaderCard(
     goal:         String,
     onAvatarPick: () -> Unit,
 ) {
-    val goalLabel = GOALS.firstOrNull { it.first == goal }?.second
+    val goalLabel = GOALS.firstOrNull { it.value == goal }?.let { stringResource(it.labelRes) }
 
     Row(
         modifier = Modifier
@@ -276,10 +332,10 @@ private fun HeaderCard(
             when {
                 !avatarSrc.isNullOrBlank() && avatarSrc.startsWith("data:image") -> {
                     val bmp = base64ToBitmap(avatarSrc)
-                    if (bmp != null) Image(bmp.asImageBitmap(), "Avatar", Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                    if (bmp != null) Image(bmp.asImageBitmap(), stringResource(R.string.cd_avatar), Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
                     else             Text(initialsText, color = colors.primary, fontWeight = FontWeight.Bold)
                 }
-                !avatarSrc.isNullOrBlank() -> AsyncImage(avatarSrc, "Avatar", Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
+                !avatarSrc.isNullOrBlank() -> AsyncImage(avatarSrc, stringResource(R.string.cd_avatar), Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
                 else -> Text(initialsText, color = colors.primary, fontWeight = FontWeight.Bold)
             }
         }
@@ -291,14 +347,14 @@ private fun HeaderCard(
             Text(email,       style = MaterialTheme.typography.bodySmall,     color = colors.subtitle.copy(alpha = 0.9f))
             if (goalLabel != null) {
                 Spacer(Modifier.height(8.dp))
-                ProfileChip(text = "✦ $goalLabel", colors = colors, active = true)
+                ProfileChip(text = goalLabel, colors = colors, active = true, icon = goalIcon(goal))
             }
         }
 
         Column(horizontalAlignment = Alignment.End) {
-            if (heightCm.isNotBlank()) Text("$heightCm cm", color = colors.subtitle, style = MaterialTheme.typography.labelSmall)
-            if (weightKg.isNotBlank()) Text("$weightKg kg", color = colors.subtitle, style = MaterialTheme.typography.labelSmall)
-            if (age.isNotBlank())      Text("$age y",       color = colors.subtitle, style = MaterialTheme.typography.labelSmall)
+            if (heightCm.isNotBlank()) Text("$heightCm ${stringResource(R.string.form_height_unit)}", color = colors.subtitle, style = MaterialTheme.typography.labelSmall)
+            if (weightKg.isNotBlank()) Text("$weightKg ${stringResource(R.string.form_weight_unit)}", color = colors.subtitle, style = MaterialTheme.typography.labelSmall)
+            if (age.isNotBlank())      Text(stringResource(R.string.profile_age_years, age),           color = colors.subtitle, style = MaterialTheme.typography.labelSmall)
         }
     }
 }
@@ -308,8 +364,11 @@ private fun HeaderCard(
 @Composable
 private fun TabBar(activeTab: String, colors: AppColors, onSelect: (String) -> Unit) {
     val tabs = listOf(
-        TAB_PROFILE to "Profile", TAB_SESSIONS to "Sessions",
-        TAB_PROGRESS to "Progress", TAB_CHALLENGES to "Challenges", TAB_DEVICES to "Devices",
+        TAB_PROFILE to stringResource(R.string.tab_profile),
+        TAB_SESSIONS to stringResource(R.string.tab_sessions),
+        TAB_PROGRESS to stringResource(R.string.tab_progress),
+        TAB_CHALLENGES to stringResource(R.string.tab_challenges),
+        TAB_DEVICES to stringResource(R.string.tab_devices),
     )
     Row(
         modifier = Modifier
@@ -332,6 +391,7 @@ private fun TabButton(active: Boolean, text: String, colors: AppColors, onClick:
         Modifier
             .clip(RoundedCornerShape(14.dp))
             .background(if (active) colors.primary else Color.Transparent)
+            .semantics { role = Role.Tab; selected = active }
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 10.dp),
     ) {
@@ -357,9 +417,9 @@ private fun ReminderTimePickerDialog(
     val pickerState = rememberTimePickerState(initialHour = hour, initialMinute = minute, is24Hour = true)
     AlertDialog(
         onDismissRequest = onDismiss,
-        confirmButton    = { TextButton(onClick = { onConfirm(pickerState.hour, pickerState.minute) }) { Text("OK") } },
-        dismissButton    = { TextButton(onClick = onDismiss) { Text("Cancel") } },
-        title            = { Text("Reminder Time") },
+        confirmButton    = { TextButton(onClick = { onConfirm(pickerState.hour, pickerState.minute) }) { Text(stringResource(R.string.profile_ok)) } },
+        dismissButton    = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.profile_cancel)) } },
+        title            = { Text(stringResource(R.string.profile_reminder_time_title)) },
         text             = { TimePicker(state = pickerState) },
     )
 }
@@ -377,7 +437,7 @@ private fun QuickNavSection(
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Text(
-            text          = "QUICK ACCESS",
+            text          = stringResource(R.string.profile_quick_access),
             style         = MaterialTheme.typography.labelSmall,
             color         = colors.subtitle,
             letterSpacing = 1.sp,
@@ -387,17 +447,17 @@ private fun QuickNavSection(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             NavCard(
-                emoji    = "📊",
-                title    = "Statistics",
-                subtitle = "Meditation data",
+                icon     = LucideAppIcons.Globe,
+                title    = stringResource(R.string.profile_community_title),
+                subtitle = stringResource(R.string.profile_community_subtitle),
                 colors   = colors,
                 modifier = Modifier.weight(1f),
-                onClick  = { navController.navigate(Route.HISTORY) },
+                onClick  = { navController.navigate(Route.GLOBE) },
             )
             NavCard(
-                emoji    = "📝",
-                title    = "Journal",
-                subtitle = "Reflections & mood",
+                icon     = LucideAppIcons.NotebookPen,
+                title    = stringResource(R.string.profile_journal_title),
+                subtitle = stringResource(R.string.profile_journal_subtitle),
                 colors   = colors,
                 modifier = Modifier.weight(1f),
                 onClick  = { navController.navigate(Route.JOURNAL) },
@@ -408,21 +468,35 @@ private fun QuickNavSection(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             NavCard(
-                emoji    = "❓",
-                title    = "Help & FAQ",
-                subtitle = "Guides & answers",
+                icon     = LucideAppIcons.Trophy,
+                title    = stringResource(R.string.profile_achievements_title),
+                subtitle = stringResource(R.string.profile_achievements_subtitle),
+                colors   = colors,
+                modifier = Modifier.weight(1f),
+                onClick  = { navController.navigate(Route.ACHIEVEMENTS) },
+            )
+            NavCard(
+                icon     = LucideAppIcons.CircleHelp,
+                title    = stringResource(R.string.profile_help_faq_title),
+                subtitle = stringResource(R.string.profile_help_faq_subtitle),
                 colors   = colors,
                 modifier = Modifier.weight(1f),
                 onClick  = { navController.navigate(Route.FAQ) },
             )
+        }
+        Row(
+            modifier              = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
             NavCard(
-                emoji    = "🔒",
-                title    = "Privacy",
-                subtitle = "Policy & your data",
+                icon     = LucideAppIcons.Music4,
+                title    = stringResource(R.string.profile_music_title),
+                subtitle = stringResource(R.string.profile_music_subtitle),
                 colors   = colors,
                 modifier = Modifier.weight(1f),
-                onClick  = { navController.navigate(Route.PRIVACY_POLICY) },
+                onClick  = { navController.navigate(Route.MUSIC) },
             )
+            Spacer(Modifier.weight(1f))
         }
         Box(
             modifier = Modifier
@@ -446,10 +520,15 @@ private fun QuickNavSection(
                 modifier              = Modifier.fillMaxWidth(),
             ) {
                 Column {
-                    Text("🏆  Challenges", color = colors.title,    fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyLarge)
-                    Text("Complete daily goals",  color = colors.subtitle.copy(alpha = 0.80f), style = MaterialTheme.typography.labelSmall)
+                    Text(stringResource(R.string.profile_challenges_title), color = colors.title, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(R.string.profile_challenges_subtitle), color = colors.subtitle.copy(alpha = 0.80f), style = MaterialTheme.typography.labelSmall)
                 }
-                Text("→", color = colors.primary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Icon(
+                    imageVector = LucideAppIcons.Trophy,
+                    contentDescription = null,
+                    tint = colors.primary,
+                    modifier = Modifier.size(20.dp),
+                )
             }
         }
     }
@@ -457,7 +536,7 @@ private fun QuickNavSection(
 
 @Composable
 private fun NavCard(
-    emoji:    String,
+    icon:     ImageVector,
     title:    String,
     subtitle: String,
     colors: AppColors,
@@ -471,7 +550,12 @@ private fun NavCard(
             .clickable(onClick = onClick)
             .padding(16.dp),
     ) {
-        Text(emoji, fontSize = 26.sp)
+        Icon(
+            imageVector = icon,
+            contentDescription = title,
+            tint = colors.primary,
+            modifier = Modifier.size(26.dp),
+        )
         Spacer(Modifier.height(8.dp))
         Text(title,    color = colors.title,                        fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
         Text(subtitle, color = colors.subtitle.copy(alpha = 0.72f), style = MaterialTheme.typography.labelSmall)
@@ -485,10 +569,13 @@ private fun initials(name: String): String =
         .joinToString("") { it.first().uppercase() }
         .ifEmpty { "?" }
 
-private fun computeBmi(h: String, w: String): Float? {
-    val height = h.toFloatOrNull() ?: return null
-    val weight = w.toFloatOrNull() ?: return null
-    return if (height > 0) weight / ((height / 100) * (height / 100)) else null
+private fun goalIcon(goal: String): ImageVector = when (goal) {
+    "sleep" -> LucideAppIcons.MoonStar
+    "stress" -> LucideAppIcons.Wind
+    "focus" -> LucideAppIcons.Target
+    "energy" -> LucideAppIcons.Zap
+    "general" -> LucideAppIcons.Waves
+    else -> LucideAppIcons.Sparkles
 }
 
 private fun uriToBase64(c: Context, u: Uri): String? = runCatching {

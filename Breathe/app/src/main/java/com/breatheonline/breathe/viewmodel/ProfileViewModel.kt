@@ -41,6 +41,8 @@ import com.breatheonline.breathe.data.models.RemoteSession
 import com.breatheonline.breathe.data.models.SleepDayDto
 import com.breatheonline.breathe.data.models.UpdateProfileRequest
 import com.breatheonline.breathe.data.models.UserChallengeDto
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -170,11 +172,14 @@ class ProfileViewModel @Inject constructor(
     fun refreshAll() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
-            fetchProfile()
-            fetchSessions()
-            fetchChallenges()
-            fetchIntegrations()
-            loadReminderSettings()
+            coroutineScope {
+                val profile      = async { fetchProfile() }
+                val challenges   = async { fetchChallenges() }
+                val integrations = async { fetchIntegrations() }
+                val reminder     = async { loadReminderSettings() }
+                profile.await(); challenges.await()
+                integrations.await(); reminder.await()
+            }
             _state.update { it.copy(isLoading = false) }
         }
     }
@@ -208,50 +213,26 @@ class ProfileViewModel @Inject constructor(
             }
     }
 
-    private suspend fun fetchSessions() {
-        runCatching { apiService.getSessions() }
-            .onSuccess { resp ->
-                if (resp.isSuccessful) {
-                    val sessions = resp.body() ?: emptyList()
-                    val zone  = ZoneId.systemDefault()
-                    val today = LocalDate.now(zone)
-                    val dates = sessions.mapNotNull { s ->
-                        val dateStr = s.sessionDate ?: s.completedAt
-                        runCatching { Instant.parse(dateStr).atZone(zone).toLocalDate() }.getOrNull()
-                    }.toSet()
-                    _state.update {
-                        it.copy(
-                            sessions      = sessions,
-                            totalSessions = sessions.size,
-                            totalMinutes  = sessions.sumOf { s -> s.sessionLength?.toInt() ?: 0 },
-                            currentStreak = SessionCalculations.computeCurrentStreak(dates, today),
-                            longestStreak = SessionCalculations.computeLongestStreak(dates),
-                        )
-                    }
-                } else {
-                    _state.update { it.copy(error = "Failed to load sessions (${resp.code()})") }
-                }
-            }
-            .onFailure { e ->
-                _state.update { it.copy(error = e.message ?: "Network error loading sessions") }
-            }
-    }
 
-    private suspend fun fetchChallenges() {
-        runCatching { apiService.getChallenges() }
-            .onSuccess { r ->
-                if (r.isSuccessful) _state.update { it.copy(availableChallenges = r.body() ?: emptyList()) }
-                else _state.update { it.copy(error = "Failed to load challenges (${r.code()})") }
-            }
-            .onFailure { e -> _state.update { it.copy(error = e.message ?: "Network error loading challenges") } }
-        runCatching { apiService.getMyChallenges() }
-            .onSuccess { r ->
-                if (r.isSuccessful) _state.update { it.copy(myChallenges = r.body() ?: emptyList()) }
-            }
-        runCatching { apiService.getChallengeRecommendation() }
-            .onSuccess { r ->
-                if (r.isSuccessful) _state.update { it.copy(recommendation = r.body()) }
-            }
+
+    private suspend fun fetchChallenges() = coroutineScope {
+        val available = async {
+            runCatching { apiService.getChallenges() }
+                .onSuccess { r ->
+                    if (r.isSuccessful) _state.update { it.copy(availableChallenges = r.body() ?: emptyList()) }
+                    else _state.update { it.copy(error = "Failed to load challenges (${r.code()})") }
+                }
+                .onFailure { e -> _state.update { it.copy(error = e.message ?: "Network error loading challenges") } }
+        }
+        val mine = async {
+            runCatching { apiService.getMyChallenges() }
+                .onSuccess { r -> if (r.isSuccessful) _state.update { it.copy(myChallenges = r.body() ?: emptyList()) } }
+        }
+        val recommendation = async {
+            runCatching { apiService.getChallengeRecommendation() }
+                .onSuccess { r -> if (r.isSuccessful) _state.update { it.copy(recommendation = r.body()) } }
+        }
+        available.await(); mine.await(); recommendation.await()
     }
 
     private suspend fun fetchIntegrations() {
@@ -335,6 +316,20 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isSyncing = true, healthConnectError = null, syncStep = context.getString(com.breatheonline.breathe.R.string.hc_step_checking_permissions)) }
             try {
+                // Re-check SDK status before getOrCreate — user may have uninstalled
+                // Health Connect or changed device state since the init-time check.
+                val sdkStatus = HealthConnectClient.getSdkStatus(context)
+                if (sdkStatus != HealthConnectClient.SDK_AVAILABLE) {
+                    _state.update {
+                        it.copy(
+                            isSyncing = false,
+                            healthConnectAvailable = false,
+                            healthConnectError = "Health Connect is not available on this device.",
+                            syncStep = null,
+                        )
+                    }
+                    return@launch
+                }
                 val client = HealthConnectClient.getOrCreate(context)
                 val granted = client.permissionController.getGrantedPermissions()
                 val canReadHeartRate = HealthPermission.getReadPermission(HeartRateRecord::class) in granted
@@ -491,18 +486,16 @@ class ProfileViewModel @Inject constructor(
         _state.update { it.copy(needsHcPermissions = false, healthConnectError = "Health Connect permissions not granted. Check app settings.") }
     }
 
-    private fun loadReminderSettings() {
-        viewModelScope.launch {
-            val prefs = context.userPrefs.data.first()
-            _state.update {
-                it.copy(
-                    notificationsEnabled  = prefs[UserPrefsKeys.NOTIFICATIONS_ENABLED]   == true,
-                    reminderHour          = prefs[UserPrefsKeys.REMINDER_HOUR]            ?: 8,
-                    reminderMinute        = prefs[UserPrefsKeys.REMINDER_MINUTE]          ?: 0,
-                    reminderIsExact       = scheduler.canScheduleExact(),
-                    dataCollectionEnabled = prefs[UserPrefsKeys.DATA_COLLECTION_ENABLED]  != false,
-                )
-            }
+    private suspend fun loadReminderSettings() {
+        val prefs = context.userPrefs.data.first()
+        _state.update {
+            it.copy(
+                notificationsEnabled  = prefs[UserPrefsKeys.NOTIFICATIONS_ENABLED]   == true,
+                reminderHour          = prefs[UserPrefsKeys.REMINDER_HOUR]            ?: 8,
+                reminderMinute        = prefs[UserPrefsKeys.REMINDER_MINUTE]          ?: 0,
+                reminderIsExact       = scheduler.canScheduleExact(),
+                dataCollectionEnabled = prefs[UserPrefsKeys.DATA_COLLECTION_ENABLED]  != false,
+            )
         }
     }
 

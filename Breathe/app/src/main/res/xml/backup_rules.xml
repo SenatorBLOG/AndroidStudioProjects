@@ -1,13 +1,18 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-   Sample backup rules file; uncomment and customize as necessary.
-   See https://developer.android.com/guide/topics/data/autobackup
-   for details.
-   Note: This file is ignored for devices older than API 31
-   See https://developer.android.com/about/versions/12/backup-restore
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Android Auto Backup rules (API < 31).
+    See https://developer.android.com/guide/topics/data/autobackup
+
+    secure_auth.xml is backed by Android Keystore (device-specific AES key).
+    Restoring the encrypted prefs to a different device causes a GeneralSecurityException
+    on next launch → app crash. Exclude it so users simply log in again on a fresh device.
+
+    Room DB (meditation_database) is excluded for size reasons — the API re-syncs
+    all sessions on login anyway, so backing it up gives no benefit.
 -->
 <full-backup-content>
-    <!--
-   <include domain="sharedpref" path="."/>
-   <exclude domain="sharedpref" path="device.xml"/>
--->
+    <exclude domain="sharedpref" path="secure_auth.xml" />
+    <exclude domain="database"   path="meditation_database" />
+    <exclude domain="database"   path="meditation_database-shm" />
+    <exclude domain="database"   path="meditation_database-wal" />
 </full-backup-content>

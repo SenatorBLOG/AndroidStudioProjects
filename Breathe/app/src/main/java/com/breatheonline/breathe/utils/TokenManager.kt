@@ -2,6 +2,7 @@ package com.breatheonline.breathe.utils
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -37,10 +38,29 @@ class TokenManager @Inject constructor(
     // ── Internal ──────────────────────────────────────────────────────────────
 
     private fun buildEncryptedPrefs(): SharedPreferences {
+        return try {
+            createEncryptedPrefs()
+        } catch (primary: Exception) {
+            // Key mismatch happens after a backup/restore to a new device.
+            // The Keystore master key is device-specific and cannot be transferred,
+            // so the backed-up encrypted file is unreadable. Wipe it and start fresh
+            // — the user will just need to log in again, which is the safe outcome.
+            Log.w(TAG, "EncryptedSharedPreferences init failed; wiping and recreating (backup-restore scenario)", primary)
+            context.deleteSharedPreferences(PREFS_FILE)
+            try {
+                createEncryptedPrefs()
+            } catch (secondary: Exception) {
+                // Extreme fallback: unencrypted prefs. Token will be null → forced login.
+                Log.e(TAG, "EncryptedSharedPreferences recreation failed; falling back to plain prefs", secondary)
+                context.getSharedPreferences("${PREFS_FILE}_fallback", Context.MODE_PRIVATE)
+            }
+        }
+    }
+
+    private fun createEncryptedPrefs(): SharedPreferences {
         val masterKey = MasterKey.Builder(context)
             .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
             .build()
-
         return EncryptedSharedPreferences.create(
             context,
             PREFS_FILE,
@@ -53,5 +73,6 @@ class TokenManager @Inject constructor(
     companion object {
         private const val PREFS_FILE = "secure_auth"
         private const val KEY_TOKEN  = "jwt_token"
+        private const val TAG        = "TokenManager"
     }
 }

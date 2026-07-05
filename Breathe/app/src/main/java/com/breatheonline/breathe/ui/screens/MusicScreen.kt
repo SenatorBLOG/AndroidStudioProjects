@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -64,6 +65,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import androidx.compose.ui.res.stringResource
+import com.breatheonline.breathe.R
 import com.breatheonline.breathe.data.models.MusicGenre
 import com.breatheonline.breathe.data.models.MusicTrack
 import com.breatheonline.breathe.ui.theme.AppColors
@@ -97,13 +100,13 @@ fun MusicScreen(colors: AppColors) {
         ) {
             Column {
                 Text(
-                    text          = "BREATHE · SOUNDS",
+                    text          = stringResource(R.string.music_breathe_sounds),
                     style         = MaterialTheme.typography.labelSmall,
                     color         = colors.subtitle,
                     letterSpacing = 2.sp,
                 )
                 Text(
-                    text       = "Music Library",
+                    text       = stringResource(R.string.music_library_title),
                     style      = MaterialTheme.typography.headlineMedium,
                     color      = colors.title,
                     fontWeight = FontWeight.Light,
@@ -132,15 +135,13 @@ fun MusicScreen(colors: AppColors) {
             contentPadding        = PaddingValues(horizontal = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            for (genre in MusicGenre.entries) {
-                item {
-                    GenreChip(
-                        genre    = genre,
-                        selected = state.selectedGenre == genre,
-                        onClick  = { viewModel.selectGenre(genre) },
-                        colors   = colors,
-                    )
-                }
+            items(MusicGenre.entries, key = { it.name }) { genre ->
+                GenreChip(
+                    genre    = genre,
+                    selected = state.selectedGenre == genre,
+                    onClick  = { viewModel.selectGenre(genre) },
+                    colors   = colors,
+                )
             }
         }
 
@@ -149,8 +150,8 @@ fun MusicScreen(colors: AppColors) {
         // ── Status row ────────────────────────────────────────────────────────
         Text(
             text = when {
-                state.isLoading -> "Loading…"
-                else -> "${displayTracks.size} track${if (displayTracks.size != 1) "s" else ""}" +
+                state.isLoading -> stringResource(R.string.music_loading)
+                else -> stringResource(R.string.music_track_count, displayTracks.size) +
                         if (state.searchQuery.isNotEmpty()) " · \"${state.searchQuery}\"" else ""
             },
             style    = MaterialTheme.typography.labelSmall,
@@ -237,7 +238,7 @@ private fun SearchBar(query: String, onQueryChange: (String) -> Unit, colors: Ap
                 Box {
                     if (query.isEmpty()) {
                         Text(
-                            "Search tracks, artists, tags…",
+                            stringResource(R.string.music_search_placeholder),
                             style = MaterialTheme.typography.bodySmall,
                             color = colors.subtitle.copy(alpha = 0.5f),
                         )
@@ -379,7 +380,6 @@ private fun TrackRow(
                         text  = tag,
                         style = MaterialTheme.typography.labelSmall,
                         color = colors.subtitle.copy(alpha = 0.6f),
-                        fontSize = 8.sp,
                     )
                 }
             }
@@ -580,7 +580,7 @@ private fun EmptySearchState(query: String, onClear: () -> Unit, colors: AppColo
     ) {
         Icon(Icons.Default.MusicNote, null, tint = colors.subtitle.copy(alpha = 0.4f), modifier = Modifier.size(36.dp))
         Spacer(Modifier.height(12.dp))
-        Text("No tracks for \"$query\"", style = MaterialTheme.typography.bodySmall, color = colors.subtitle)
+        Text(stringResource(R.string.music_no_tracks_for, query), style = MaterialTheme.typography.bodySmall, color = colors.subtitle)
         Spacer(Modifier.height(10.dp))
         Box(
             modifier = Modifier
@@ -588,7 +588,7 @@ private fun EmptySearchState(query: String, onClear: () -> Unit, colors: AppColo
                 .clickable(onClick = onClear)
                 .padding(horizontal = 16.dp, vertical = 8.dp),
         ) {
-            Text("Clear search", style = MaterialTheme.typography.labelMedium, color = colors.primary)
+            Text(stringResource(R.string.music_clear_search), style = MaterialTheme.typography.labelMedium, color = colors.primary)
         }
     }
 }
@@ -603,7 +603,7 @@ private fun EmptyLibraryState(onLoad: () -> Unit, error: String?, colors: AppCol
         Icon(Icons.Default.MusicNote, null, tint = colors.subtitle.copy(alpha = 0.4f), modifier = Modifier.size(36.dp))
         Spacer(Modifier.height(12.dp))
         Text(
-            text  = if (error != null) "Couldn't load tracks" else "No tracks found",
+            text  = if (error != null) stringResource(R.string.music_couldnt_load) else stringResource(R.string.music_no_tracks_found),
             style = MaterialTheme.typography.bodySmall,
             color = colors.subtitle,
         )
@@ -618,7 +618,7 @@ private fun EmptyLibraryState(onLoad: () -> Unit, error: String?, colors: AppCol
                 .clickable(onClick = onLoad)
                 .padding(horizontal = 16.dp, vertical = 8.dp),
         ) {
-            Text("Reload", style = MaterialTheme.typography.labelMedium, color = colors.primary)
+            Text(stringResource(R.string.music_reload), style = MaterialTheme.typography.labelMedium, color = colors.primary)
         }
     }
 }

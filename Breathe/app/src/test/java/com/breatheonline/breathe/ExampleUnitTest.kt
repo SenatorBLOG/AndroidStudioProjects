@@ -1,4 +1,4 @@
-package com.example.breathe
+package com.breatheonline.breathe
 
 import org.junit.Test
 

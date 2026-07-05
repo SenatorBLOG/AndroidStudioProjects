@@ -1,5 +1,6 @@
 package com.breatheonline.breathe.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.breatheonline.breathe.data.api.ApiService
@@ -10,6 +11,7 @@ import com.breatheonline.breathe.data.models.NlpInsights
 import com.breatheonline.breathe.data.models.RemoteSession
 import com.breatheonline.breathe.data.models.SleepDayDto
 import com.breatheonline.breathe.data.models.SleepInsightFeedback
+import com.breatheonline.breathe.data.repository.IntegrationRepository
 import com.breatheonline.breathe.data.repository.MeditationRepository
 import com.breatheonline.breathe.data.repository.SleepInsightFeedbackRepository
 import com.breatheonline.breathe.utils.mergeHeartRateDays
@@ -17,6 +19,7 @@ import com.breatheonline.breathe.utils.mergeSleepDays
 import com.breatheonline.breathe.utils.parseHealthDate
 import com.breatheonline.breathe.utils.SessionCalculations
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -29,7 +32,9 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 import javax.inject.Inject
+import kotlin.math.roundToInt
 
 // ── Supporting types ───────────────────────────────────────────────────────────
 
@@ -62,10 +67,11 @@ data class MonthPoint(
 )
 
 data class DurationBuckets(
-    val short:    Int = 0,
-    val medium:   Int = 0,
-    val long:     Int = 0,
-    val extended: Int = 0,
+    val short:      Int   = 0,
+    val medium:     Int   = 0,
+    val long:       Int   = 0,
+    val extended:   Int   = 0,
+    val avgMinutes: Float = 0f,
 ) {
     val total get() = short + medium + long + extended
 }
@@ -131,6 +137,8 @@ data class StatsState(
     val sleepDayView:           SleepDayView?     = null,
     val sleepWeekView:          SleepWeekView?    = null,
     val sleepMonthView:         SleepMonthView?   = null,
+    val earliestSleepDate:      LocalDate?        = null,
+    val latestSleepDate:        LocalDate?        = null,
     // Existing chart data
     val weeklyData:             List<DayMinutes>  = emptyList(),
     val monthlyData:            List<DayMinutes>  = emptyList(),
@@ -164,6 +172,8 @@ class StatsViewModel @Inject constructor(
     private val repository: MeditationRepository,
     private val apiService: ApiService,
     private val sleepInsightFeedbackRepository: SleepInsightFeedbackRepository,
+    private val integrationRepository: IntegrationRepository,
+    @ApplicationContext private val context: Context,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(StatsState())
@@ -185,9 +195,10 @@ class StatsViewModel @Inject constructor(
     init {
         observeLocal()
         observeSleepInsightFeedback()
+        observeHealth()
+        viewModelScope.launch { integrationRepository.refresh() }
         viewModelScope.launch { fetchRemote() }
         viewModelScope.launch { fetchNlp() }
-        viewModelScope.launch { fetchHealth() }
     }
 
     private fun observeLocal() {
@@ -232,52 +243,83 @@ class StatsViewModel @Inject constructor(
             }
     }
 
-    private suspend fun fetchHealth() {
-        runCatching { apiService.getIntegrationStatus() }
-            .onSuccess { resp ->
-                if (!resp.isSuccessful) return@onSuccess
-                val connected = resp.body()?.filter { it.connected && it.data != null }
-                if (connected.isNullOrEmpty()) return@onSuccess
+    private fun observeHealth() {
+        viewModelScope.launch {
+            integrationRepository.integrations.collect { body -> processHealth(body) }
+        }
+    }
 
-                val allSleep = mergeSleepDays(connected.flatMap { it.data!!.sleep ?: emptyList() }).takeLast(14)
-                val allHrv   = connected.flatMap { it.data!!.hrv ?: emptyList() }
-                    .distinctBy { it.date }
-                    .sortedBy { it.date }
-                    .takeLast(14)
-                val allHr    = mergeHeartRateDays(connected.flatMap { it.data!!.heartRate ?: emptyList() }).takeLast(14)
+    private suspend fun processHealth(body: List<com.breatheonline.breathe.data.models.IntegrationStatusDto>) {
+        val connected = body.filter { it.connected && it.data != null }
+        if (connected.isEmpty()) return
 
-                allSleepCache = allSleep
-                allHrCache = allHr
-                recomputeSleepViews()
+        val allSleep = mergeSleepDays(connected.flatMap { it.data?.sleep ?: emptyList() }).takeLast(14)
+        val allHrv   = connected.flatMap { it.data?.hrv ?: emptyList() }
+            .distinctBy { it.date }
+            .sortedBy { it.date }
+            .takeLast(14)
+        val allHr    = mergeHeartRateDays(connected.flatMap { it.data?.heartRate ?: emptyList() }).takeLast(14)
 
-                val last7Sleep = allSleep.takeLast(7)
-                val avgSleep  = if (last7Sleep.isEmpty()) null else last7Sleep.map { it.duration }.average().toInt()
-                val avgHrv    = allHrv.takeLast(7).mapNotNull { it.rmssd }.takeIf { it.isNotEmpty() }?.average()?.toInt()
-                val restingHr = allHr.lastOrNull { it.restingRate != null }?.restingRate
-                val recovery  = avgHrv?.let { hrv -> ((hrv - 20f) / 80f * 100f).toInt().coerceIn(0, 100) }
-                val sleepStats = buildSleepStats(allSleep, allHrv, allHr)
-                val sleepInsight = buildSleepInsight(sleepStats)
-
-                if (avgSleep == null && avgHrv == null && restingHr == null && sleepStats.timeline.isEmpty()) return@onSuccess
-                _state.update {
-                    it.copy(
-                        health = HealthSummary(
-                            avgSleep7dMin = avgSleep,
-                            avgHrv7d      = avgHrv,
-                            restingHr     = restingHr,
-                            recoveryScore = recovery,
-                            sources       = connected.map { conn -> conn.provider },
-                        ),
-                        sleepStats = sleepStats,
-                        sleepInsight = sleepInsight,
-                    )
-                }
+        allSleepCache = allSleep
+        allHrCache = allHr
+        val latestSleepDate = allSleep.lastOrNull()?.let { parseHealthDate(it.date) }
+        if (latestSleepDate != null) {
+            _state.update { state ->
+                val hasSelected = allSleep.any { it.date == state.selectedSleepDate.toString() }
+                state.copy(
+                    selectedSleepDate = if (hasSelected) state.selectedSleepDate else latestSleepDate
+                )
             }
+        }
+        recomputeSleepViews()
+
+        val last7Sleep = allSleep.takeLast(7)
+        val avgSleep   = if (last7Sleep.isEmpty()) null else last7Sleep.map { it.duration }.average().toInt()
+        val avgHrv     = allHrv.takeLast(7).mapNotNull { it.rmssd }.takeIf { it.isNotEmpty() }?.average()?.toInt()
+        val restingHr  = allHr.lastOrNull { it.restingRate != null }?.restingRate
+        val recovery   = avgHrv?.let { hrv -> ((hrv - 20f) / 80f * 100f).toInt().coerceIn(0, 100) }
+        val sleepStats = buildSleepStats(allSleep, allHrv, allHr)
+        val sleepInsight = buildSleepInsight(sleepStats)
+
+        if (avgSleep == null && avgHrv == null && restingHr == null && sleepStats.timeline.isEmpty()) return
+        _state.update {
+            it.copy(
+                health = HealthSummary(
+                    avgSleep7dMin = avgSleep,
+                    avgHrv7d      = avgHrv,
+                    restingHr     = restingHr,
+                    recoveryScore = recovery,
+                    sources       = connected.map { conn -> conn.provider },
+                ),
+                sleepStats   = sleepStats,
+                sleepInsight = sleepInsight,
+            )
+        }
     }
 
     fun setSleepView(view: SleepView) {
         _state.update { it.copy(sleepView = view) }
         recomputeSleepViews()
+    }
+
+    fun moveSleepSelection(step: Int) {
+        val availableDates = allSleepCache.mapNotNull { parseHealthDate(it.date) }.sorted()
+        if (availableDates.isEmpty() || step == 0) return
+
+        val current = _state.value.selectedSleepDate
+        val target = when (_state.value.sleepView) {
+            SleepView.DAY -> moveToAdjacentDate(availableDates, current, step)
+            SleepView.WEEK -> resolveAvailableDateFor(current.plusDays(step * 7L), availableDates)
+            SleepView.MONTH -> resolveAvailableDateFor(current.plusMonths(step.toLong()), availableDates)
+        } ?: return
+
+        setSleepDate(target)
+    }
+
+    fun jumpToLatestSleep() {
+        allSleepCache.lastOrNull()?.let { latest ->
+            parseHealthDate(latest.date)?.let(::setSleepDate)
+        }
     }
 
     fun setSleepDate(date: LocalDate) {
@@ -293,6 +335,7 @@ class StatsViewModel @Inject constructor(
         val selected = _state.value.selectedSleepDate
         val selectedStr = selected.toString()
         val dayDto = days.firstOrNull { it.date == selectedStr } ?: days.last()
+        val availableDates = days.mapNotNull { parseHealthDate(it.date) }.sorted()
         val history7d = days.takeLast(7)
         val dayView = com.breatheonline.breathe.utils.buildSleepDayView(dayDto, history7d, hrBpm)
 
@@ -323,8 +366,35 @@ class StatsViewModel @Inject constructor(
         )
 
         _state.update {
-            it.copy(sleepDayView = dayView, sleepWeekView = weekView, sleepMonthView = monthView)
+            it.copy(
+                sleepDayView = dayView,
+                sleepWeekView = weekView,
+                sleepMonthView = monthView,
+                earliestSleepDate = availableDates.firstOrNull(),
+                latestSleepDate = availableDates.lastOrNull(),
+            )
         }
+    }
+
+    private fun moveToAdjacentDate(
+        availableDates: List<LocalDate>,
+        current: LocalDate,
+        step: Int,
+    ): LocalDate? {
+        val currentIndex = availableDates.indexOfLast { !it.isAfter(current) }.takeIf { it >= 0 } ?: return null
+        val targetIndex = (currentIndex + step).coerceIn(0, availableDates.lastIndex)
+        return availableDates.getOrNull(targetIndex)
+    }
+
+    private fun resolveAvailableDateFor(target: LocalDate, availableDates: List<LocalDate>): LocalDate? {
+        val sameMonth = availableDates.filter { it.year == target.year && it.month == target.month }
+        if (sameMonth.isNotEmpty()) {
+            return sameMonth.minByOrNull { kotlin.math.abs(it.dayOfMonth - target.dayOfMonth) }
+        }
+        return availableDates
+            .filter { !it.isAfter(target) }
+            .maxOrNull()
+            ?: availableDates.minOrNull()
     }
 
     fun setSleepInsightFeedback(isPositive: Boolean) {
@@ -363,10 +433,13 @@ class StatsViewModel @Inject constructor(
             list.any { epochToDate(it.date) == today.minusDays(n.toLong()) }
         }
         var bs = 0; var bm = 0; var bl = 0; var be = 0
+        var totalLocalMins = 0
         list.forEach { s ->
             val mins = s.duration / 60
+            totalLocalMins += mins
             when { mins <= 5 -> bs++; mins <= 15 -> bm++; mins <= 30 -> bl++; else -> be++ }
         }
+        val localAvgMin = if (list.isEmpty()) 0f else totalLocalMins.toFloat() / list.size
 
         _state.update {
             it.copy(
@@ -382,7 +455,9 @@ class StatsViewModel @Inject constructor(
                 monthlyData            = buildMonthlyLocal(list, today),
                 yearlyData             = buildYearlyLocal(list, today),
                 annualMonthData        = buildAnnualMonthLocal(list, today),
-                durationBuckets        = DurationBuckets(bs, bm, bl, be),
+                allYearsData           = buildAllYearsDataLocal(list),
+                moodPoints             = buildMoodPointsLocal(list),
+                durationBuckets        = DurationBuckets(bs, bm, bl, be, localAvgMin),
                 consistencyPct         = activeDays7 * 100 / 7,
                 sessionsPrev7d         = prev7.size,
                 avgSessionMin7d        = if (last7.isEmpty()) 0 else last7.sumOf { s -> s.duration } / last7.size / 60,
@@ -395,29 +470,36 @@ class StatsViewModel @Inject constructor(
 
     // ── Stats from API ─────────────────────────────────────────────────────────
 
-    private suspend fun updateFromRemote(list: List<RemoteSession>) = withContext(Dispatchers.Default) {
+    private suspend fun updateFromRemote(rawList: List<RemoteSession>) = withContext(Dispatchers.Default) {
+        if (rawList.isEmpty()) { _state.update { it.copy(isLoading = false) }; return@withContext }
+
+        val today = LocalDate.now(ZoneId.systemDefault())
+
+        // Pre-parse every session's date once, using all available fields.
+        // Sessions with no parseable date are dropped — they'd cluster on today otherwise.
+        val datesById = buildMap<String, LocalDate> {
+            rawList.forEach { s -> parseRemoteSessionDate(s)?.let { put(s.id, it) } }
+        }
+        val list = rawList.filter { it.id in datesById }
         if (list.isEmpty()) { _state.update { it.copy(isLoading = false) }; return@withContext }
 
-        val today     = LocalDate.now(ZoneId.systemDefault())
-        val startWeek = today.with(DayOfWeek.MONDAY)
-        val dates     = list.map { remoteToDate(it.completedAt) }.toSet()
-        val totalMin  = list.sumOf { s -> (s.sessionLength?.toInt() ?: (s.duration / 60)) }
-        val totalCyc  = list.sumOf { s -> s.cycles ?: 0 }
-        val calmList  = list.mapNotNull { it.calmnessScore }
-        val focusList = list.mapNotNull { it.focusLevel }
+        // All date lookups go through this map — no more remoteToDate(completedAt) in chart logic
+        fun RemoteSession.d(): LocalDate = datesById.getValue(id)
 
-        val last7 = list.filter { remoteToDate(it.completedAt) >= today.minusDays(6) }
-        val prev7 = list.filter {
-            val d = remoteToDate(it.completedAt)
-            d >= today.minusDays(13) && d < today.minusDays(6)
-        }
-        val activeDays7 = (0..6).count { n ->
-            list.any { remoteToDate(it.completedAt) == today.minusDays(n.toLong()) }
-        }
+        val startWeek   = today.with(DayOfWeek.MONDAY)
+        val dates       = list.map { it.d() }.toSet()
+        val totalMin    = list.sumOf { s -> (s.sessionLength?.roundToInt() ?: (s.duration / 60)) }
+        val totalCyc    = list.sumOf { s -> s.cycles ?: 0 }
+        val calmList    = list.mapNotNull { it.calmnessScore }
+        val focusList   = list.mapNotNull { it.focusLevel }
 
-        val moodPoints = list.sortedByDescending { it.completedAt }.take(35).map { s ->
+        val last7 = list.filter { it.d() >= today.minusDays(6) }
+        val prev7 = list.filter { val d = it.d(); d >= today.minusDays(13) && d < today.minusDays(6) }
+        val activeDays7 = (0..6).count { n -> list.any { it.d() == today.minusDays(n.toLong()) } }
+
+        val moodPoints = list.sortedByDescending { it.d() }.take(35).map { s ->
             MoodPoint(
-                date  = remoteToDate(s.completedAt),
+                date  = s.d(),
                 delta = if (s.moodBefore != null && s.moodAfter != null) s.moodAfter - s.moodBefore else null,
             )
         }
@@ -428,32 +510,38 @@ class StatsViewModel @Inject constructor(
                 totalMeditationMinutes = totalMin,
                 totalSessions          = list.size,
                 totalCycles            = totalCyc,
+                averageSessionDuration = run {
+                    val validSecs = list.mapNotNull { s ->
+                        s.sessionLength?.let { minD -> (minD * 60).roundToInt() }
+                    }
+                    if (validSecs.isEmpty()) 0 else validSecs.sum() / validSecs.size
+                },
                 bestStreakDays         = SessionCalculations.computeLongestStreak(dates),
                 currentStreak          = SessionCalculations.computeCurrentStreak(dates, today),
-                sessionsThisWeek       = list.count { s -> remoteToDate(s.completedAt) >= startWeek },
-                todayMinutes           = list.filter { s -> remoteToDate(s.completedAt) == today }
-                    .sumOf { s -> (s.sessionLength?.toInt() ?: (s.duration / 60)) },
+                sessionsThisWeek       = list.count { s -> s.d() >= startWeek },
+                todayMinutes           = list.filter { s -> s.d() == today }
+                    .sumOf { s -> (s.sessionLength?.roundToInt() ?: (s.duration / 60)) },
                 avgCalmness            = if (calmList.isEmpty()) 0f else calmList.average().toFloat(),
                 avgFocus               = if (focusList.isEmpty()) 0f else focusList.average().toFloat(),
-                weeklyData             = buildWeeklyRemote(list, today),
-                monthlyData            = buildMonthlyRemote(list, today),
-                yearlyData             = buildYearlyRemote(list, today),
-                annualMonthData        = buildAnnualMonthData(list, today),
-                allYearsData           = buildAllYearsData(list),
+                weeklyData             = buildWeeklyRemote(list, today, datesById),
+                monthlyData            = buildMonthlyRemote(list, today, datesById),
+                yearlyData             = buildYearlyRemote(list, today, datesById),
+                annualMonthData        = buildAnnualMonthData(list, today, datesById),
+                allYearsData           = buildAllYearsData(list, datesById),
                 durationBuckets        = buildDurationBuckets(list),
                 moodStats              = buildMoodStats(list),
                 consistencyPct         = activeDays7 * 100 / 7,
                 sessionsPrev7d         = prev7.size,
                 avgSessionMin7d        = run {
-                    val valid = last7.map { s -> s.sessionLength?.toInt() ?: (s.duration / 60) }.filter { it > 0 }
+                    val valid = last7.map { s -> s.sessionLength?.roundToInt() ?: (s.duration / 60) }.filter { it > 0 }
                     if (valid.isEmpty()) 0 else valid.sum() / valid.size
                 },
                 avgSessionMinPrev7d    = run {
-                    val valid = prev7.map { s -> s.sessionLength?.toInt() ?: (s.duration / 60) }.filter { it > 0 }
+                    val valid = prev7.map { s -> s.sessionLength?.roundToInt() ?: (s.duration / 60) }.filter { it > 0 }
                     if (valid.isEmpty()) 0 else valid.sum() / valid.size
                 },
-                weekdayAverages        = buildWeekdayAverages(list, today),
-                heatmap28              = buildHeatmap28(list, today),
+                weekdayAverages        = buildWeekdayAverages(list, datesById),
+                heatmap28              = buildHeatmap28(list, today, datesById),
                 moodPoints             = moodPoints,
                 insights               = buildInsights(list),
             )
@@ -484,37 +572,38 @@ class StatsViewModel @Inject constructor(
         }
 
     private fun buildAnnualMonthLocal(list: List<MeditationSession>, today: LocalDate): List<MonthPoint> {
-        val months = arrayOf("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
+        val locale = Locale.getDefault()
         return (11 downTo 0).map { n ->
             val m = today.minusMonths(n.toLong()).withDayOfMonth(1)
             val s = list.filter {
                 val d = epochToDate(it.date)
                 d.year == m.year && d.monthValue == m.monthValue
             }
-            MonthPoint(months[m.monthValue - 1], s.sumOf { it.duration } / 60, s.size, n == 0)
+            MonthPoint(m.month.getDisplayName(java.time.format.TextStyle.SHORT, locale), s.sumOf { it.duration } / 60, s.size, n == 0)
         }
     }
 
     private fun buildWeekdayAveragesLocal(list: List<MeditationSession>, today: LocalDate): List<Float> {
         val totals = FloatArray(7); val counts = IntArray(7)
-        (0..27).forEach { n ->
-            val d = today.minusDays(n.toLong())
-            val wd = d.dayOfWeek.value % 7
-            val mins = list.filter { epochToDate(it.date) == d }.sumOf { it.duration }.toFloat() / 60f
-            if (mins > 0f) { totals[wd] += mins; counts[wd]++ }
+        list.groupBy { epochToDate(it.date) }.forEach { (date, sessions) ->
+            val wd = date.dayOfWeek.value % 7
+            val dayMins = sessions.sumOf { it.duration }.toFloat() / 60f
+            if (dayMins > 0f) { totals[wd] += dayMins; counts[wd]++ }
         }
         return List(7) { i -> if (counts[i] > 0) totals[i] / counts[i] else 0f }
     }
 
     private fun buildHeatmap28Local(list: List<MeditationSession>, today: LocalDate): List<HeatCell> {
         val fmt = DateTimeFormatter.ofPattern("M/d")
+        val daysSinceSunday = today.dayOfWeek.value % 7   // Sun=0 … Sat=6
+        val start = today.minusDays((daysSinceSunday + 21).toLong())  // 4 full Sun-Sat weeks
         val dayMins = (0..27).associate { n ->
-            val d = today.minusDays(n.toLong())
+            val d = start.plusDays(n.toLong())
             d to list.filter { epochToDate(it.date) == d }.sumOf { it.duration } / 60
         }
         val maxMins = dayMins.values.maxOrNull()?.coerceAtLeast(1) ?: 1
-        return (27 downTo 0).map { n ->
-            val d = today.minusDays(n.toLong())
+        return (0..27).map { n ->
+            val d = start.plusDays(n.toLong())
             val mins = dayMins[d] ?: 0
             HeatCell(d.format(fmt), mins, mins.toFloat() / maxMins)
         }
@@ -522,56 +611,66 @@ class StatsViewModel @Inject constructor(
 
     // ── Chart builders — remote ────────────────────────────────────────────────
 
-    private fun buildWeeklyRemote(list: List<RemoteSession>, today: LocalDate) =
+    private fun buildWeeklyRemote(list: List<RemoteSession>, today: LocalDate, dates: Map<String, LocalDate>) =
         (6 downTo 0).map { n ->
             val d = today.minusDays(n.toLong())
-            DayMinutes(d, list.filter { remoteToDate(it.completedAt) == d }
-                .sumOf { s -> (s.sessionLength?.toInt() ?: (s.duration / 60)) })
+            DayMinutes(d, list.filter { dates[it.id] == d }
+                .sumOf { s -> (s.sessionLength?.roundToInt() ?: (s.duration / 60)) })
         }
 
-    private fun buildMonthlyRemote(list: List<RemoteSession>, today: LocalDate) =
+    private fun buildMonthlyRemote(list: List<RemoteSession>, today: LocalDate, dates: Map<String, LocalDate>) =
         (29 downTo 0).map { n ->
             val d = today.minusDays(n.toLong())
-            DayMinutes(d, list.filter { remoteToDate(it.completedAt) == d }
-                .sumOf { s -> (s.sessionLength?.toInt() ?: (s.duration / 60)) })
+            DayMinutes(d, list.filter { dates[it.id] == d }
+                .sumOf { s -> (s.sessionLength?.roundToInt() ?: (s.duration / 60)) })
         }
 
-    private fun buildYearlyRemote(list: List<RemoteSession>, today: LocalDate) =
+    private fun buildYearlyRemote(list: List<RemoteSession>, today: LocalDate, dates: Map<String, LocalDate>) =
         (11 downTo 0).map { n ->
             val m = today.minusMonths(n.toLong()).withDayOfMonth(1)
             DayMinutes(m, list.filter {
-                val d = remoteToDate(it.completedAt)
+                val d = dates[it.id] ?: return@filter false
                 d.year == m.year && d.monthValue == m.monthValue
-            }.sumOf { s -> (s.sessionLength?.toInt() ?: (s.duration / 60)) })
+            }.sumOf { s -> (s.sessionLength?.roundToInt() ?: (s.duration / 60)) })
         }
 
-    private fun buildAnnualMonthData(list: List<RemoteSession>, today: LocalDate): List<MonthPoint> {
-        val months = arrayOf("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec")
+    private fun buildAnnualMonthData(list: List<RemoteSession>, today: LocalDate, dates: Map<String, LocalDate>): List<MonthPoint> {
+        val locale = Locale.getDefault()
         return (11 downTo 0).map { n ->
             val m = today.minusMonths(n.toLong()).withDayOfMonth(1)
             val s = list.filter {
-                val d = remoteToDate(it.completedAt)
+                val d = dates[it.id] ?: return@filter false
                 d.year == m.year && d.monthValue == m.monthValue
             }
-            MonthPoint(months[m.monthValue - 1], s.sumOf { it -> (it.sessionLength?.toInt() ?: (it.duration / 60)) }, s.size, n == 0)
+            MonthPoint(m.month.getDisplayName(java.time.format.TextStyle.SHORT, locale), s.sumOf { (it.sessionLength?.roundToInt() ?: (it.duration / 60)) }, s.size, n == 0)
         }
     }
 
-    private fun buildAllYearsData(list: List<RemoteSession>): List<MonthPoint> {
+    private fun buildAllYearsData(list: List<RemoteSession>, dates: Map<String, LocalDate>): List<MonthPoint> {
         val curYear = LocalDate.now(ZoneId.systemDefault()).year
-        return list.groupBy { remoteToDate(it.completedAt).year }.entries.sortedBy { it.key }
+        return list.groupBy { dates[it.id]?.year ?: return@groupBy -1 }
+            .filter { it.key != -1 }
+            .entries.sortedBy { it.key }
             .map { (year, s) ->
-                MonthPoint(year.toString(), s.sumOf { (it.sessionLength?.toInt() ?: (it.duration / 60)) }, s.size, year == curYear)
+                MonthPoint(year.toString(), s.sumOf { (it.sessionLength?.roundToInt() ?: (it.duration / 60)) }, s.size, year == curYear)
             }
     }
 
     private fun buildDurationBuckets(list: List<RemoteSession>): DurationBuckets {
         var s = 0; var m = 0; var l = 0; var e = 0
+        var totalMins = 0f
         list.forEach { sess ->
-            val mins = sess.sessionLength?.toInt() ?: (sess.duration / 60)
-            when { mins <= 5 -> s++; mins <= 15 -> m++; mins <= 30 -> l++; else -> e++ }
+            val mins = sess.sessionLength?.toFloat() ?: (sess.duration / 60f)
+            totalMins += mins
+            when {
+                mins <= 5f  -> s++
+                mins <= 15f -> m++
+                mins <= 30f -> l++
+                else        -> e++
+            }
         }
-        return DurationBuckets(s, m, l, e)
+        val avg = if (list.isEmpty()) 0f else totalMins / list.size
+        return DurationBuckets(s, m, l, e, avg)
     }
 
     private fun buildMoodStats(list: List<RemoteSession>): MoodStats {
@@ -594,28 +693,30 @@ class StatsViewModel @Inject constructor(
         )
     }
 
-    private fun buildWeekdayAverages(list: List<RemoteSession>, today: LocalDate): List<Float> {
+    private fun buildWeekdayAverages(list: List<RemoteSession>, dates: Map<String, LocalDate>): List<Float> {
         val totals = FloatArray(7); val counts = IntArray(7)
-        (0..27).forEach { n ->
-            val d  = today.minusDays(n.toLong())
-            val wd = d.dayOfWeek.value % 7
-            val mins = list.filter { remoteToDate(it.completedAt) == d }
-                .sumOf { s -> (s.sessionLength?.toInt() ?: (s.duration / 60)) }.toFloat()
-            if (mins > 0f) { totals[wd] += mins; counts[wd]++ }
+        // list is already filtered to sessions in dates, so dates[id] is always non-null here
+        list.groupBy { dates[it.id] }.forEach { (date, sessions) ->
+            date ?: return@forEach
+            val wd = date.dayOfWeek.value % 7
+            val dayMins = sessions.sumOf { s -> (s.sessionLength?.roundToInt() ?: (s.duration / 60)) }.toFloat()
+            if (dayMins > 0f) { totals[wd] += dayMins; counts[wd]++ }
         }
         return List(7) { i -> if (counts[i] > 0) totals[i] / counts[i] else 0f }
     }
 
-    private fun buildHeatmap28(list: List<RemoteSession>, today: LocalDate): List<HeatCell> {
+    private fun buildHeatmap28(list: List<RemoteSession>, today: LocalDate, dates: Map<String, LocalDate>): List<HeatCell> {
         val fmt = DateTimeFormatter.ofPattern("M/d")
+        val daysSinceSunday = today.dayOfWeek.value % 7   // Sun=0 … Sat=6
+        val start = today.minusDays((daysSinceSunday + 21).toLong())  // 4 full Sun-Sat weeks
         val dayMins = (0..27).associate { n ->
-            val d = today.minusDays(n.toLong())
-            d to list.filter { remoteToDate(it.completedAt) == d }
-                .sumOf { s -> (s.sessionLength?.toInt() ?: (s.duration / 60)) }
+            val d = start.plusDays(n.toLong())
+            d to list.filter { dates[it.id] == d }
+                .sumOf { s -> (s.sessionLength?.roundToInt() ?: (s.duration / 60)) }
         }
         val maxMins = dayMins.values.maxOrNull()?.coerceAtLeast(1) ?: 1
-        return (27 downTo 0).map { n ->
-            val d = today.minusDays(n.toLong())
+        return (0..27).map { n ->
+            val d = start.plusDays(n.toLong())
             val mins = dayMins[d] ?: 0
             HeatCell(d.format(fmt), mins, mins.toFloat() / maxMins)
         }
@@ -640,14 +741,18 @@ class StatsViewModel @Inject constructor(
                     "You practise most in the $time. Keep that rhythm!")
             }
 
-        val moodPairs = list.filter { it.moodBefore != null && it.moodAfter != null }
-        if (moodPairs.isNotEmpty()) {
-            val avg = moodPairs.map { it.moodAfter!! - it.moodBefore!! }.average()
+        val moodDeltas = list.mapNotNull { s ->
+            val before = s.moodBefore
+            val after  = s.moodAfter
+            if (before != null && after != null) after - before else null
+        }
+        if (moodDeltas.isNotEmpty()) {
+            val avg = moodDeltas.average()
             cards += InsightCard(if (avg >= 0) "😌" else "📉", "Mood lift",
                 "Average mood change per session: ${if (avg >= 0) "+" else ""}${"%.1f".format(avg)} pts.")
         }
 
-        val sorted = list.sortedBy { it.completedAt }; val half = sorted.size / 2
+        val sorted = list.sortedBy { it.effectiveDate }; val half = sorted.size / 2
         val firstCalm  = sorted.take(half).mapNotNull { it.calmnessScore }
         val secondCalm = sorted.drop(half).mapNotNull { it.calmnessScore }
         if (firstCalm.isNotEmpty() && secondCalm.isNotEmpty()) {
@@ -713,21 +818,37 @@ class StatsViewModel @Inject constructor(
         }
     }
 
-    private fun typeLabel(type: String) = when {
-        type.startsWith("custom_") -> "Custom Breathing"
+    private fun typeLabel(type: String): String = when {
+        type.startsWith("custom_") -> context.getString(com.breatheonline.breathe.R.string.history_session_custom)
         else -> when (type) {
-            "4-7-8"     -> "4-7-8 Breathing"
-            "box"       -> "Box Breathing"
-            "wimhof"    -> "Wim Hof Method"
-            "coherent"  -> "Coherent Breathing"
-            "belly"     -> "Belly Breathing"
-            "morning"   -> "Morning Ritual"
-            "alternate" -> "Alternate Nostril"
-            "deep"      -> "Deep Relaxation"
-            "energy"    -> "Energising Breath"
+            "4-7-8"     -> context.getString(com.breatheonline.breathe.R.string.history_session_4_7_8)
+            "box"       -> context.getString(com.breatheonline.breathe.R.string.history_session_box)
+            "wimhof"    -> context.getString(com.breatheonline.breathe.R.string.history_session_wim_hof)
+            "coherent"  -> context.getString(com.breatheonline.breathe.R.string.history_session_coherent)
+            "belly"     -> context.getString(com.breatheonline.breathe.R.string.history_session_belly)
+            "morning"   -> context.getString(com.breatheonline.breathe.R.string.history_session_morning)
+            "alternate" -> context.getString(com.breatheonline.breathe.R.string.history_session_alternate)
+            "deep"      -> context.getString(com.breatheonline.breathe.R.string.history_session_deep)
+            "energy"    -> context.getString(com.breatheonline.breathe.R.string.history_session_energising)
             else        -> type.replaceFirstChar { it.uppercase() }
         }
     }
+
+    private fun buildAllYearsDataLocal(list: List<MeditationSession>): List<MonthPoint> {
+        val curYear = LocalDate.now(ZoneId.systemDefault()).year
+        return list.groupBy { epochToDate(it.date).year }.entries.sortedBy { it.key }
+            .map { (year, sessions) ->
+                MonthPoint(year.toString(), sessions.sumOf { it.duration } / 60, sessions.size, year == curYear)
+            }
+    }
+
+    private fun buildMoodPointsLocal(list: List<MeditationSession>): List<MoodPoint> =
+        list.sortedByDescending { it.date }.take(35).map { s ->
+            MoodPoint(
+                date  = epochToDate(s.date),
+                delta = if (s.moodBefore != null && s.moodAfter != null) s.moodAfter - s.moodBefore else null,
+            )
+        }
 
     private fun timeEmoji(time: String) = when (time.lowercase()) {
         "morning" -> "🌅"; "afternoon" -> "☀️"; "evening" -> "🌆"; "night" -> "🌙"; else -> "⏰"
@@ -736,9 +857,22 @@ class StatsViewModel @Inject constructor(
     private fun epochToDate(millis: Long): LocalDate =
         Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
 
-    private fun remoteToDate(completedAt: String): LocalDate = try {
-        Instant.parse(completedAt).atZone(ZoneId.systemDefault()).toLocalDate()
-    } catch (_: Exception) { LocalDate.now() }
+    private fun parseRemoteSessionDate(s: RemoteSession): LocalDate? =
+        // Prefer explicit date-only field; it's unambiguous and tz-free
+        s.sessionDate?.let { sd ->
+            runCatching { LocalDate.parse(sd) }.getOrNull()
+                ?: runCatching { Instant.parse(sd).atZone(ZoneId.systemDefault()).toLocalDate() }.getOrNull()
+                ?: runCatching { java.time.OffsetDateTime.parse(sd).toLocalDate() }.getOrNull()
+        } ?: s.completedAt?.let { parseCompletedAt(it) }
+
+    private fun parseCompletedAt(raw: String): LocalDate? =
+        runCatching { Instant.parse(raw).atZone(ZoneId.systemDefault()).toLocalDate() }.getOrNull()
+            ?: runCatching { java.time.OffsetDateTime.parse(raw).toLocalDate() }.getOrNull()
+            ?: runCatching { java.time.LocalDateTime.parse(raw).toLocalDate() }.getOrNull()
+            ?: runCatching { LocalDate.parse(raw) }.getOrNull()
+
+    private fun remoteToDate(completedAt: String): LocalDate =
+        parseCompletedAt(completedAt) ?: LocalDate.now()
 
     private fun parseApiDate(raw: String): LocalDate? = parseHealthDate(raw)
 

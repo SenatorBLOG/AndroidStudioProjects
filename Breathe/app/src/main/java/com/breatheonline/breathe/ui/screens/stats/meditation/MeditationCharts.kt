@@ -25,6 +25,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -34,6 +37,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.breatheonline.breathe.R
 import com.breatheonline.breathe.ui.theme.AppColors
 import com.breatheonline.breathe.viewmodel.DayMinutes
 import com.breatheonline.breathe.viewmodel.StatsState
@@ -60,10 +64,25 @@ internal fun ActivityChart(
     }
     val subLabels = if (period == 0) data.map { dm -> if (dm.minutes > 0) "${dm.minutes}m" else "" } else null
 
+    val totalMinutes = data.sumOf { it.minutes }
+    val activeDays = data.count { it.minutes > 0 }
+
+    val activeUnit = if (period == 2) {
+        pluralStringResource(R.plurals.stats_active_months, activeDays, activeDays)
+    } else {
+        pluralStringResource(R.plurals.stats_active_days, activeDays, activeDays)
+    }
+    MeditationSectionLabel(stringResource(R.string.stats_activity_section), colors)
     MeditationBarChart(
         values    = data.map { it.minutes.toFloat() },
         labels    = labels,
         subLabels = subLabels,
+        title = when (period) {
+            2 -> stringResource(R.string.stats_yearly_rhythm)
+            1 -> stringResource(R.string.stats_monthly_consistency)
+            else -> stringResource(R.string.stats_weekly_practice)
+        },
+        summary = stringResource(R.string.stats_summary_format, totalMinutes, activeUnit),
         colors    = colors,
     )
 }
@@ -75,6 +94,8 @@ internal fun MeditationBarChart(
     values:    List<Float>,
     labels:    List<String>,
     subLabels: List<String>? = null,
+    title: String,
+    summary: String,
     colors:    AppColors,
     modifier:  Modifier = Modifier,
 ) {
@@ -87,13 +108,25 @@ internal fun MeditationBarChart(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
-            .height(if (hasSubLabels) 220.dp else 190.dp)
+            .height(if (hasSubLabels) 208.dp else 180.dp)
             .clip(RoundedCornerShape(20.dp))
             .background(colors.surface)
-            .border(1.dp, colors.subtitle.copy(alpha = 0.10f), RoundedCornerShape(20.dp))
+            .border(1.dp, colors.primary.copy(alpha = 0.08f), RoundedCornerShape(20.dp))
             .padding(horizontal = 14.dp, vertical = 12.dp),
     ) {
-        Canvas(modifier = Modifier.fillMaxSize().padding(bottom = bottomPad)) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                color = colors.title,
+            )
+            Text(
+                text = summary,
+                style = MaterialTheme.typography.labelSmall,
+                color = colors.subtitle,
+            )
+        }
+        Canvas(modifier = Modifier.fillMaxSize().padding(top = 30.dp, bottom = bottomPad)) {
             val n        = values.size.coerceAtLeast(1)
             val areaW    = size.width / n
             val barW     = (areaW * 0.45f).coerceAtLeast(6f)
@@ -129,7 +162,7 @@ internal fun MeditationBarChart(
                     Text(lbl, style = MaterialTheme.typography.labelSmall, color = colors.subtitle, textAlign = TextAlign.Center)
                     if (hasSubLabels) {
                         Text(
-                            text = subLabels!![i],
+                            text = subLabels?.getOrNull(i).orEmpty(),
                             style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
                             color = if (values[i] > 0f) colors.title else colors.subtitle.copy(alpha = 0.4f),
                             fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
@@ -179,14 +212,13 @@ internal fun AnnualProgressSection(state: StatsState, colors: AppColors) {
     var byYear by remember { mutableStateOf(false) }
     val data   = if (byYear) state.allYearsData else state.annualMonthData
 
-    MeditationSectionLabel("ANNUAL PROGRESS", colors)
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(20.dp))
             .background(colors.surface)
-            .border(1.dp, colors.subtitle.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
+            .border(1.dp, colors.primary.copy(alpha = 0.08f), RoundedCornerShape(20.dp))
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
@@ -195,22 +227,33 @@ internal fun AnnualProgressSection(state: StatsState, colors: AppColors) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment     = Alignment.CenterVertically,
         ) {
+            Text(
+                text = stringResource(R.string.meditation_annual_progress),
+                style = MaterialTheme.typography.titleSmall,
+                color = colors.title,
+            )
+            AnnualViewToggle(byYear = byYear, onToggle = { byYear = it }, colors = colors)
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
             Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     Box(Modifier.width(12.dp).height(4.dp).clip(RoundedCornerShape(2.dp)).background(colors.primary))
-                    Text("Minutes", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = colors.subtitle)
+                    Text(stringResource(R.string.meditation_chart_minutes), style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = colors.subtitle)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     Box(Modifier.width(12.dp).height(2.dp).background(colors.primary.copy(alpha = 0.6f)))
-                    Text("Sessions", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = colors.subtitle)
+                    Text(stringResource(R.string.meditation_chart_sessions), style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = colors.subtitle)
                 }
             }
-            AnnualViewToggle(byYear = byYear, onToggle = { byYear = it }, colors = colors)
         }
 
         if (data.isEmpty() || data.all { it.totalMinutes == 0 && it.sessions == 0 }) {
             Box(Modifier.fillMaxWidth().height(140.dp), contentAlignment = Alignment.Center) {
-                Text("No data yet", style = MaterialTheme.typography.bodySmall, color = colors.subtitle)
+                Text(stringResource(R.string.meditation_chart_no_data), style = MaterialTheme.typography.bodySmall, color = colors.subtitle)
             }
         } else {
             val maxMins  = data.maxOf { it.totalMinutes }.coerceAtLeast(1)
@@ -283,12 +326,13 @@ internal fun AnnualProgressSection(state: StatsState, colors: AppColors) {
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
-                "${data.sumOf { it.sessions }} sessions · ${data.sumOf { it.totalMinutes }}m total",
+                stringResource(R.string.meditation_annual_summary, data.sumOf { it.sessions }, data.sumOf { it.totalMinutes }),
                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
                 color = colors.subtitle,
             )
             Text(
-                "● this ${if (byYear) "year" else "month"}",
+                if (byYear) stringResource(R.string.meditation_current_year_legend)
+                else        stringResource(R.string.meditation_current_month_legend),
                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
                 color = colors.primary,
             )
@@ -298,6 +342,8 @@ internal fun AnnualProgressSection(state: StatsState, colors: AppColors) {
 
 @Composable
 internal fun AnnualViewToggle(byYear: Boolean, onToggle: (Boolean) -> Unit, colors: AppColors) {
+    val label12m  = stringResource(R.string.meditation_toggle_12m)
+    val labelYear = stringResource(R.string.meditation_toggle_year)
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
@@ -305,7 +351,7 @@ internal fun AnnualViewToggle(byYear: Boolean, onToggle: (Boolean) -> Unit, colo
             .padding(2.dp),
         horizontalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        listOf(false to "12M", true to "YEAR").forEach { (isYear, label) ->
+        listOf(false to label12m, true to labelYear).forEach { (isYear, label) ->
             val active = isYear == byYear
             Box(
                 modifier = Modifier
@@ -330,11 +376,13 @@ internal fun AnnualViewToggle(byYear: Boolean, onToggle: (Boolean) -> Unit, colo
 @Composable
 internal fun MeditationSectionLabel(text: String, colors: AppColors) {
     Text(
-        text     = text,
-        style    = MaterialTheme.typography.labelSmall,
-        color    = colors.subtitle,
-        modifier = Modifier
+        text          = text,
+        style         = MaterialTheme.typography.labelSmall,
+        color         = colors.subtitle,
+        fontWeight    = FontWeight.SemiBold,
+        letterSpacing = 1.sp,
+        modifier      = Modifier
             .padding(horizontal = 20.dp)
-            .padding(bottom = 10.dp),
+            .padding(bottom = 6.dp),
     )
 }

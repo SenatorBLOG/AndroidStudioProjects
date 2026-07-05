@@ -32,6 +32,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
@@ -48,33 +49,58 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.breatheonline.breathe.R
 import com.breatheonline.breathe.ui.theme.AppColors
 import com.breatheonline.breathe.viewmodel.SessionFeedback
+import com.composables.icons.lucide.ArrowRight
+import com.composables.icons.lucide.CircleAlert
+import com.composables.icons.lucide.CircleCheck
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.MoonStar
+import com.composables.icons.lucide.Sparkles
+import com.composables.icons.lucide.Sprout
+import com.composables.icons.lucide.Target
+import com.composables.icons.lucide.Volume1
+import com.composables.icons.lucide.Volume2
+import com.composables.icons.lucide.VolumeX
+import com.composables.icons.lucide.Waves
+import com.composables.icons.lucide.Wind
+import com.composables.icons.lucide.Zap
 import java.time.LocalTime
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 
 private val FEELINGS = listOf(
-    "focused"    to "🎯",
-    "calm"       to "🌊",
-    "energized"  to "⚡",
-    "drowsy"     to "💤",
-    "distracted" to "🌀",
-    "peaceful"   to "☮️",
-    "anxious"    to "😰",
-    "refreshed"  to "🌿",
+    "focused"    to Lucide.Target,
+    "calm"       to Lucide.Waves,
+    "energized"  to Lucide.Zap,
+    "drowsy"     to Lucide.MoonStar,
+    "distracted" to Lucide.Wind,
+    "peaceful"   to Lucide.Sparkles,
+    "anxious"    to Lucide.CircleAlert,
+    "refreshed"  to Lucide.Sprout,
 )
 
 private val NOISE_OPTS = listOf(
-    "Silent"   to "🔇",
-    "Quiet"    to "🔉",
-    "Moderate" to "🔊",
-    "Noisy"    to "📢",
+    "Silent"   to Lucide.VolumeX,
+    "Quiet"    to Lucide.Volume1,
+    "Moderate" to Lucide.Volume2,
+    "Noisy"    to Lucide.Volume2,
 )
+
+@androidx.annotation.StringRes
+private fun noiseLabel(key: String): Int = when (key) {
+    "Silent"   -> R.string.feedback_noise_silent
+    "Quiet"    -> R.string.feedback_noise_quiet
+    "Moderate" -> R.string.feedback_noise_moderate
+    else       -> R.string.feedback_noise_noisy
+}
 
 private fun autoTimeOfDay(): String = when (LocalTime.now().hour) {
     in 5..11  -> "Morning"
@@ -168,7 +194,7 @@ fun SessionFeedbackModal(
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text  = "Session complete",
+                                text  = stringResource(R.string.feedback_session_complete),
                                 style = MaterialTheme.typography.titleSmall.copy(
                                     color    = colors.title,
                                     fontSize = 15.sp,
@@ -176,14 +202,14 @@ fun SessionFeedbackModal(
                             )
                             Spacer(Modifier.height(2.dp))
                             Text(
-                                text  = "Your data trains your personal AI coach",
+                                text  = stringResource(R.string.feedback_data_trains_ai),
                                 style = MaterialTheme.typography.labelSmall.copy(color = colors.label),
                             )
                         }
                         if (step == 0) {
                             TextButton(onClick = onDismiss) {
                                 Text(
-                                    text  = "Skip",
+                                    text  = stringResource(R.string.feedback_skip),
                                     style = MaterialTheme.typography.labelMedium.copy(color = colors.label),
                                 )
                             }
@@ -277,7 +303,7 @@ fun SessionFeedbackModal(
                                 ),
                             ) {
                                 Text(
-                                    text  = "Back",
+                                    text  = stringResource(R.string.feedback_back),
                                     style = MaterialTheme.typography.labelMedium,
                                 )
                             }
@@ -294,10 +320,20 @@ fun SessionFeedbackModal(
                                 contentColor   = colors.onPrimary,
                             ),
                         ) {
-                            Text(
-                                text  = if (step < 3) "Continue →" else "Save ✓",
-                                style = MaterialTheme.typography.labelMedium,
-                            )
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                Text(
+                                    text  = if (step < 3) stringResource(R.string.feedback_continue) else stringResource(R.string.feedback_save),
+                                    style = MaterialTheme.typography.labelMedium,
+                                )
+                                Icon(
+                                    imageVector = if (step < 3) Lucide.ArrowRight else Lucide.CircleCheck,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(14.dp),
+                                )
+                            }
                         }
                     }
                 }
@@ -312,7 +348,7 @@ fun SessionFeedbackModal(
 private fun StepHeader(colors: AppColors, step: Int, title: String, subtitle: String) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
-            text  = "STEP $step OF 4",
+            text  = stringResource(R.string.feedback_step_progress, step),
             style = MaterialTheme.typography.labelSmall.copy(
                 color         = colors.label,
                 letterSpacing = 2.sp,
@@ -342,16 +378,16 @@ private fun StepMood(
     onBefore: (Float) -> Unit, onAfter: (Float) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        StepHeader(colors, 1, "How did your mood shift?", "Slide before & after to track your progress")
-        MoodSliderRow("BEFORE", before, colors.label,   colors, onBefore)
-        MoodSliderRow("AFTER",  after,  colors.primary, colors, onAfter)
+        StepHeader(colors, 1, stringResource(R.string.feedback_mood_shift), stringResource(R.string.feedback_slide_before_after))
+        MoodSliderRow(stringResource(R.string.feedback_mood_before), before, colors.label,   colors, onBefore)
+        MoodSliderRow(stringResource(R.string.feedback_mood_after),  after,  colors.primary, colors, onAfter)
 
         // Delta badge
         val delta = after.toInt() - before.toInt()
         val (badgeText, badgeTint) = when {
-            delta > 0 -> "+$delta better" to colors.primary
-            delta < 0 -> "$delta worse"   to Color(0xFFFF8A8A)
-            else      -> "no change"      to colors.label
+            delta > 0 -> stringResource(R.string.feedback_mood_better, delta) to colors.primary
+            delta < 0 -> stringResource(R.string.feedback_mood_worse, delta)  to Color(0xFFFF8A8A)
+            else      -> stringResource(R.string.feedback_no_change)          to colors.label
         }
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -424,13 +460,13 @@ private fun StepFeelings(
     onToggle: (String) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        StepHeader(colors, 2, "How do you feel right now?", "Pick all that apply")
+        StepHeader(colors, 2, stringResource(R.string.feedback_how_feel_now), stringResource(R.string.feedback_pick_all))
         FEELINGS.chunked(4).forEach { row ->
             Row(
                 modifier              = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                row.forEach { (key, emoji) ->
+                row.forEach { (key, icon) ->
                     val on = key in selected
                     Box(
                         modifier = Modifier
@@ -454,7 +490,12 @@ private fun StepFeelings(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(3.dp),
                         ) {
-                            Text(emoji, fontSize = if (on) 20.sp else 16.sp)
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                tint = if (on) colors.primary else colors.label,
+                                modifier = Modifier.size(if (on) 20.dp else 16.dp),
+                            )
                             Text(
                                 text  = key.replaceFirstChar { it.uppercase() },
                                 style = MaterialTheme.typography.labelSmall.copy(
@@ -483,25 +524,25 @@ private fun StepQuality(
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         StepHeader(
             colors   = colors, step = 3,
-            title    = "Session quality",
-            subtitle = "Quick ratings help your AI coach personalise your sessions",
+            title    = stringResource(R.string.feedback_session_quality),
+            subtitle = stringResource(R.string.feedback_session_quality_subtitle),
         )
-        DotSliderRow("Focus level",   focusLevel,       10, colors.primary,                  colors, onFocus)
-        DotSliderRow("Calmness",      calmnessScore,    10, colors.primary.copy(alpha = 0.7f), colors, onCalmness)
-        DotSliderRow("Breath depth",  breathingDepth,   10, colors.primary,                  colors, onBreath)
-        DotSliderRow("Stress level",  stressLevel,      10, Color(0xFFFF8A8A),               colors, onStress)
-        DotSliderRow("Distractions",  distractionCount, 10, colors.primary.copy(alpha = 0.6f), colors, onDistract)
+        DotSliderRow(stringResource(R.string.feedback_focus_level),   focusLevel,       10, colors.primary,                  colors, onFocus)
+        DotSliderRow(stringResource(R.string.feedback_calmness),      calmnessScore,    10, colors.primary.copy(alpha = 0.7f), colors, onCalmness)
+        DotSliderRow(stringResource(R.string.feedback_breath_depth),  breathingDepth,   10, colors.primary,                  colors, onBreath)
+        DotSliderRow(stringResource(R.string.feedback_stress_level),  stressLevel,      10, Color(0xFFFF8A8A),               colors, onStress)
+        DotSliderRow(stringResource(R.string.feedback_distractions),  distractionCount, 10, colors.primary.copy(alpha = 0.6f), colors, onDistract)
 
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
-                text  = "Noise level",
+                text  = stringResource(R.string.feedback_noise_level),
                 style = MaterialTheme.typography.bodySmall.copy(color = colors.subtitle),
             )
             Row(
                 modifier              = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                NOISE_OPTS.forEach { (value, emoji) ->
+                NOISE_OPTS.forEach { (value, icon) ->
                     val on = value == noiseLevel
                     Box(
                         modifier = Modifier
@@ -525,9 +566,14 @@ private fun StepQuality(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(2.dp),
                         ) {
-                            Text(emoji, fontSize = if (on) 18.sp else 14.sp)
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                tint = if (on) colors.primary else colors.label,
+                                modifier = Modifier.size(if (on) 18.dp else 14.dp),
+                            )
                             Text(
-                                text  = value,
+                                text  = stringResource(noiseLabel(value)),
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     color    = if (on) colors.title else colors.label,
                                     fontSize = 9.sp,
@@ -591,14 +637,14 @@ private fun StepNotes(
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Row {
             Text(
-                text  = "Any thoughts? ",
+                text  = "${stringResource(R.string.feedback_any_thoughts)} ",
                 style = MaterialTheme.typography.titleSmall.copy(
                     color    = colors.title,
                     fontSize = 16.sp,
                 ),
             )
             Text(
-                text  = "(optional)",
+                text  = stringResource(R.string.feedback_optional),
                 style = MaterialTheme.typography.titleSmall.copy(
                     color      = colors.label,
                     fontSize   = 14.sp,
@@ -617,9 +663,14 @@ private fun StepNotes(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment     = Alignment.Top,
         ) {
-            Text("✨", style = MaterialTheme.typography.bodySmall)
+            Icon(
+                imageVector = Lucide.Sparkles,
+                contentDescription = null,
+                tint = colors.primary,
+                modifier = Modifier.size(16.dp),
+            )
             Text(
-                text  = "Your feedback trains your personal AI breathing coach.",
+                text  = stringResource(R.string.feedback_trains_coach),
                 style = MaterialTheme.typography.bodySmall.copy(color = colors.subtitle),
             )
         }
@@ -641,7 +692,7 @@ private fun StepNotes(
                 Box {
                     if (notes.isEmpty()) {
                         Text(
-                            text  = "How did this session feel? Any observations…",
+                            text  = stringResource(R.string.feedback_notes_placeholder),
                             style = MaterialTheme.typography.bodySmall.copy(color = colors.label),
                         )
                     }

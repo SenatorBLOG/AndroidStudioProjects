@@ -1,7 +1,6 @@
 package com.breatheonline.breathe.ui.screens
 
 import android.content.Context
-import android.util.Log
 import android.util.Patterns
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -30,6 +29,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -56,11 +56,16 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import com.breatheonline.breathe.R
 import com.breatheonline.breathe.ui.components.AuthTextField
 import com.breatheonline.breathe.ui.components.PasswordTextField
 import com.breatheonline.breathe.ui.theme.AppColors
@@ -91,14 +96,16 @@ fun LoginScreen(
 
     LaunchedEffect(loginState) {
         if (loginState is AuthUiState.Success) {
-            navController.navigate("home") {
-                popUpTo("login") { inclusive = true }
+            navController.navigate(Route.HOME) {
+                popUpTo(Route.LOGIN) { inclusive = true }
             }
             viewModel.resetLoginState()
         }
     }
 
     val isLoading = loginState is AuthUiState.Loading
+    val emailErrorMsg    = stringResource(R.string.login_email_error)
+    val passwordErrorMsg = stringResource(R.string.login_password_error)
 
     Box(
         modifier = Modifier
@@ -125,9 +132,9 @@ fun LoginScreen(
 
                 Box(
                     modifier = Modifier
-                        .size(180.dp)
+                        .size(220.dp)
                         .drawBehind {
-                            val radius = size.width / 2 + 56.dp.toPx()
+                            val radius = size.width / 2 + 72.dp.toPx()
                             drawCircle(
                                 brush = Brush.radialGradient(
                                     0f to colors.glowOuter,
@@ -142,15 +149,15 @@ fun LoginScreen(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text  = "Breathe",
-                            style = MaterialTheme.typography.headlineLarge,
+                            text  = stringResource(R.string.app_name),
+                            style = MaterialTheme.typography.displaySmall,
                             color = colors.title,
                         )
                         Text(
-                            text  = "breathe · relax · sleep",
+                            text  = stringResource(R.string.tagline),
                             style = MaterialTheme.typography.titleMedium,
                             color = colors.subtitle,
-                            modifier = Modifier.padding(top = 4.dp),
+                            modifier = Modifier.padding(top = 6.dp),
                         )
                     }
                 }
@@ -159,8 +166,8 @@ fun LoginScreen(
 
                 AuthTextField(
                     value = email,
-                    onValueChange = { email = it; emailError = null },
-                    label = "Email",
+                    onValueChange = { email = it; emailError = null; viewModel.resetLoginState() },
+                    label = stringResource(R.string.login_email),
                     error = emailError,
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Email,
@@ -177,8 +184,8 @@ fun LoginScreen(
 
                 PasswordTextField(
                     value = password,
-                    onValueChange = { password = it; passwordError = null },
-                    label = "Password",
+                    onValueChange = { password = it; passwordError = null; viewModel.resetLoginState() },
+                    label = stringResource(R.string.login_password),
                     error = passwordError,
                     imeAction = ImeAction.Done,
                     keyboardActions = KeyboardActions(
@@ -186,6 +193,8 @@ fun LoginScreen(
                             focusManager.clearFocus()
                             submitLogin(
                                 email, password,
+                                emailErr    = emailErrorMsg,
+                                passwordErr = passwordErrorMsg,
                                 onEmailError = { emailError = it },
                                 onPasswordError = { passwordError = it },
                                 onValid = { viewModel.login(email, password) },
@@ -202,6 +211,8 @@ fun LoginScreen(
                     onClick = {
                         focusManager.clearFocus()
                         submitLogin(email, password,
+                            emailErr        = emailErrorMsg,
+                            passwordErr     = passwordErrorMsg,
                             onEmailError    = { emailError    = it },
                             onPasswordError = { passwordError = it },
                             onValid         = { viewModel.login(email, password) },
@@ -225,7 +236,7 @@ fun LoginScreen(
                         )
                     } else {
                         Text(
-                            text  = "Sign In",
+                            text  = stringResource(R.string.login_sign_in),
                             style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
                             color = colors.onPrimary,
                         )
@@ -240,7 +251,7 @@ fun LoginScreen(
                 ) {
                     HorizontalDivider(modifier = Modifier.weight(1f), color = colors.subtitle.copy(alpha = 0.2f))
                     Text(
-                        text = " OR ",
+                        text = " ${stringResource(R.string.login_or_divider)} ",
                         style = MaterialTheme.typography.bodySmall,
                         color = colors.subtitle.copy(alpha = 0.6f),
                         modifier = Modifier.padding(horizontal = 16.dp)
@@ -273,18 +284,63 @@ fun LoginScreen(
 
                 Spacer(Modifier.weight(1f))
 
+                // ── Language picker ───────────────────────────────────────────
+                var selectedLang by remember {
+                    val tags = AppCompatDelegate.getApplicationLocales().toLanguageTags()
+                    mutableStateOf(when {
+                        tags.contains("ru") -> "ru"
+                        tags.contains("es") -> "es"
+                        else -> "en"
+                    })
+                }
+                Row(
+                    modifier              = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment     = Alignment.CenterVertically,
+                ) {
+                    listOf(
+                        "en" to R.string.language_english,
+                        "ru" to R.string.language_russian,
+                        "es" to R.string.language_spanish,
+                    ).forEach { (code, labelRes) ->
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .clip(RoundedCornerShape(50))
+                                .background(if (selectedLang == code) colors.primary.copy(alpha = 0.12f) else Color.Transparent)
+                                .border(1.dp, if (selectedLang == code) colors.primary else colors.subtitle.copy(alpha = 0.25f), RoundedCornerShape(50))
+                                .clickable {
+                                    selectedLang = code
+                                    AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(code))
+                                }
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                        ) {
+                            val label = when (code) {
+                                "en" -> "🇬🇧 ${stringResource(labelRes)}"
+                                "ru" -> "🇷🇺 ${stringResource(labelRes)}"
+                                else -> "🇪🇸 ${stringResource(labelRes)}"
+                            }
+                            Text(
+                                text  = label,
+                                color = if (selectedLang == code) colors.primary else colors.subtitle.copy(alpha = 0.65f),
+                                style = MaterialTheme.typography.labelSmall,
+                            )
+                        }
+                    }
+                }
+
                 TextButton(
-                    onClick  = { navController.navigate("register") },
+                    onClick  = { navController.navigate(Route.REGISTER) },
                     modifier = Modifier.padding(bottom = 24.dp),
                 ) {
                     Row {
                         Text(
-                            text  = "Don't have an account? ",
+                            text  = "${stringResource(R.string.login_no_account)} ",
                             style = MaterialTheme.typography.bodySmall,
                             color = colors.subtitle,
                         )
                         Text(
-                            text  = "Register",
+                            text  = stringResource(R.string.login_register_link),
                             style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold),
                             color = colors.primary,
                         )
@@ -307,15 +363,24 @@ fun GoogleSignInButton(
             .height(54.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(colors.surface)
-            .border(1.dp, colors.subtitle.copy(alpha = 0.1f), RoundedCornerShape(16.dp))
+            .border(1.dp, colors.subtitle.copy(alpha = 0.15f), RoundedCornerShape(16.dp))
             .clickable(enabled = enabled, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            verticalAlignment     = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Icon(
+                painter           = painterResource(R.drawable.ic_google),
+                contentDescription = null,
+                tint              = Color.Unspecified,
+                modifier          = Modifier.size(20.dp),
+            )
             Text(
-                text = "Continue with Google",
+                text  = stringResource(R.string.login_continue_google),
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium),
-                color = colors.title
+                color = colors.title,
             )
         }
     }
@@ -323,8 +388,7 @@ fun GoogleSignInButton(
 
 private suspend fun performGoogleSignIn(context: Context, viewModel: AuthViewModel) {
     val credentialManager = CredentialManager.create(context)
-    // Web Client ID из Google Cloud Console
-    val webClientId = "617412317511-19s97rms2r9t3ihl041h7k128a7pqd98.apps.googleusercontent.com"
+    val webClientId = com.breatheonline.breathe.BuildConfig.GOOGLE_WEB_CLIENT_ID
 
     val googleIdOption = GetGoogleIdOption.Builder()
         .setFilterByAuthorizedAccounts(false)
@@ -337,39 +401,32 @@ private suspend fun performGoogleSignIn(context: Context, viewModel: AuthViewMod
 
     try {
         val result = credentialManager.getCredential(context = context, request = request)
-        val credential = result.credential
-
-        // Используем официальный метод для извлечения данных
-        val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+        val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(result.credential.data)
         val idToken = googleIdTokenCredential.idToken
-
-        if (idToken != null) {
-            Log.d("Auth", "Token obtained: ${idToken.take(20)}...")
-            viewModel.loginWithGoogle(idToken)
-        } else {
-            Log.e("Auth", "Google ID Token is null")
-        }
+        viewModel.loginWithGoogle(idToken)
     } catch (e: GetCredentialException) {
-        Log.e("Auth", "Google Sign-In failed: ${e.message}")
+        viewModel.setLoginError(e.message ?: "Google Sign-In failed. Please try again.")
     } catch (e: Exception) {
-        Log.e("Auth", "Unexpected error: ${e.message}")
+        viewModel.setLoginError("Unexpected error. Please try again.")
     }
 }
 
 private fun submitLogin(
     email: String,
     password: String,
+    emailErr: String,
+    passwordErr: String,
     onEmailError: (String?) -> Unit,
     onPasswordError: (String?) -> Unit,
     onValid: () -> Unit,
 ) {
     var ok = true
     if (email.isBlank() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-        onEmailError("Enter a valid email address")
+        onEmailError(emailErr)
         ok = false
     }
     if (password.length < 6) {
-        onPasswordError("Password must be at least 6 characters")
+        onPasswordError(passwordErr)
         ok = false
     }
     if (ok) onValid()

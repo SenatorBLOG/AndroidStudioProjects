@@ -24,12 +24,12 @@ interface MeditationDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSession(session: MeditationSession): Long
 
-    @Query("UPDATE meditation_sessions SET synced = 1 WHERE id = :id")
-    suspend fun markAsSynced(id: Long)
+    @Query("UPDATE meditation_sessions SET isSynced = 1 WHERE id = :id")
+    suspend fun markAsSynced(id: Long): Unit
 
     @Query("UPDATE meditation_sessions SET remoteId = :remoteId WHERE id = :id")
-    suspend fun updateRemoteId(id: Long, remoteId: String)
+    suspend fun updateRemoteId(id: Long, remoteId: String): Unit
 
-    @Query("SELECT * FROM meditation_sessions WHERE synced = 0")
+    @Query("SELECT * FROM meditation_sessions WHERE isSynced = 0")
     suspend fun getUnsyncedSessions(): List<MeditationSession>
 }

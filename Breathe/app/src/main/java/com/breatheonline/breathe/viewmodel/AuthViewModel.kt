@@ -65,6 +65,8 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    fun setLoginError(message: String) { _loginState.value = AuthUiState.Error(message) }
+
     fun resetLoginState()    { _loginState.value    = AuthUiState.Idle }
     fun resetRegisterState() { _registerState.value = AuthUiState.Idle }
 }

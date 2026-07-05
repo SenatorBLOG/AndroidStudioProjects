@@ -6,11 +6,12 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.breatheonline.breathe.BuildConfig
-import com.example.breathe.data.local.AppDatabase
-import com.example.breathe.data.local.MIGRATION_1_2
-import com.example.breathe.data.local.MIGRATION_2_3
-import com.example.breathe.data.local.dao.MeditationDao
-import com.example.breathe.data.repository.MeditationRepository
+import com.breatheonline.breathe.data.local.AppDatabase
+import com.breatheonline.breathe.data.local.MIGRATION_1_2
+import com.breatheonline.breathe.data.local.MIGRATION_2_3
+import com.breatheonline.breathe.data.local.MIGRATION_3_4
+import com.breatheonline.breathe.data.local.dao.MeditationDao
+import com.breatheonline.breathe.data.local.dao.SleepInsightFeedbackDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,8 +29,10 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             "meditation_database"
-        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3)
-        .addCallback(object : RoomDatabase.Callback() {
+        ).addMigrations(MIGRATION_1_2)
+         .addMigrations(MIGRATION_2_3)
+         .addMigrations(MIGRATION_3_4)
+         .addCallback(object : RoomDatabase.Callback() {
             override fun onCreate(db: SupportSQLiteDatabase) {
                 super.onCreate(db)
                 if (BuildConfig.DEBUG) {
@@ -44,8 +47,9 @@ object DatabaseModule {
     fun provideMeditationDao(database: AppDatabase): MeditationDao {
         return database.meditationDao()
     }
+
     @Provides
-    fun provideMeditationRepository(dao: MeditationDao): MeditationRepository {
-        return MeditationRepository(dao)
+    fun provideSleepInsightFeedbackDao(database: AppDatabase): SleepInsightFeedbackDao {
+        return database.sleepInsightFeedbackDao()
     }
 }

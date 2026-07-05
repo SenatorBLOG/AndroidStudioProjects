@@ -1,5 +1,6 @@
 package com.breatheonline.breathe.ui.screens
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -13,12 +14,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -39,79 +41,120 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.breatheonline.breathe.R
 import com.breatheonline.breathe.ui.theme.AppColors
+import com.composables.icons.lucide.ChartNoAxesColumn
+import com.composables.icons.lucide.CircleAlert
+import com.composables.icons.lucide.FlaskConical
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Waves
+import com.composables.icons.lucide.Wind
 
 // ── Quiz data ─────────────────────────────────────────────────────────────────
 
 private enum class BreathTag { STRESS, SHALLOW, DEEP }
 
-private data class QuizQuestion(val text: String, val opts: List<Pair<String, BreathTag>>)
+private data class QuizQuestion(@StringRes val textRes: Int, val opts: List<Pair<Int, BreathTag>>)
 
 private val QUIZ_QUESTIONS = listOf(
     QuizQuestion(
-        "Where do you breathe from?",
-        listOf("Chest" to BreathTag.SHALLOW, "Belly" to BreathTag.DEEP, "Not sure" to BreathTag.STRESS),
+        R.string.interactive_quiz_question_breathing_from,
+        listOf(
+            R.string.interactive_quiz_option_chest to BreathTag.SHALLOW,
+            R.string.interactive_quiz_option_belly to BreathTag.DEEP,
+            R.string.interactive_quiz_option_not_sure to BreathTag.STRESS,
+        ),
     ),
     QuizQuestion(
-        "Do you breathe through your mouth?",
-        listOf("Often" to BreathTag.SHALLOW, "Sometimes" to BreathTag.STRESS, "Rarely" to BreathTag.DEEP),
+        R.string.interactive_quiz_question_mouth,
+        listOf(
+            R.string.interactive_quiz_option_often to BreathTag.SHALLOW,
+            R.string.interactive_quiz_option_sometimes to BreathTag.STRESS,
+            R.string.interactive_quiz_option_rarely to BreathTag.DEEP,
+        ),
     ),
     QuizQuestion(
-        "How do you feel at bedtime?",
-        listOf("Racing thoughts" to BreathTag.STRESS, "A bit restless" to BreathTag.SHALLOW, "Calm" to BreathTag.DEEP),
+        R.string.interactive_quiz_question_bedtime,
+        listOf(
+            R.string.interactive_quiz_option_racing_thoughts to BreathTag.STRESS,
+            R.string.interactive_quiz_option_a_bit_restless to BreathTag.SHALLOW,
+            R.string.interactive_quiz_option_calm to BreathTag.DEEP,
+        ),
     ),
     QuizQuestion(
-        "Do you sigh or yawn a lot?",
-        listOf("Yes, constantly" to BreathTag.STRESS, "Sometimes" to BreathTag.SHALLOW, "Not really" to BreathTag.DEEP),
+        R.string.interactive_quiz_question_sigh_yawn,
+        listOf(
+            R.string.interactive_quiz_option_yes_constantly to BreathTag.STRESS,
+            R.string.interactive_quiz_option_sometimes to BreathTag.SHALLOW,
+            R.string.interactive_quiz_option_not_really to BreathTag.DEEP,
+        ),
     ),
     QuizQuestion(
-        "Energy by midday?",
-        listOf("Exhausted" to BreathTag.STRESS, "A bit tired" to BreathTag.SHALLOW, "Still going" to BreathTag.DEEP),
+        R.string.interactive_quiz_question_energy_midday,
+        listOf(
+            R.string.interactive_quiz_option_exhausted to BreathTag.STRESS,
+            R.string.interactive_quiz_option_a_bit_tired to BreathTag.SHALLOW,
+            R.string.interactive_quiz_option_still_going to BreathTag.DEEP,
+        ),
     ),
 )
 
 private data class QuizResult(
-    val emoji:     String,
-    val title:     String,
-    val desc:      String,
-    val color:     Color,
-    val technique: String,
-    val route:     String,
-    val plan:      List<String>,
+    val icon:        ImageVector,
+    @StringRes val titleRes: Int,
+    @StringRes val descRes: Int,
+    @StringRes val techniqueRes: Int,
+    val color:       Color,
+    val route:       String,
+    val planRes:     List<Int>,
 )
 
 private val QUIZ_RESULTS = mapOf(
     "stress" to QuizResult(
-        emoji     = "😰",
-        title     = "Stress Breather",
-        color     = Color(0xFFFF8A8A),
-        desc      = "Your nervous system is running hot. Short breath holds and slow exhales will rebalance it fast.",
-        technique = "4-7-8 Breathing",
-        route     = "4-7-8",
-        plan      = listOf("Day 1–2: Reset your baseline with 4-7-8", "Day 3–5: Box breathing for daytime calm", "Day 6–7: Lock in the evening wind-down"),
+        icon        = Lucide.CircleAlert,
+        titleRes    = R.string.result_stress_breather_title,
+        color       = Color(0xFFFF8A8A),
+        descRes     = R.string.result_stress_breather_desc,
+        techniqueRes = R.string.result_stress_breather_technique,
+        route       = "4-7-8",
+        planRes     = listOf(
+            R.string.interactive_plan_stress_day1_2,
+            R.string.interactive_plan_stress_day3_5,
+            R.string.interactive_plan_stress_day6_7,
+        ),
     ),
     "shallow" to QuizResult(
-        emoji     = "🌀",
-        title     = "Shallow Breather",
-        color     = Color(0xFFFFD97D),
-        desc      = "You're using only the top of your lungs. Belly breathing unlocks more oxygen and calm.",
-        technique = "Belly Breathing",
-        route     = "belly",
-        plan      = listOf("Day 1–2: Belly breathing foundation", "Day 3–5: Expand to coherent breathing", "Day 6–7: Full diaphragm activation habit"),
+        icon        = Lucide.Wind,
+        titleRes    = R.string.result_shallow_breather_title,
+        color       = Color(0xFFFFD97D),
+        descRes     = R.string.result_shallow_breather_desc,
+        techniqueRes = R.string.result_shallow_breather_technique,
+        route       = "belly",
+        planRes     = listOf(
+            R.string.interactive_plan_shallow_day1_2,
+            R.string.interactive_plan_shallow_day3_5,
+            R.string.interactive_plan_shallow_day6_7,
+        ),
     ),
     "natural" to QuizResult(
-        emoji     = "🌊",
-        title     = "Natural Breather",
-        color     = Color(0xFF4AE8A0),
-        desc      = "You have solid breathing instincts. Coherent breathing will take you to the next level.",
-        technique = "Coherent Breathing",
-        route     = "coherent",
-        plan      = listOf("Day 1–2: Establish 5.5 BPM resonance", "Day 3–5: HRV tracking + Wim Hof boost", "Day 6–7: Lock in your peak-performance routine"),
+        icon        = Lucide.Waves,
+        titleRes    = R.string.result_natural_breather_title,
+        color       = Color(0xFF4AE8A0),
+        descRes     = R.string.result_natural_breather_desc,
+        techniqueRes = R.string.result_natural_breather_technique,
+        route       = "coherent",
+        planRes     = listOf(
+            R.string.interactive_plan_natural_day1_2,
+            R.string.interactive_plan_natural_day3_5,
+            R.string.interactive_plan_natural_day6_7,
+        ),
     ),
 )
 
@@ -137,13 +180,13 @@ fun InteractiveScreen(navController: NavController, colors: AppColors) {
         ) {
             IconButton(onClick = { navController.navigateUp() }) {
                 Icon(
-                    imageVector        = Icons.Filled.ArrowBack,
-                    contentDescription = "Back",
+                    imageVector        = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.cd_back),
                     tint               = colors.title,
                 )
             }
             Text(
-                text   = "Breathing Tools",
+                text   = stringResource(R.string.interactive_breathing_tools),
                 style  = MaterialTheme.typography.headlineSmall,
                 color  = colors.title,
                 modifier = Modifier.padding(start = 4.dp),
@@ -162,8 +205,8 @@ fun InteractiveScreen(navController: NavController, colors: AppColors) {
                 .padding(4.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
-            TabBtn("🧪  Breathing Quiz", tab == 0, colors, Modifier.weight(1f)) { tab = 0 }
-            TabBtn("📊  Stress Score",   tab == 1, colors, Modifier.weight(1f)) { tab = 1 }
+            TabBtn(Lucide.FlaskConical, stringResource(R.string.interactive_breathing_quiz_tab), tab == 0, colors, Modifier.weight(1f)) { tab = 0 }
+            TabBtn(Lucide.ChartNoAxesColumn, stringResource(R.string.interactive_stress_score_tab), tab == 1, colors, Modifier.weight(1f)) { tab = 1 }
         }
 
         Spacer(Modifier.height(16.dp))
@@ -188,7 +231,7 @@ fun InteractiveScreen(navController: NavController, colors: AppColors) {
 // ── Tab button ────────────────────────────────────────────────────────────────
 
 @Composable
-private fun TabBtn(label: String, active: Boolean, colors: AppColors, modifier: Modifier, onClick: () -> Unit) {
+private fun TabBtn(icon: ImageVector, label: String, active: Boolean, colors: AppColors, modifier: Modifier, onClick: () -> Unit) {
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
@@ -201,14 +244,25 @@ private fun TabBtn(label: String, active: Boolean, colors: AppColors, modifier: 
             .padding(vertical = 10.dp, horizontal = 4.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text  = label,
-            style = MaterialTheme.typography.labelSmall.copy(
-                color      = if (active) colors.title else colors.subtitle,
-                fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
-                fontSize   = 11.sp,
-            ),
-        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = if (active) colors.title else colors.subtitle,
+                modifier = Modifier.size(14.dp),
+            )
+            Text(
+                text  = label,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    color      = if (active) colors.title else colors.subtitle,
+                    fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal,
+                    fontSize   = 11.sp,
+                ),
+            )
+        }
     }
 }
 
@@ -230,7 +284,9 @@ private fun QuizSection(colors: AppColors, navController: NavController) {
             (counts[BreathTag.SHALLOW] ?: 0) >= 3 -> "shallow"
             else                                   -> "stress"
         }
-        val result = QUIZ_RESULTS[resultKey]!!
+        // Safe fallback: resultKey is always one of the 3 keys above, but guard against
+        // map drift to avoid runtime crash.
+        val result = QUIZ_RESULTS[resultKey] ?: QUIZ_RESULTS.values.firstOrNull() ?: return
         QuizResult(
             result       = result,
             colors       = colors,
@@ -271,21 +327,18 @@ private fun QuizSection(colors: AppColors, navController: NavController) {
 
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                text  = "Question ${step + 1} of 5",
+                text  = stringResource(R.string.interactive_question_progress, step + 1),
                 style = MaterialTheme.typography.labelSmall.copy(
                     color         = colors.label,
                     fontSize      = 10.sp,
                     letterSpacing = 1.sp,
                 ),
             )
-            Text(
-                text  = q.text,
-                style = MaterialTheme.typography.titleSmall.copy(color = colors.title),
-            )
+            Text(text = stringResource(q.textRes), style = MaterialTheme.typography.titleSmall.copy(color = colors.title))
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            q.opts.forEach { (label, tag) ->
+            q.opts.forEach { (labelRes, tag) ->
                 val on = selected == tag
                 Box(
                     modifier = Modifier
@@ -302,7 +355,7 @@ private fun QuizSection(colors: AppColors, navController: NavController) {
                         .padding(horizontal = 16.dp, vertical = 14.dp),
                 ) {
                     Text(
-                        text  = label,
+                        text  = stringResource(labelRes),
                         style = MaterialTheme.typography.bodyMedium.copy(
                             color = if (on) colors.title else colors.subtitle,
                         ),
@@ -332,7 +385,7 @@ private fun QuizSection(colors: AppColors, navController: NavController) {
                 ),
             ) {
                 Text(
-                    text  = if (step < 4) "Next →" else "See my result →",
+                    text  = if (step < 4) stringResource(R.string.interactive_next) else stringResource(R.string.interactive_see_result),
                     style = MaterialTheme.typography.labelMedium,
                 )
             }
@@ -351,18 +404,23 @@ private fun QuizResult(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text(result.emoji, fontSize = 48.sp)
+        Icon(
+            imageVector = result.icon,
+            contentDescription = null,
+            tint = result.color,
+            modifier = Modifier.size(48.dp),
+        )
 
         Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
-                text  = result.title,
+                text  = stringResource(result.titleRes),
                 style = MaterialTheme.typography.titleMedium.copy(
                     color      = result.color,
                     fontWeight = FontWeight.SemiBold,
                 ),
             )
             Text(
-                text      = result.desc,
+                text      = stringResource(result.descRes),
                 style     = MaterialTheme.typography.bodySmall.copy(color = colors.subtitle),
                 textAlign = TextAlign.Center,
             )
@@ -379,17 +437,17 @@ private fun QuizResult(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
-                text  = "Your 7-day plan",
+                text  = stringResource(R.string.interactive_seven_day_plan),
                 style = MaterialTheme.typography.labelSmall.copy(
                     color         = colors.label,
                     letterSpacing = 1.sp,
                 ),
             )
-            result.plan.forEach { line ->
+            result.planRes.forEach { lineRes ->
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text("→", color = result.color, style = MaterialTheme.typography.bodySmall)
                     Text(
-                        text  = line,
+                        text  = stringResource(lineRes),
                         style = MaterialTheme.typography.bodySmall.copy(color = colors.subtitle),
                     )
                 }
@@ -407,14 +465,14 @@ private fun QuizResult(
             ),
         ) {
             Text(
-                text  = "Start ${result.technique} →",
+                text  = stringResource(R.string.interactive_start_technique, stringResource(result.techniqueRes)),
                 style = MaterialTheme.typography.labelLarge,
             )
         }
 
         TextButton(onClick = onReset) {
             Text(
-                text  = "Retake quiz",
+                text  = stringResource(R.string.interactive_retake_quiz),
                 style = MaterialTheme.typography.bodySmall.copy(color = colors.label),
             )
         }
@@ -440,10 +498,10 @@ private fun StressSection(colors: AppColors, navController: NavController) {
         else        -> Color(0xFFFF8A8A)
     }
     val scoreLabel = when {
-        score >= 76 -> "Low Stress"
-        score >= 51 -> "Balanced"
-        score >= 31 -> "Moderate Stress"
-        else        -> "High Stress"
+        score >= 76 -> stringResource(R.string.interactive_score_low_stress)
+        score >= 51 -> stringResource(R.string.journal_mood_balanced)
+        score >= 31 -> stringResource(R.string.interactive_score_moderate_stress)
+        else        -> stringResource(R.string.interactive_score_high_stress)
     }
 
     if (showResult) {
@@ -464,15 +522,15 @@ private fun StressSection(colors: AppColors, navController: NavController) {
 
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         Text(
-            text  = "Rate how you feel today",
+            text  = stringResource(R.string.interactive_rate_how_feel),
             style = MaterialTheme.typography.titleSmall.copy(color = colors.title),
         )
 
         listOf(
-            StressSliderData("Sleep Quality", sleep,   colors.primary,             false) { sleep   = it },
-            StressSliderData("Anxiety Level", anxiety, Color(0xFFFF8A8A),          true)  { anxiety = it },
-            StressSliderData("Focus",         focus,   colors.primary.copy(0.75f), false) { focus   = it },
-            StressSliderData("Energy",        energy,  Color(0xFFFFD97D),          false) { energy  = it },
+            StressSliderData(stringResource(R.string.interactive_sleep_quality), sleep,   colors.primary,             false) { sleep   = it },
+            StressSliderData(stringResource(R.string.interactive_anxiety_level), anxiety, Color(0xFFFF8A8A),          true)  { anxiety = it },
+            StressSliderData(stringResource(R.string.interactive_focus),         focus,   colors.primary.copy(0.75f), false) { focus   = it },
+            StressSliderData(stringResource(R.string.interactive_energy),        energy,  Color(0xFFFFD97D),          false) { energy  = it },
         ).forEach { data ->
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Row(
@@ -519,7 +577,7 @@ private fun StressSection(colors: AppColors, navController: NavController) {
             verticalAlignment     = Alignment.CenterVertically,
         ) {
             Text(
-                text  = "Your stress score:",
+                text  = stringResource(R.string.interactive_your_stress_score),
                 style = MaterialTheme.typography.bodySmall.copy(color = colors.subtitle),
             )
             Row(
@@ -550,7 +608,7 @@ private fun StressSection(colors: AppColors, navController: NavController) {
             ),
         ) {
             Text(
-                text  = "Calculate my plan →",
+                text  = stringResource(R.string.interactive_calculate_plan),
                 style = MaterialTheme.typography.labelLarge,
             )
         }
@@ -579,14 +637,14 @@ private fun StressResult(
     onBack:     () -> Unit,
 ) {
     val breakdown = buildList {
-        if (sleep   <= 4f) add("Sleep is your biggest lever right now")
-        if (anxiety >= 7f) add("Anxiety is spiking your baseline stress")
-        if (focus   <= 4f) add("Low focus suggests mental fatigue — try box breathing before work")
-        if (energy  <= 4f) add("Morning routine would help energy levels")
+        if (sleep   <= 4f) add(stringResource(R.string.interactive_breakdown_sleep_lever))
+        if (anxiety >= 7f) add(stringResource(R.string.interactive_breakdown_anxiety_spiking))
+        if (focus   <= 4f) add(stringResource(R.string.interactive_breakdown_focus_fatigue))
+        if (energy  <= 4f) add(stringResource(R.string.interactive_breakdown_energy_help))
         if (isEmpty()) {
-            add("Maintain your current healthy balance")
-            add("Add Coherent Breathing to go deeper")
-            add("Evening wind-down session recommended")
+            add(stringResource(R.string.interactive_breakdown_healthy_balance))
+            add(stringResource(R.string.interactive_breakdown_coherent_deeper))
+            add(stringResource(R.string.interactive_breakdown_evening_wind_down))
         }
     }.take(3)
 
@@ -642,7 +700,7 @@ private fun StressResult(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
-                text  = "What's driving your score",
+                text  = stringResource(R.string.interactive_whats_driving),
                 style = MaterialTheme.typography.labelSmall.copy(
                     color         = colors.label,
                     letterSpacing = 1.sp,
@@ -669,14 +727,14 @@ private fun StressResult(
             ),
         ) {
             Text(
-                text  = "Start your plan →",
+                text  = stringResource(R.string.interactive_start_your_plan),
                 style = MaterialTheme.typography.labelLarge,
             )
         }
 
         TextButton(onClick = onBack) {
             Text(
-                text  = "Adjust scores",
+                text  = stringResource(R.string.interactive_adjust_scores),
                 style = MaterialTheme.typography.bodySmall.copy(color = colors.label),
             )
         }

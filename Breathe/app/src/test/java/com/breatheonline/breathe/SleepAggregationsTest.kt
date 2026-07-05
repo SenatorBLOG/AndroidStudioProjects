@@ -63,8 +63,9 @@ class SleepAggregationsTest {
             stages = emptyList(),
             stageTotals = com.breatheonline.breathe.viewmodel.StageTotals(50, 180, 50, 50),
             score = 45, qualityLabel = "Fair", avgSleepingHrBpm = null, deltaVsAvg7dMin = null,
+            nightMetrics = emptyList(),
         )
         val msg = com.breatheonline.breathe.utils.buildLocalInsight(view, com.breatheonline.breathe.utils.Regularity.REGULAR)
-        assertEquals(true, msg.contains("6 час"))
+        assertEquals(true, msg.contains("6 hour") || msg.contains("6 час"))
     }
 }

@@ -1,5 +1,6 @@
 package com.breatheonline.breathe.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.breatheonline.breathe.data.api.ApiService
@@ -80,7 +81,11 @@ class AiCoachViewModel @Inject constructor(
             .onSuccess { resp ->
                 when {
                     resp.isSuccessful -> {
-                        val body = resp.body()!!
+                        val body = resp.body()
+                        if (body == null) {
+                            appendError("Empty response from server. Please try again.")
+                            return@onSuccess
+                        }
                         _state.update { s ->
                             s.copy(
                                 messages = s.messages + ChatMessage(
@@ -101,7 +106,10 @@ class AiCoachViewModel @Inject constructor(
                     else -> appendError("Server error ${resp.code()}. Please try again.")
                 }
             }
-            .onFailure { appendError("Network error. Check your connection and try again.") }
+            .onFailure { e ->
+                Log.e("AiCoachViewModel", "sendCoachMessage failed", e)
+                appendError("Network error. Check your connection and try again.")
+            }
         }
     }
 

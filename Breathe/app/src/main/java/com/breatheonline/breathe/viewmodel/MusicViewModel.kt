@@ -125,13 +125,20 @@ class MusicViewModel @Inject constructor(
                     startPositionTracking()
                 }
                 setOnCompletionListener { nextTrack() }
-                setOnErrorListener { _, _, _ ->
-                    _state.update { it.copy(isPreparing = false, isPlaying = false) }
+                setOnErrorListener { _, what, extra ->
+                    _state.update { it.copy(
+                        isPreparing = false,
+                        isPlaying   = false,
+                        error       = "Playback error ($what/$extra). The track may be unavailable.",
+                    )}
                     true
                 }
                 prepareAsync()
-            } catch (_: Exception) {
-                _state.update { it.copy(isPreparing = false) }
+            } catch (e: Exception) {
+                _state.update { it.copy(
+                    isPreparing = false,
+                    error       = e.message ?: "Could not load track",
+                )}
             }
         }
     }
@@ -181,6 +188,8 @@ class MusicViewModel @Inject constructor(
         applyVolume()
     }
 
+    fun clearError() { _state.update { it.copy(error = null) } }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private fun displayTracks() =
@@ -200,13 +209,12 @@ class MusicViewModel @Inject constructor(
         positionJob?.cancel()
         positionJob = viewModelScope.launch {
             while (true) {
-                delay(500)
+                delay(1_000)
                 val mp = mediaPlayer ?: break
                 try {
-                    if (mp.isPlaying) {
-                        val pos = mp.currentPosition
-                        if (pos >= 0) _state.update { it.copy(currentPositionMs = pos) }
-                    }
+                    if (!mp.isPlaying) break  // self-terminate when paused/stopped
+                    val pos = mp.currentPosition
+                    if (pos >= 0) _state.update { it.copy(currentPositionMs = pos) }
                 } catch (_: Exception) { break }
             }
         }

@@ -3,6 +3,13 @@
 
     <!-- Минимальная тема без ActionBar, совместимая с Compose -->
     <style name="Theme.Breathe" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-            </style>
+        <!-- Prevent white flash before Compose renders -->
+        <item name="android:windowBackground">@color/launch_background</item>
+        <!-- Edge-to-edge: transparent system bars let Compose manage them -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowTranslucentNavigation">false</item>
+    </style>
 
 </resources>

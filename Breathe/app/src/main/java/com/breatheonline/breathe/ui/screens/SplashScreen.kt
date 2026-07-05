@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -18,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
@@ -27,6 +29,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
+import androidx.compose.ui.res.stringResource
+import com.breatheonline.breathe.R
 import com.breatheonline.breathe.ui.theme.AppColors
 import com.breatheonline.breathe.utils.TokenManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -59,26 +63,25 @@ fun SplashScreen(
     colors: AppColors,
     viewModel: SplashViewModel = hiltViewModel(),
 ) {
-    val scale = remember { Animatable(0.60f) }
+    val scale = remember { Animatable(0.25f) }
     val alpha = remember { Animatable(0f) }
 
     LaunchedEffect(Unit) {
         // Fade-in and spring-scale run in parallel, then navigate
         launch {
             alpha.animateTo(
-                targetValue    = 1f,
-                animationSpec  = tween(durationMillis = 850),
+                targetValue   = 1f,
+                animationSpec = tween(durationMillis = 600),
             )
         }
         scale.animateTo(
             targetValue   = 1f,
             animationSpec = spring(
                 dampingRatio = Spring.DampingRatioMediumBouncy,
-                stiffness    = Spring.StiffnessLow,
+                stiffness    = Spring.StiffnessMediumLow,
             ),
         )
-        // Brief hold so the animation settles before navigating
-        delay(500)
+        delay(200)
 
         val destination = if (viewModel.isLoggedIn()) Route.HOME else Route.LOGIN
         navController.navigate(destination) {
@@ -128,12 +131,12 @@ fun SplashScreen(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text  = "Breathe",
+                    text  = stringResource(R.string.app_name),
                     style = MaterialTheme.typography.headlineLarge,
                     color = colors.title,
                 )
                 Text(
-                    text     = "breathe · relax · sleep",
+                    text     = stringResource(R.string.splash_tagline),
                     style    = MaterialTheme.typography.titleMedium,
                     color    = colors.subtitle,
                     modifier = Modifier.padding(top = 6.dp),

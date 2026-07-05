@@ -1,9 +1,15 @@
 package com.breatheonline.breathe.ui.screens
 
 import androidx.activity.compose.BackHandler
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.background
@@ -13,6 +19,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -23,13 +30,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -53,6 +61,9 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -69,6 +80,12 @@ import com.breatheonline.breathe.viewmodel.BreatheState
 import com.breatheonline.breathe.viewmodel.BreatheViewModel
 import com.breatheonline.breathe.viewmodel.GuidanceMode
 import com.breatheonline.breathe.viewmodel.VoiceGender
+import com.composables.icons.lucide.Bed
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Sparkles
+import com.composables.icons.lucide.Square
+import com.composables.icons.lucide.Waves
+import com.composables.icons.lucide.Zap
 
 // ── Entry point ───────────────────────────────────────────────────────────────
 
@@ -77,13 +94,13 @@ fun BreatheScreen(
     navController:  NavController,
     colors: AppColors,
     exerciseType:   String,
-    @Suppress("UNUSED_PARAMETER") onThemeChange: (String) -> Unit,
     viewModel: BreatheViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
     var showExitDialog by remember { mutableStateOf(false) }
 
     val isRunning = state.phase != BreathPhase.IDLE && state.phase != BreathPhase.DONE
+    val immersiveMode = isRunning && !state.isCompleted
 
     BackHandler(enabled = isRunning && !state.isCompleted) { showExitDialog = true }
     BackHandler(enabled = state.showFeedbackModal) { viewModel.skipFeedback() }
@@ -102,14 +119,15 @@ fun BreatheScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize().background(colors.background)) {
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .systemBarsPadding()
-                .verticalScroll(rememberScrollState()),
+                .systemBarsPadding(),
+            contentPadding = PaddingValues(bottom = 40.dp),
         ) {
             // ── Top bar ───────────────────────────────────────────────────────
-            Row(
+            item(key = "top_bar") {
+                Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -122,7 +140,7 @@ fun BreatheScreen(
                         else              -> navController.navigateUp()
                     }
                 }) {
-                    Icon(Icons.Filled.ArrowBack, contentDescription = null, tint = colors.title)
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_back), tint = colors.title)
                 }
                 Text(
                     text     = state.exerciseName,
@@ -130,63 +148,99 @@ fun BreatheScreen(
                     color    = colors.title,
                     modifier = Modifier.weight(1f).padding(start = 4.dp),
                 )
+                }
             }
 
             // ── Quiet header above circle (label + live time/cycles) ──────────
-            SessionHeaderAbove(state = state, colors = colors)
+            item(key = "session_header") {
+                SessionHeaderAbove(
+                    state = state,
+                    colors = colors,
+                    compact = immersiveMode,
+                )
+            }
 
-            Spacer(Modifier.height(20.dp))
+            item(key = "spacer_1") { Spacer(Modifier.height(if (immersiveMode) 10.dp else 20.dp)) }
 
             // ── Breathing circle ─────────────────────────────────────────────
-            BreathingCircle(state = state, scale = circleScale.value, colors = colors)
+            item(key = "breathing_circle") {
+                BreathingCircle(
+                    state = state,
+                    scale = circleScale.value,
+                    colors = colors,
+                    expanded = immersiveMode,
+                )
+            }
 
-            Spacer(Modifier.height(24.dp))
+            item(key = "spacer_2") { Spacer(Modifier.height(if (immersiveMode) 12.dp else 24.dp)) }
 
             // ── Controls (start/pause/guidance) ──────────────────────────────
-            SessionControls(
-                state     = state,
-                colors    = colors,
-                onStart   = { viewModel.startSession() },
-                onToggle  = { viewModel.togglePause() },
-                onEnd     = { viewModel.endSession() },
-                onGuidance= { m, g -> viewModel.setGuidance(m, g) },
-            )
+            item(key = "session_controls") {
+                SessionControls(
+                    state     = state,
+                    colors    = colors,
+                    onStart   = { viewModel.startSession() },
+                    onToggle  = { viewModel.togglePause() },
+                    onEnd     = { viewModel.endSession() },
+                    onGuidance= { m, g -> viewModel.setGuidance(m, g) },
+                )
+            }
 
-            Spacer(Modifier.height(16.dp))
+            item(key = "spacer_3") { Spacer(Modifier.height(if (immersiveMode) 10.dp else 16.dp)) }
 
             // ── All-time stats row (Streak / Total / Sessions) ────────────────
-            SessionStatsRow(state = state, colors = colors)
+            item(key = "stats_row") {
+                SessionStatsRow(state = state, colors = colors)
+            }
 
-            Spacer(Modifier.height(24.dp))
+            if (!immersiveMode) {
+                item(key = "spacer_4") { Spacer(Modifier.height(24.dp)) }
 
-            // ── Pattern editor ────────────────────────────────────────────────
-            PatternEditor(
-                state    = state,
-                colors   = colors,
-                onChange = { i, h1, e, h2 -> viewModel.updatePattern(i, h1, e, h2) },
-            )
+                // ── Pattern editor ────────────────────────────────────────────
+                item(key = "pattern_editor") {
+                    PatternEditor(
+                        state    = state,
+                        colors   = colors,
+                        onChange = { i, h1, e, h2 -> viewModel.updatePattern(i, h1, e, h2) },
+                    )
+                }
 
-            Spacer(Modifier.height(12.dp))
+                item(key = "spacer_5") { Spacer(Modifier.height(12.dp)) }
 
-            // ── Presets ───────────────────────────────────────────────────────
-            PresetsRow(
-                selected = state.selectedPreset,
-                enabled  = state.phase == BreathPhase.IDLE,
-                colors   = colors,
-                onSelect = { viewModel.applyPreset(it) },
-            )
+                // ── Presets ───────────────────────────────────────────────────
+                item(key = "presets_row") {
+                    PresetsRow(
+                        selected = state.selectedPreset,
+                        enabled  = state.phase == BreathPhase.IDLE,
+                        colors   = colors,
+                        onSelect = { viewModel.applyPreset(it) },
+                    )
+                }
 
-            Spacer(Modifier.height(28.dp))
+                item(key = "spacer_6") { Spacer(Modifier.height(28.dp)) }
 
-            // ── Technique guide cards ─────────────────────────────────────────
-            TechniqueGuideSection(
-                colors        = colors,
-                navController = navController,
-                onApply       = { viewModel.applyPreset(it) },
-                isIdle        = state.phase == BreathPhase.IDLE,
-            )
-
-            Spacer(Modifier.height(40.dp))
+                // ── Technique guide cards ─────────────────────────────────────
+                item(key = "technique_guides") {
+                    TechniqueGuideSection(
+                        colors        = colors,
+                        navController = navController,
+                        onApply       = { viewModel.applyPreset(it) },
+                        isIdle        = state.phase == BreathPhase.IDLE,
+                    )
+                }
+            } else {
+                item(key = "immersive_hint") {
+                    Text(
+                        text = stringResource(R.string.breathe_pattern_guides_message),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.subtitle.copy(alpha = 0.72f),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 28.dp, vertical = 10.dp),
+                    )
+                }
+            }
         }
 
         // ── Exit dialog ───────────────────────────────────────────────────────
@@ -194,10 +248,10 @@ fun BreatheScreen(
             AlertDialog(
                 onDismissRequest = { showExitDialog = false },
                 containerColor   = colors.surface,
-                title   = { Text("End session?", color = colors.title, style = MaterialTheme.typography.titleLarge) },
+                title   = { Text(stringResource(R.string.exit_dialog_title), color = colors.title, style = MaterialTheme.typography.titleLarge) },
                 text    = {
                     Text(
-                        text  = if (state.elapsedSeconds >= 30) "You've been breathing for ${fmtElapsed(state.elapsedSeconds)}. Save your progress?" else "Discard this session?",
+                        text  = if (state.elapsedSeconds >= 30) stringResource(R.string.exit_dialog_body_with_progress, fmtElapsed(state.elapsedSeconds)) else stringResource(R.string.exit_dialog_body_no_progress),
                         color = colors.subtitle,
                     )
                 },
@@ -205,10 +259,10 @@ fun BreatheScreen(
                     TextButton(onClick = {
                         showExitDialog = false
                         if (state.elapsedSeconds > 0) viewModel.endSession() else navController.navigateUp()
-                    }) { Text("End", color = colors.primary) }
+                    }) { Text(stringResource(R.string.exit_dialog_confirm), color = colors.primary) }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showExitDialog = false }) { Text("Continue", color = colors.subtitle) }
+                    TextButton(onClick = { showExitDialog = false }) { Text(stringResource(R.string.exit_dialog_dismiss), color = colors.subtitle) }
                 },
             )
         }
@@ -231,20 +285,20 @@ fun BreatheScreen(
 // ── Session header above circle ───────────────────────────────────────────────
 
 @Composable
-private fun SessionHeaderAbove(state: BreatheState, colors: AppColors) {
+private fun SessionHeaderAbove(state: BreatheState, colors: AppColors, compact: Boolean = false) {
     Column(
         modifier            = Modifier.fillMaxWidth().padding(horizontal = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(if (compact) 4.dp else 8.dp),
     ) {
         val label = when {
-            state.phase == BreathPhase.IDLE -> "Ready to breathe"
-            state.isPaused                  -> "Session paused"
+            state.phase == BreathPhase.IDLE -> stringResource(R.string.breathe_ready_state)
+            state.isPaused                  -> stringResource(R.string.breathe_paused_state)
             else                            -> state.exerciseName
         }
         Text(
             text      = label,
-            style     = MaterialTheme.typography.bodySmall,
+            style     = if (compact) MaterialTheme.typography.labelMedium else MaterialTheme.typography.bodySmall,
             color     = colors.subtitle.copy(alpha = 0.70f),
             textAlign = TextAlign.Center,
         )
@@ -254,9 +308,9 @@ private fun SessionHeaderAbove(state: BreatheState, colors: AppColors) {
                 verticalAlignment     = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                MiniLiveStat(fmtElapsed(state.elapsedSeconds), "time",   colors)
+                MiniLiveStat(fmtElapsed(state.elapsedSeconds), stringResource(R.string.breathe_time_label),   colors)
                 Box(Modifier.size(3.dp).background(colors.subtitle.copy(alpha = 0.20f), CircleShape))
-                MiniLiveStat("${state.cyclesCompleted}",        "cycles", colors)
+                MiniLiveStat("${state.cyclesCompleted}",        stringResource(R.string.breathe_cycles_label), colors)
             }
         }
     }
@@ -286,94 +340,178 @@ private fun MiniLiveStat(value: String, label: String, colors: AppColors) {
 
 // ── Breathing Circle ──────────────────────────────────────────────────────────
 
+private val OrbTeal   = Color(0xFF2DD4BF)
+private val OrbIndigo = Color(0xFF818CF8)
+private val OrbGlow   = Color(0xFF5EECD4)
+
 @Composable
-private fun BreathingCircle(state: BreatheState, scale: Float, colors: AppColors) {
+private fun BreathingCircle(
+    state: BreatheState,
+    scale: Float,
+    colors: AppColors,
+    expanded: Boolean = false,
+) {
     val phaseText = when (state.phase) {
-        BreathPhase.INHALE             -> "Inhale"
-        BreathPhase.HOLD1, BreathPhase.HOLD2 -> "Hold"
-        BreathPhase.EXHALE             -> "Exhale"
+        BreathPhase.INHALE             -> stringResource(R.string.breathe_inhale)
+        BreathPhase.HOLD1, BreathPhase.HOLD2 -> stringResource(R.string.breathe_hold)
+        BreathPhase.EXHALE             -> stringResource(R.string.breathe_exhale)
         else                           -> ""
     }
+    val circleSize    = if (expanded) 300.dp else 240.dp
+    val containerHeight = if (expanded) 420.dp else 320.dp
+    val isActive = state.phase != BreathPhase.IDLE && state.phase != BreathPhase.DONE
+
+    // Idle glow pulse — slower when active (breathing cycle drives the visual energy)
+    val infiniteTransition = rememberInfiniteTransition(label = "orb_glow")
+    val glowAlpha by infiniteTransition.animateFloat(
+        initialValue  = if (isActive) 0.35f else 0.20f,
+        targetValue   = if (isActive) 0.55f else 0.38f,
+        animationSpec = infiniteRepeatable(
+            animation  = tween(if (isActive) 1400 else 2800, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "glow_alpha",
+    )
 
     Box(
-        modifier         = Modifier.fillMaxWidth().height(280.dp),
+        modifier         = Modifier.fillMaxWidth().height(containerHeight),
         contentAlignment = Alignment.Center,
     ) {
+        // Outer glow aura drawn behind the scaled circle
         Box(
             modifier = Modifier
-                .size(220.dp)
+                .size(circleSize)
                 .scale(scale)
                 .drawBehind {
-                    val r = size.width / 2 + 72.dp.toPx()
+                    val cx = size.width / 2
+                    val cy = size.height / 2
+                    val baseR = size.width / 2
                     drawCircle(
-                        brush  = Brush.radialGradient(
-                            0f to colors.glowOuter,
-                            1f to Color.Transparent,
-                            center = Offset(size.width / 2, size.height / 2),
-                            radius = r,
+                        brush = Brush.radialGradient(
+                            0f   to OrbGlow.copy(alpha = glowAlpha),
+                            0.45f to OrbGlow.copy(alpha = glowAlpha * 0.40f),
+                            1f   to Color.Transparent,
+                            center = Offset(cx, cy),
+                            radius = baseR + 90.dp.toPx(),
                         ),
-                        radius = r,
+                        radius = baseR + 90.dp.toPx(),
                     )
+                    if (isActive) {
+                        drawCircle(
+                            brush = Brush.radialGradient(
+                                0f   to OrbGlow.copy(alpha = glowAlpha * 0.55f),
+                                0.6f to OrbGlow.copy(alpha = glowAlpha * 0.15f),
+                                1f   to Color.Transparent,
+                                center = Offset(cx, cy),
+                                radius = baseR + 48.dp.toPx(),
+                            ),
+                            radius = baseR + 48.dp.toPx(),
+                        )
+                    }
                 },
             contentAlignment = Alignment.Center,
         ) {
             Box(
                 modifier = Modifier
-                    .size(220.dp)
-                    .background(colors.background, CircleShape)
-                    .border(
-                        width = 1.5.dp,
-                        color = colors.primary.copy(alpha = if (state.phase == BreathPhase.IDLE) 0.20f else 0.45f),
-                        shape = CircleShape,
-                    ),
+                    .size(circleSize)
+                    .drawBehind {
+                        val cx = size.width / 2
+                        val cy = size.height / 2
+                        val r  = size.width / 2
+
+                        // Orb body: teal → indigo diagonal gradient
+                        drawCircle(
+                            brush = Brush.linearGradient(
+                                0f to OrbTeal,
+                                1f to OrbIndigo,
+                                start = Offset(0f, 0f),
+                                end   = Offset(size.width, size.height),
+                            ),
+                            radius = r,
+                            center = Offset(cx, cy),
+                        )
+
+                        // Glassmorphism highlight: bright spot top-left
+                        drawCircle(
+                            brush = Brush.radialGradient(
+                                0f    to Color.White.copy(alpha = 0.55f),
+                                0.42f to Color.White.copy(alpha = 0.18f),
+                                1f    to Color.Transparent,
+                                center = Offset(cx * 0.50f, cy * 0.40f),
+                                radius = r * 0.68f,
+                            ),
+                            radius = r,
+                            center = Offset(cx, cy),
+                        )
+
+                        // Edge vignette for 3D depth
+                        drawCircle(
+                            brush = Brush.radialGradient(
+                                0f    to Color.Transparent,
+                                0.70f to Color.Transparent,
+                                1f    to Color(0xFF0D2B35).copy(alpha = 0.32f),
+                                center = Offset(cx, cy),
+                                radius = r,
+                            ),
+                            radius = r,
+                            center = Offset(cx, cy),
+                        )
+
+                        // Rim stroke
+                        drawCircle(
+                            color  = OrbTeal.copy(alpha = if (isActive) 0.65f else 0.35f),
+                            radius = r,
+                            center = Offset(cx, cy),
+                            style  = Stroke(width = 1.5.dp.toPx()),
+                        )
+                    },
                 contentAlignment = Alignment.Center,
             ) {
-                Box(
-                    modifier = Modifier
-                        .matchParentSize()
-                        .background(colors.glowBackground, CircleShape)
-                        .drawBehind {
-                            drawCircle(
-                                brush = Brush.radialGradient(
-                                    colorStops = arrayOf(
-                                        0f    to colors.glowInner.copy(alpha = 0.04f),
-                                        0.99f to colors.glowInner.copy(alpha = 0.55f),
-                                        1f    to colors.glowInner.copy(alpha = 0.80f),
-                                    ),
-                                    center = Offset(size.width / 2, size.height / 2),
-                                    radius = size.width / 2,
-                                ),
-                                radius = size.width / 2,
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    when {
+                        state.isPaused -> {
+                            Icon(
+                                imageVector        = Icons.Filled.Pause,
+                                contentDescription = null,
+                                tint               = Color.White.copy(alpha = 0.90f),
+                                modifier           = Modifier.size(32.dp),
                             )
-                        },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        when {
-                            state.isPaused -> {
-                                Text("⏸", fontSize = 28.sp)
-                                Text("Paused", style = MaterialTheme.typography.bodyMedium, color = colors.subtitle)
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                stringResource(R.string.breathe_paused_state),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White.copy(alpha = 0.85f),
+                            )
+                        }
+                        state.phase == BreathPhase.IDLE -> {
+                            Icon(
+                                imageVector        = Lucide.Sparkles,
+                                contentDescription = null,
+                                tint               = Color.White.copy(alpha = 0.70f),
+                                modifier           = Modifier.size(26.dp),
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                stringResource(R.string.breathe_ready_state),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = Color.White.copy(alpha = 0.85f),
+                            )
+                        }
+                        else -> {
+                            if (state.phaseSecondsLeft > 0) {
+                                Text(
+                                    text       = "${state.phaseSecondsLeft}",
+                                    style      = MaterialTheme.typography.displaySmall,
+                                    color      = Color.White,
+                                    fontWeight = FontWeight.Bold,
+                                )
                             }
-                            state.phase == BreathPhase.IDLE -> {
-                                Text("✦", fontSize = 26.sp, color = colors.primary.copy(alpha = 0.55f))
-                                Spacer(Modifier.height(4.dp))
-                                Text("Ready", style = MaterialTheme.typography.bodyMedium, color = colors.subtitle)
-                            }
-                            else -> {
-                                if (state.phaseSecondsLeft > 0) {
-                                    Text(
-                                        text  = "${state.phaseSecondsLeft}",
-                                        style = MaterialTheme.typography.displaySmall,
-                                        color = colors.title,
-                                    )
-                                }
-                                if (phaseText.isNotEmpty()) {
-                                    Text(
-                                        text  = phaseText,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = colors.title,
-                                    )
-                                }
+                            if (phaseText.isNotEmpty()) {
+                                Text(
+                                    text  = phaseText,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = Color.White.copy(alpha = 0.90f),
+                                )
                             }
                         }
                     }
@@ -387,7 +525,7 @@ private fun BreathingCircle(state: BreatheState, scale: Float, colors: AppColors
                 horizontalArrangement = Arrangement.spacedBy(7.dp),
             ) {
                 repeat(state.cyclesCompleted.coerceAtMost(8)) {
-                    Box(Modifier.size(6.dp).background(colors.primary.copy(alpha = 0.65f), CircleShape))
+                    Box(Modifier.size(6.dp).background(OrbTeal.copy(alpha = 0.75f), CircleShape))
                 }
             }
         }
@@ -401,30 +539,40 @@ private fun SessionStatsRow(state: BreatheState, colors: AppColors) {
     Row(
         modifier              = Modifier
             .fillMaxWidth()
-            .horizontalScroll(rememberScrollState())
             .padding(horizontal = 20.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        StatPill("${state.streakDays}d",   "Streak",   colors)
-        StatPill("${state.totalMinutes}m", "Total",    colors)
-        StatPill("${state.totalSessions}", "Sessions", colors)
+        StatPill("${state.streakDays}d",   stringResource(R.string.stat_label_streak),    colors, Modifier.weight(1f))
+        StatPill("${state.totalMinutes}m", stringResource(R.string.sessions_total_label), colors, Modifier.weight(1f))
+        StatPill("${state.totalSessions}", stringResource(R.string.stat_sessions),        colors, Modifier.weight(1f))
         if (state.heartRate != null) {
-            StatPill("${state.heartRate} bpm", "Heart rate", colors)
+            StatPill("${state.heartRate}", stringResource(R.string.breathe_heart_rate_label), colors, Modifier.weight(1f))
         }
     }
 }
 
 @Composable
-private fun StatPill(value: String, label: String, colors: AppColors) {
+private fun StatPill(value: String, label: String, colors: AppColors, modifier: Modifier = Modifier) {
     Column(
-        modifier = Modifier
-            .background(colors.surface.copy(alpha = 0.70f), RoundedCornerShape(14.dp))
-            .border(1.dp, colors.subtitle.copy(alpha = 0.06f), RoundedCornerShape(14.dp))
-            .padding(horizontal = 14.dp, vertical = 9.dp),
+        modifier = modifier
+            .background(colors.surface.copy(alpha = 0.75f), RoundedCornerShape(16.dp))
+            .border(1.dp, colors.subtitle.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
+            .padding(horizontal = 10.dp, vertical = 13.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(value, style = MaterialTheme.typography.labelLarge, color = colors.primary.copy(alpha = 0.85f), fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
-        Text(label, style = MaterialTheme.typography.labelSmall, color = colors.subtitle.copy(alpha = 0.60f), fontSize = 9.sp)
+        Text(
+            text       = value,
+            style      = MaterialTheme.typography.titleSmall,
+            color      = colors.primary,
+            fontWeight = FontWeight.Bold,
+        )
+        Text(
+            text      = label,
+            style     = MaterialTheme.typography.labelSmall,
+            color     = colors.subtitle.copy(alpha = 0.70f),
+            fontSize  = 10.sp,
+            textAlign = TextAlign.Center,
+        )
     }
 }
 
@@ -456,7 +604,7 @@ private fun SessionControls(
                     contentColor   = colors.onPrimary,
                 ),
             ) {
-                Text("▶  Start Breathing", style = MaterialTheme.typography.labelLarge)
+                Text(stringResource(R.string.breathe_start_button), style = MaterialTheme.typography.labelLarge)
             }
         } else if (isRunning) {
             Row(
@@ -473,7 +621,7 @@ private fun SessionControls(
                     ),
                 ) {
                     Text(
-                        text  = if (state.isPaused) "▶  Resume" else "⏸  Pause",
+                        text  = if (state.isPaused) stringResource(R.string.breathe_resume_button) else stringResource(R.string.breathe_pause_button),
                         style = MaterialTheme.typography.labelLarge,
                         color = colors.primary,
                     )
@@ -483,11 +631,11 @@ private fun SessionControls(
                     modifier = Modifier.weight(1f).height(50.dp),
                     shape    = RoundedCornerShape(16.dp),
                     colors   = ButtonDefaults.buttonColors(
-                        containerColor = colors.surface,
-                        contentColor   = colors.subtitle,
+                        containerColor = Color(0xFFFF6B6B).copy(alpha = 0.13f),
+                        contentColor   = Color(0xFFFF8A8A),
                     ),
                 ) {
-                    Text("■  End", style = MaterialTheme.typography.labelLarge, color = colors.subtitle)
+                    Text(stringResource(R.string.breathe_end_button), style = MaterialTheme.typography.labelLarge, color = Color(0xFFFF8A8A))
                 }
             }
         }
@@ -512,9 +660,9 @@ private fun InlineGuidanceRow(
     onChange:    (GuidanceMode, VoiceGender) -> Unit,
 ) {
     val modes = listOf(
-        Triple(GuidanceMode.SILENT,    "Silent",  "○"),
-        Triple(GuidanceMode.VIBRATION, "Vibrate", "≋"),
-        Triple(GuidanceMode.VOICE,     "Voice",   "◉"),
+        Triple(GuidanceMode.SILENT,    R.string.guidance_silent,  "○"),
+        Triple(GuidanceMode.VIBRATION, R.string.guidance_vibration, "≋"),
+        Triple(GuidanceMode.VOICE,     R.string.guidance_ai_voice,   "◉"),
     )
     Row(
         modifier = Modifier
@@ -523,7 +671,7 @@ private fun InlineGuidanceRow(
             .border(1.dp, colors.subtitle.copy(alpha = 0.08f), RoundedCornerShape(16.dp))
             .padding(4.dp),
     ) {
-        modes.forEach { (gMode, label, icon) ->
+        modes.forEach { (gMode, labelRes, icon) ->
             val active = mode == gMode
             Box(
                 modifier = Modifier
@@ -545,7 +693,7 @@ private fun InlineGuidanceRow(
                         fontWeight = if (active) FontWeight.Bold else FontWeight.Normal,
                     )
                     Text(
-                        text     = label,
+                        text     = stringResource(labelRes),
                         style    = MaterialTheme.typography.labelSmall,
                         color    = if (active) colors.primary else colors.subtitle.copy(alpha = 0.60f),
                         fontSize = 10.sp,
@@ -580,7 +728,7 @@ private fun PatternEditor(
             verticalAlignment     = Alignment.CenterVertically,
         ) {
             Text(
-                text          = "BREATHING PATTERN",
+                text          = stringResource(R.string.breathe_pattern_title),
                 style         = MaterialTheme.typography.labelSmall,
                 color         = colors.primary,
                 letterSpacing = 1.sp,
@@ -588,7 +736,7 @@ private fun PatternEditor(
             )
             if (!editable) {
                 Text(
-                    text  = "Active",
+                    text  = stringResource(R.string.breathe_active),
                     style = MaterialTheme.typography.labelSmall,
                     color = colors.primary.copy(alpha = 0.65f),
                 )
@@ -596,7 +744,7 @@ private fun PatternEditor(
         }
 
         PhaseBar(
-            label      = "Inhale",
+            label      = stringResource(R.string.breathe_inhale),
             value      = state.inhaleS,
             active     = state.phase == BreathPhase.INHALE,
             editable   = editable,
@@ -606,7 +754,7 @@ private fun PatternEditor(
             onIncrement = { onChange(state.inhaleS + 1, state.hold1S, state.exhaleS, state.hold2S) },
         )
         PhaseBar(
-            label      = "Hold",
+            label      = stringResource(R.string.breathe_hold),
             value      = state.hold1S,
             active     = state.phase == BreathPhase.HOLD1,
             editable   = editable,
@@ -616,7 +764,7 @@ private fun PatternEditor(
             onIncrement = { onChange(state.inhaleS, state.hold1S + 1, state.exhaleS, state.hold2S) },
         )
         PhaseBar(
-            label      = "Exhale",
+            label      = stringResource(R.string.breathe_exhale),
             value      = state.exhaleS,
             active     = state.phase == BreathPhase.EXHALE,
             editable   = editable,
@@ -626,7 +774,7 @@ private fun PatternEditor(
             onIncrement = { onChange(state.inhaleS, state.hold1S, state.exhaleS + 1, state.hold2S) },
         )
         PhaseBar(
-            label      = "Pause",
+            label      = stringResource(R.string.breathe_pause),
             value      = state.hold2S,
             active     = state.phase == BreathPhase.HOLD2,
             editable   = editable,
@@ -737,7 +885,7 @@ private fun PresetsRow(
 ) {
     Column(modifier = Modifier.padding(horizontal = 20.dp)) {
         Text(
-            text          = "PRESETS",
+            text          = stringResource(R.string.breathe_section_presets),
             style         = MaterialTheme.typography.labelSmall,
             color         = colors.subtitle,
             letterSpacing = 1.sp,
@@ -764,7 +912,7 @@ private fun PresetsRow(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text       = preset.label,
+                            text       = stringResource(preset.labelRes),
                             style      = MaterialTheme.typography.labelMedium,
                             color      = if (isSelected) colors.primary else colors.subtitle,
                             fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
@@ -785,19 +933,19 @@ private fun PresetsRow(
 // ── Technique Guide Cards ─────────────────────────────────────────────────────
 
 private data class TechniqueCard(
-    val icon:       String,
-    val title:      String,
-    val tag:        String,
-    val desc:       String,
+    val icon:       ImageVector,
+    @StringRes val titleRes: Int,
+    @StringRes val tagRes:   Int,
+    @StringRes val descRes:  Int,
     val presetKey:  String,
     val articleUrl: String,
 )
 
 private val TECHNIQUE_CARDS = listOf(
-    TechniqueCard("🔲", "Box Breathing",       "Calm · Focus",   "Equal 4-count phases used by Navy SEALs to reset the nervous system under stress.",      "box",      "https://breatheonline.app/articles/box-breathing"),
-    TechniqueCard("😴", "4-7-8 for Sleep",     "Sleep · Relax",  "Long exhale activates the parasympathetic system, easing you into deep sleep.",          "4-7-8",    "https://breatheonline.app/articles/4-7-8-breathing"),
-    TechniqueCard("⚡", "Wim Hof Energize",    "Energy · Focus", "Short rapid cycles followed by retention boost alertness and oxygen efficiency.",         "wimhof",   "https://breatheonline.app/articles/wim-hof"),
-    TechniqueCard("🌊", "Coherent Breathing",  "Balance · HRV",  "5-second in/out cycle synchronises heart rate variability for lasting calm.",             "coherent", "https://breatheonline.app/articles/coherent-breathing"),
+    TechniqueCard(Lucide.Square, R.string.technique_box_breathing_title, R.string.technique_box_breathing_tag, R.string.technique_box_breathing_desc, "box", "https://breatheonline.app/articles/box-breathing"),
+    TechniqueCard(Lucide.Bed, R.string.technique_478_sleep_title, R.string.technique_478_sleep_tag, R.string.technique_478_sleep_desc, "4-7-8", "https://breatheonline.app/articles/4-7-8-breathing"),
+    TechniqueCard(Lucide.Zap, R.string.technique_wim_hof_title, R.string.technique_wim_hof_tag, R.string.technique_wim_hof_desc, "wimhof", "https://breatheonline.app/articles/wim-hof"),
+    TechniqueCard(Lucide.Waves, R.string.technique_coherent_title, R.string.technique_coherent_tag, R.string.technique_coherent_desc, "coherent", "https://breatheonline.app/articles/coherent-breathing"),
 )
 
 @Composable
@@ -809,7 +957,7 @@ private fun TechniqueGuideSection(
 ) {
     Column(modifier = Modifier.padding(horizontal = 20.dp)) {
         Text(
-            text          = "TECHNIQUES & GUIDES",
+            text          = stringResource(R.string.breathe_section_techniques),
             style         = MaterialTheme.typography.labelSmall,
             color         = colors.subtitle,
             letterSpacing = 1.sp,
@@ -860,17 +1008,22 @@ private fun TechniqueCardItem(
                         .background(colors.primary.copy(alpha = 0.10f), RoundedCornerShape(12.dp)),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(card.icon, fontSize = 18.sp)
+                    Icon(
+                        imageVector = card.icon,
+                        contentDescription = null,
+                        tint = colors.primary,
+                        modifier = Modifier.size(18.dp),
+                    )
                 }
                 Column {
-                    Text(card.title, style = MaterialTheme.typography.titleSmall,  color = colors.title,                        fontWeight = FontWeight.SemiBold)
-                    Text(card.tag,   style = MaterialTheme.typography.labelSmall,  color = colors.primary.copy(alpha = 0.75f))
+                    Text(stringResource(card.titleRes), style = MaterialTheme.typography.titleSmall,  color = colors.title,                        fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(card.tagRes),   style = MaterialTheme.typography.labelSmall,  color = colors.primary.copy(alpha = 0.75f))
                 }
             }
         }
 
         Text(
-            text  = card.desc,
+            text  = stringResource(card.descRes),
             style = MaterialTheme.typography.bodySmall,
             color = colors.subtitle.copy(alpha = 0.85f),
         )
@@ -890,7 +1043,7 @@ private fun TechniqueCardItem(
                         .padding(vertical = 10.dp),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text("Apply", style = MaterialTheme.typography.labelMedium, color = colors.primary, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.breathe_apply), style = MaterialTheme.typography.labelMedium, color = colors.primary, fontWeight = FontWeight.SemiBold)
                 }
                 Box(
                     modifier = Modifier
@@ -902,7 +1055,7 @@ private fun TechniqueCardItem(
                         .padding(vertical = 10.dp),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text("Read Guide →", style = MaterialTheme.typography.labelMedium, color = colors.subtitle)
+                    Text(stringResource(R.string.breathe_read_guide), style = MaterialTheme.typography.labelMedium, color = colors.subtitle)
                 }
             } else {
                 Box(
@@ -915,7 +1068,7 @@ private fun TechniqueCardItem(
                         .padding(vertical = 10.dp),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text("Read Guide →", style = MaterialTheme.typography.labelMedium, color = colors.subtitle)
+                    Text(stringResource(R.string.breathe_read_guide), style = MaterialTheme.typography.labelMedium, color = colors.subtitle)
                 }
             }
         }
@@ -961,7 +1114,7 @@ private fun CompletionOverlay(state: BreatheState, colors: AppColors, onDone: ()
             Text(fmtElapsed(state.elapsedSeconds), style = MaterialTheme.typography.headlineMedium, color = colors.primary)
             Spacer(Modifier.height(4.dp))
             Text(
-                text  = "${state.cyclesCompleted} cycle${if (state.cyclesCompleted != 1) "s" else ""}",
+                text  = pluralStringResource(R.plurals.cycle_count, state.cyclesCompleted, state.cyclesCompleted),
                 style = MaterialTheme.typography.bodyMedium,
                 color = colors.subtitle,
             )

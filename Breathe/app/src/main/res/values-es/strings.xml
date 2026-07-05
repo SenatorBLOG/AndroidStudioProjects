@@ -1,0 +1,691 @@
+<resources>
+    <string name="app_name">Breathe</string>
+
+    <!-- Greetings -->
+    <string name="greeting_morning">Buenos días</string>
+    <string name="greeting_afternoon">Buenas tardes</string>
+    <string name="greeting_evening">Buenas noches</string>
+
+    <!-- Splash -->
+    <string name="splash_tagline">respira · relájate · duerme</string>
+
+    <!-- Home screen -->
+    <string name="tagline">respira · relájate · duerme</string>
+    <string name="home_breathe_header">RESPIRA</string>
+    <string name="home_streak_count">%1$d días seguidos</string>
+    <string name="home_today_minutes">%1$d min hoy</string>
+    <string name="home_bpm">%1$d ppm</string>
+    <string name="home_sleep_prefix">%1$s</string>
+    <string name="home_start_meditation">Iniciar meditación</string>
+    <string name="home_how_it_works">Cómo funciona →</string>
+    <string name="home_breathing_quiz">Test de respiración →</string>
+    <string name="home_ai_coach_title">Coach IA</string>
+    <string name="home_ai_coach_subtitle">Guía de respiración personalizada y ayuda para dormir</string>
+    <string name="home_community_info">La comunidad, guías detalladas y más están disponibles fuera de la pantalla principal para mantenerla enfocada.</string>
+    <string name="home_featured_section">DESTACADO</string>
+    <string name="home_ai_sleep_story_title">CUENTO DE NOCHE IA</string>
+    <string name="home_close">Cerrar</string>
+    <string name="home_generate_story_hint">Toca «Generar» para un cuento relajante personalizado para ti.</string>
+    <string name="home_generate_story_button">Generar cuento</string>
+    <string name="home_crafting_story">Creando tu cuento de noche…</string>
+    <string name="home_generate_another">Generar otro</string>
+    <string name="home_powered_by_gemini">DESARROLLADO CON GEMINI AI</string>
+    <string name="home_daily_inspiration">INSPIRACIÓN DIARIA</string>
+    <string name="home_explore_section">EXPLORAR</string>
+    <string name="home_sleep_guides_section">GUÍAS DE SUEÑO</string>
+    <string name="section_quick_exercises">EJERCICIOS RÁPIDOS</string>
+    <string name="section_recent_sessions">SESIONES RECIENTES</string>
+    <string name="btn_view_all">Ver todo</string>
+    <string name="featured_title">Tómate un momento</string>
+    <string name="featured_subtitle">para respirar</string>
+    <string name="btn_start_breathing">Comenzar a respirar →</string>
+    <string name="stat_label_today">Hoy</string>
+    <string name="stat_label_streak">Racha</string>
+    <string name="stat_unit_min">min</string>
+    <string name="stat_unit_days">días</string>
+    <string name="no_sessions_yet">Sin sesiones aún</string>
+    <string name="no_sessions_hint">Completa un ejercicio de respiración\npara ver tu historial aquí</string>
+    <string name="btn_retry">Reintentar</string>
+    <string name="home_exercise_desc_4_7_8">Calma la ansiedad rápido</string>
+    <string name="home_exercise_desc_box">Enfoque y reinicio</string>
+    <string name="home_exercise_desc_wimhof">Energía y vitalidad</string>
+    <string name="home_exercise_desc_coherent">Equilibrio de frecuencia cardíaca</string>
+    <string name="home_exercise_desc_belly">Relajación profunda</string>
+    <string name="home_exercise_desc_morning">Despertar suave</string>
+    <string name="home_exercise_desc_alternate">Equilibrio y claridad</string>
+    <string name="globe_community_label">COMUNIDAD</string>
+    <string name="globe_share_journey">Comparte tu camino</string>
+    <string name="globe_tab_posts">Publicaciones</string>
+    <string name="globe_tab_spots">Lugares</string>
+    <string name="globe_author_fallback">Usuario</string>
+    <string name="faq_try_different_search">Prueba con otro término de búsqueda</string>
+
+    <!-- Breathe screen -->
+    <string name="cd_back">Atrás</string>
+    <string name="cd_avatar">Avatar</string>
+    <string name="breathe_pattern_title">PATRÓN DE RESPIRACIÓN</string>
+    <string name="breathe_active">Activo</string>
+    <string name="breathe_inhale">Inhalar</string>
+    <string name="breathe_hold">Retener</string>
+    <string name="breathe_exhale">Exhalar</string>
+    <string name="breathe_pause">Pausa</string>
+    <string name="breathe_presets">PREAJUSTES</string>
+    <string name="breathe_techniques_guides">TÉCNICAS Y GUÍAS</string>
+    <string name="breathe_pattern_guides_message">Los patrones y guías vuelven después de la sesión.</string>
+    <string name="technique_box_breathing_title">Respiración cuadrada</string>
+    <string name="technique_box_breathing_tag">Calma · Concentración</string>
+    <string name="technique_box_breathing_desc">Fases iguales de 4 tiempos para reiniciar el sistema nervioso bajo estrés.</string>
+    <string name="technique_478_sleep_title">4-7-8 para dormir</string>
+    <string name="technique_478_sleep_tag">Sueño · Relajación</string>
+    <string name="technique_478_sleep_desc">Una exhalación larga activa el sistema parasimpático y te lleva a un sueño profundo.</string>
+    <string name="technique_wim_hof_title">Energía Wim Hof</string>
+    <string name="technique_wim_hof_tag">Energía · Concentración</string>
+    <string name="technique_wim_hof_desc">Ciclos rápidos cortos seguidos de retención aumentan el estado de alerta y la eficiencia de oxígeno.</string>
+    <string name="technique_coherent_title">Respiración coherente</string>
+    <string name="technique_coherent_tag">Equilibrio · VFC</string>
+    <string name="technique_coherent_desc">Un ciclo de 5 segundos de entrada y salida sincroniza la variabilidad cardiaca para una calma duradera.</string>
+    <string name="phase_inhale">Inhala\u2026</string>
+    <string name="phase_hold">Retén\u2026</string>
+    <string name="phase_exhale">Exhala\u2026</string>
+    <string name="btn_end_session">Terminar sesión</string>
+    <string name="exit_dialog_title">¿Terminar sesión?</string>
+    <string name="exit_dialog_body_with_progress">Has respirado durante %1$s.\nLa sesión terminará antes y el progreso se guardará.</string>
+    <string name="exit_dialog_body_no_progress">¿Terminar tu sesión antes de tiempo?</string>
+    <string name="exit_dialog_confirm">Terminar</string>
+    <string name="exit_dialog_dismiss">Continuar</string>
+    <string name="cd_complete">Completado</string>
+    <string name="session_complete">Sesión completada</string>
+    <string name="btn_done">Listo</string>
+
+    <!-- Guidance picker -->
+    <string name="guidance_mode_label">MODO DE GUÍA</string>
+    <string name="guidance_silent">Silencioso</string>
+    <string name="guidance_vibration">Vibración</string>
+    <string name="guidance_ai_voice">Voz IA</string>
+    <string name="guidance_voice_style">ESTILO DE VOZ</string>
+    <string name="guidance_female">Femenino</string>
+    <string name="guidance_male">Masculino</string>
+
+    <!-- Session feedback modal -->
+    <string name="feedback_session_complete">Sesión completada</string>
+    <string name="feedback_data_trains_ai">Tus datos entrenan a tu coach IA personal</string>
+    <string name="feedback_skip">Omitir</string>
+    <string name="feedback_step_progress">PASO %1$d DE 4</string>
+    <string name="feedback_mood_shift">¿Cómo cambió tu estado de ánimo?</string>
+    <string name="feedback_slide_before_after">Desliza antes y después para seguir tu progreso</string>
+    <string name="feedback_mood_before">ANTES</string>
+    <string name="feedback_mood_after">DESPUÉS</string>
+    <string name="feedback_mood_better">+%1$d mejor</string>
+    <string name="feedback_mood_worse">%1$d peor</string>
+    <string name="feedback_no_change">sin cambio</string>
+    <string name="feedback_how_feel_now">¿Cómo te sientes ahora?</string>
+    <string name="feedback_pick_all">Elige todo lo que aplique</string>
+    <string name="feedback_session_quality">Calidad de la sesión</string>
+    <string name="feedback_session_quality_subtitle">Las puntuaciones rápidas ayudan a tu coach IA a personalizar tus sesiones</string>
+    <string name="feedback_focus_level">Nivel de concentración</string>
+    <string name="feedback_calmness">Calma</string>
+    <string name="feedback_breath_depth">Profundidad de respiración</string>
+    <string name="feedback_stress_level">Nivel de estrés</string>
+    <string name="feedback_distractions">Distracciones</string>
+    <string name="feedback_noise_level">Nivel de ruido</string>
+    <string name="feedback_any_thoughts">¿Algún pensamiento?</string>
+    <string name="feedback_optional">(opcional)</string>
+    <string name="feedback_trains_coach">Tu retroalimentación entrena a tu coach IA personal de respiración.</string>
+    <string name="feedback_notes_placeholder">¿Cómo fue esta sesión? ¿Alguna observación…?</string>
+    <string name="feedback_continue">Continuar</string>
+    <string name="feedback_save">Guardar</string>
+    <string name="feedback_back">Atrás</string>
+    <string name="feedback_time_morning">Mañana</string>
+    <string name="feedback_time_afternoon">Tarde</string>
+    <string name="feedback_time_evening">Noche temprana</string>
+    <string name="feedback_time_night">Noche</string>
+    <string name="feedback_feeling_focused">Enfocado</string>
+    <string name="feedback_feeling_calm">Tranquilo</string>
+    <string name="feedback_feeling_energized">Energizado</string>
+    <string name="feedback_feeling_drowsy">Somnoliento</string>
+    <string name="feedback_feeling_distracted">Distraído</string>
+    <string name="feedback_feeling_peaceful">En paz</string>
+    <string name="feedback_feeling_anxious">Ansioso</string>
+    <string name="feedback_feeling_refreshed">Renovado</string>
+    <string name="feedback_noise_silent">Silencio</string>
+    <string name="feedback_noise_quiet">Tranquilo</string>
+    <string name="feedback_noise_moderate">Moderado</string>
+    <string name="feedback_noise_noisy">Ruidoso</string>
+    <string name="cd_hide_password">Ocultar contraseña</string>
+    <string name="cd_show_password">Mostrar contraseña</string>
+
+    <!-- Login screen -->
+    <string name="login_email">Correo electrónico</string>
+    <string name="login_password">Contraseña</string>
+    <string name="login_sign_in">Iniciar sesión</string>
+    <string name="login_or_divider">O</string>
+    <string name="login_continue_google">Continuar con Google</string>
+    <string name="login_no_account">¿No tienes cuenta?</string>
+    <string name="login_register_link">Registrarse</string>
+    <string name="login_email_error">Ingresa una dirección de correo válida</string>
+    <string name="login_password_error">La contraseña debe tener al menos 6 caracteres</string>
+
+    <!-- Register screen -->
+    <string name="register_title">Crear cuenta</string>
+    <string name="register_subtitle">Comienza tu camino hacia la atención plena</string>
+    <string name="register_full_name">Nombre completo</string>
+    <string name="register_create_button">Crear cuenta</string>
+    <string name="register_have_account">¿Ya tienes cuenta?</string>
+    <string name="register_sign_in_link">Iniciar sesión</string>
+    <string name="register_name_error">El nombre no puede estar vacío</string>
+    <string name="register_passwords_no_match">Las contraseñas no coinciden</string>
+
+    <!-- Profile screen -->
+    <string name="profile_title">Perfil</string>
+    <string name="profile_subtitle">Tu cuenta y configuración</string>
+    <string name="profile_subtitle_full">Todo en un lugar: perfil, sesiones, progreso, desafíos y dispositivos.</string>
+    <string name="profile_sign_out">Cerrar sesión</string>
+    <string name="profile_reminder_time_title">Hora del recordatorio</string>
+    <string name="profile_ok">OK</string>
+    <string name="profile_cancel">Cancelar</string>
+    <string name="profile_quick_access">ACCESO RÁPIDO</string>
+    <string name="profile_community_title">Comunidad</string>
+    <string name="profile_community_subtitle">Globo y sesiones</string>
+    <string name="profile_journal_title">Diario</string>
+    <string name="profile_journal_subtitle">Reflexiones y estado de ánimo</string>
+    <string name="profile_achievements_title">Logros</string>
+    <string name="profile_achievements_subtitle">Progreso compartido</string>
+    <string name="profile_help_faq_title">Ayuda y FAQ</string>
+    <string name="profile_help_faq_subtitle">Guías y respuestas</string>
+    <string name="profile_music_title">Música</string>
+    <string name="profile_music_subtitle">Pistas para concentración y sueño</string>
+    <string name="profile_challenges_title">Desafíos</string>
+    <string name="profile_challenges_subtitle">Cumple metas diarias</string>
+    <string name="section_stats">ESTADÍSTICAS</string>
+    <string name="stat_sessions">Sesiones</string>
+    <string name="stat_minutes">Minutos</string>
+    <string name="stat_current_streak">Racha actual</string>
+    <string name="stat_longest_streak">Racha más larga</string>
+    <string name="section_settings">CONFIGURACIÓN</string>
+    <string name="setting_theme">Tema</string>
+    <string name="theme_ocean">Océano</string>
+    <string name="theme_forest">Bosque</string>
+    <string name="theme_sunset">Atardecer</string>
+    <string name="setting_notifications">Notificaciones</string>
+    <string name="setting_notifications_hint">Recordatorios diarios de respiración</string>
+    <string name="btn_sign_out">Cerrar sesión</string>
+    <string name="reminder_time_label">Hora del recordatorio</string>
+    <string name="reminder_time_title">Establecer hora del recordatorio</string>
+    <string name="reminder_approximate_hint">Aproximado — concede permiso de alarma exacta para mayor precisión</string>
+
+    <!-- Profile form tab -->
+    <string name="form_personal_info">INFO PERSONAL</string>
+    <string name="form_display_name">NOMBRE VISIBLE</string>
+    <string name="form_shown_in_community">Visible en la comunidad y clasificaciones.</string>
+    <string name="form_body_data">DATOS CORPORALES</string>
+    <string name="form_height_unit">cm</string>
+    <string name="form_weight_unit">kg</string>
+    <string name="form_age_unit">años</string>
+    <string name="form_gender">GÉNERO</string>
+    <string name="form_my_goal">Mi objetivo</string>
+    <string name="form_theme">Tema</string>
+    <string name="form_theme_ocean">Océano</string>
+    <string name="form_theme_forest">Bosque</string>
+    <string name="form_theme_sunset">Atardecer</string>
+    <string name="form_theme_day">Día</string>
+    <string name="form_notifications">Notificaciones</string>
+    <string name="form_daily_reminder">Recordatorio diario</string>
+    <string name="form_daily_reminder_hint">Notificarme cada día sobre la meditación.</string>
+    <string name="form_reminder_time">Hora del recordatorio</string>
+    <string name="form_approximate_on_device">Aproximado en este dispositivo.</string>
+    <string name="form_privacy_data">Privacidad y datos</string>
+    <string name="form_allow_data_collection">Permitir recopilación de datos</string>
+    <string name="form_share_stats_hint">Comparte estadísticas de respiración y datos de ubicación para mejorar tu experiencia. Puedes desactivarlo en cualquier momento.</string>
+    <string name="form_data_collection_off">La recopilación de datos opcional está desactivada. El inicio de sesión y las funciones principales siguen funcionando normalmente.</string>
+    <string name="form_how_we_use">Cómo usamos esto</string>
+    <string name="form_data_calibration">Tu edad, altura y peso ayudan a calibrar el ritmo de respiración. Tu objetivo configura las primeras recomendaciones.</string>
+    <string name="form_save_changes">Guardar cambios</string>
+
+    <!-- Devices tab -->
+    <string name="devices_connected_services">SERVICIOS CONECTADOS</string>
+    <string name="devices_sync_all">Sincronizar todo</string>
+    <string name="devices_syncing">Sincronizando…</string>
+    <string name="devices_health_connect_section">HEALTH CONNECT</string>
+    <string name="devices_health_connect_devices">Amazfit · Xiaomi · Samsung Health · Apple Health</string>
+    <string name="devices_connected_status">Conectado</string>
+    <string name="devices_not_linked">No vinculado</string>
+    <string name="devices_synced_ago">Sincronizado %1$s</string>
+    <string name="devices_disconnect">Desconectar</string>
+    <string name="devices_connect">Conectar</string>
+    <string name="devices_fitbit_subtitle">Frecuencia cardíaca · Sueño · VFC</string>
+    <string name="devices_google_fit_subtitle">Sueño · Frecuencia cardíaca</string>
+    <string name="devices_hc_available">Disponible en tu dispositivo</string>
+    <string name="devices_hc_not_installed">No instalado</string>
+    <string name="devices_hc_synced_badge">Sincronizado</string>
+    <string name="devices_hc_permissions_error">Permisos de Health Connect no concedidos.</string>
+    <string name="devices_open_hc_settings">Abrir configuración de Health Connect</string>
+    <string name="devices_resync">Re-sincronizar</string>
+    <string name="devices_sync_now">Sincronizar ahora</string>
+    <string name="devices_install_hc">Instala Health Connect desde Play Store para sincronizar datos de Amazfit, Xiaomi y Samsung.</string>
+
+    <!-- Sessions and progress tabs -->
+    <string name="sessions_label">SESIONES</string>
+    <string name="sessions_total_completed">total completadas</string>
+    <string name="sessions_streak_label">RACHA</string>
+    <string name="sessions_best_label">MEJOR</string>
+    <string name="sessions_total_label">TOTAL</string>
+    <string name="sessions_average_label">PROMEDIO</string>
+    <string name="sessions_this_week_label">ESTA SEMANA</string>
+    <string name="sessions_recent_label">Sesiones recientes</string>
+    <string name="sessions_no_sessions">Sin sesiones aún</string>
+    <string name="sessions_complete_to_see">Completa una sesión de respiración para ver tu historial</string>
+    <string name="sessions_key_metrics">Métricas clave</string>
+    <string name="sessions_weekly_goal">Meta semanal</string>
+    <string name="sessions_weekly_goal_pct">%1$d%% de la meta semanal</string>
+    <string name="sessions_weekly_goal_target">Meta: 70 min/sem • Prom: %1$d min/sesión</string>
+    <string name="sessions_stat_sessions">Sesiones</string>
+    <string name="sessions_stat_minutes">Minutos</string>
+    <string name="sessions_stat_current_streak">Racha actual</string>
+    <string name="sessions_stat_best_streak">Mejor racha</string>
+
+    <!-- Stats screen -->
+    <string name="stats_title">Estadísticas</string>
+    <string name="stats_subtitle">Tu progreso</string>
+    <string name="stats_session_history">Historial de sesiones</string>
+    <string name="stats_meditation_regularity">Regularidad de meditación</string>
+    <string name="stats_health_data">Datos de salud</string>
+    <string name="stats_achievements">Logros</string>
+    <string name="stats_emotional_journal">Diario emocional</string>
+
+    <!-- History screen -->
+    <string name="history_title">Historial</string>
+    <string name="history_subtitle">Tus sesiones de respiración</string>
+    <string name="history_empty_title">Sin sesiones aún</string>
+    <string name="history_empty_hint">¡Comienza a respirar para registrar\ntu primera sesión!</string>
+    <string name="btn_try_again">Intentar de nuevo</string>
+    <string name="history_today">Hoy</string>
+    <string name="history_yesterday">Ayer</string>
+    <string name="history_session_breathing">Respiración</string>
+    <string name="history_session_custom">Respiración personalizada</string>
+    <string name="history_session_4_7_8">Respiración 4-7-8</string>
+    <string name="history_session_box">Respiración cuadrada</string>
+    <string name="history_session_wim_hof">Método Wim Hof</string>
+    <string name="history_session_coherent">Respiración coherente</string>
+    <string name="history_session_belly">Respiración abdominal</string>
+    <string name="history_session_morning">Ritual matutino</string>
+    <string name="history_session_alternate">Respiración alterna</string>
+    <string name="history_session_deep">Relajación profunda</string>
+    <string name="history_session_energising">Respiración energizante</string>
+
+    <!-- Health stats screen -->
+    <string name="health_stats_title">Datos de salud</string>
+    <string name="health_stats_refresh">Actualizar</string>
+    <string name="health_avg_sleep">SUEÑO PROM.</string>
+    <string name="health_last_7_days">últimos 7 días</string>
+    <string name="health_resting_hr">FC EN REPOSO</string>
+    <string name="health_latest_reading">última medición</string>
+    <string name="health_recovery">RECUPERACIÓN</string>
+    <string name="health_great_recovery">Excelente recuperación</string>
+    <string name="health_moderate_recovery">Recuperación moderada</string>
+    <string name="health_rest_recommended">Se recomienda descanso</string>
+    <string name="health_no_data_title">Sin datos de salud aún</string>
+    <string name="health_no_data_message">Sincroniza tu dispositivo wearable con Health Connect\nen la pestaña Perfil → Dispositivos.</string>
+    <string name="health_sleep_duration_chart">DURACIÓN DEL SUEÑO</string>
+    <string name="health_resting_hr_chart">FRECUENCIA CARDÍACA EN REPOSO</string>
+
+    <!-- Meditation regularity screen -->
+    <string name="regularity_title">Regularidad de meditación</string>
+    <string name="regularity_total_time">Tiempo total de meditación: %1$s</string>
+    <string name="regularity_best_streak">Mejor racha: %1$d días</string>
+    <string name="regularity_sessions_week">Sesiones esta semana: %1$d</string>
+
+    <!-- Journal screen -->
+    <string name="journal_title">Diario emocional</string>
+    <string name="journal_subtitle">Perspectivas de sesiones con IA</string>
+    <string name="journal_30_day_overview">RESUMEN DE 30 DÍAS</string>
+    <string name="journal_analyzed">analizadas</string>
+    <string name="journal_overall_mood">estado de ánimo general</string>
+    <string name="journal_positive_pct">positivo</string>
+    <string name="journal_recurring_themes">Temas recurrentes</string>
+    <string name="journal_mood_generally_positive">Generalmente positivo</string>
+    <string name="journal_mood_challenging">Período desafiante</string>
+    <string name="journal_mood_balanced">Equilibrado</string>
+    <string name="journal_sentiment_positive">Positivo</string>
+    <string name="journal_sentiment_neutral">Neutral</string>
+    <string name="journal_sentiment_difficult">Difícil</string>
+    <string name="journal_emotional_score">PUNTUACIÓN EMOCIONAL</string>
+    <string name="journal_recommended">Recomendado:</string>
+    <string name="journal_try_it">Probar →</string>
+    <string name="journal_your_notes">TUS NOTAS</string>
+    <string name="journal_empty_title">Tu diario está vacío</string>
+    <string name="journal_empty_message">Añade notas a tus sesiones de respiración.\nLa IA analizará tus emociones y\nsugerirá la técnica adecuada.</string>
+    <string name="journal_start_session">Iniciar una sesión →</string>
+    <string name="journal_could_not_load">No se pudo cargar el diario</string>
+    <string name="journal_check_connection">Comprueba tu conexión e inténtalo de nuevo</string>
+    <string name="journal_tip">Cuanto más llevas el diario, mejor entiende la IA tus patrones emocionales y puede recomendarte la técnica adecuada en el momento adecuado.</string>
+
+    <!-- Music screen -->
+    <string name="music_breathe_sounds">BREATHE · SONIDOS</string>
+    <string name="music_library_title">Biblioteca de música</string>
+    <string name="music_search_placeholder">Buscar pistas, artistas, etiquetas…</string>
+    <string name="music_loading">Cargando…</string>
+    <string name="music_track_count">%1$d pistas</string>
+    <string name="music_no_tracks_for">Sin pistas para «%1$s»</string>
+    <string name="music_clear_search">Borrar búsqueda</string>
+    <string name="music_couldnt_load">No se pudieron cargar las pistas</string>
+    <string name="music_no_tracks_found">No se encontraron pistas</string>
+    <string name="music_reload">Recargar</string>
+
+    <!-- Achievements screen -->
+    <string name="achievements_title_text">Logros</string>
+    <string name="achievements_subtitle_text">Progreso compartido en la app, web y datos de salud conectados.</string>
+    <string name="achievements_no_achievements">Sin logros aún</string>
+    <string name="achievements_levels">Niveles</string>
+    <string name="achievements_one_system">Un sistema de logros para móvil, web y sincronización de salud.</string>
+    <string name="achievements_completed">completados</string>
+    <string name="achievements_in_progress">en progreso</string>
+    <string name="achievements_avg_progress">progreso promedio</string>
+    <string name="achievements_highlights">Destacados</string>
+    <string name="achievements_view_all">Ver todos los logros</string>
+
+    <!-- Article screen -->
+    <string name="article_breatheonline">breatheonline.app</string>
+    <string name="article_could_not_load">No se pudo cargar la página</string>
+    <string name="article_check_internet">Comprueba tu conexión a internet e inténtalo de nuevo.</string>
+    <string name="article_retry">Reintentar</string>
+
+    <!-- AI Coach -->
+    <string name="ai_coach_label">COACH IA</string>
+    <string name="ai_messages_left">%1$d restantes hoy</string>
+    <string name="ai_ask_placeholder">Pregunta sobre meditación…</string>
+    <string name="ai_daily_limit">Límite diario alcanzado</string>
+    <string name="ai_resets_in">Se restablece en %1$dh. Crea una cuenta para más consultas.</string>
+    <string name="ai_powered_by_gemini">DESARROLLADO CON GEMINI AI</string>
+
+    <!-- Interactive screen (Breathing quiz / Stress score) -->
+    <string name="interactive_breathing_tools">Herramientas de respiración</string>
+    <string name="interactive_breathing_quiz_tab">Test de respiración</string>
+    <string name="interactive_stress_score_tab">Nivel de estrés</string>
+    <string name="interactive_question_progress">Pregunta %1$d de 5</string>
+    <string name="interactive_next">Siguiente →</string>
+    <string name="interactive_see_result">Ver mi resultado →</string>
+    <string name="interactive_retake_quiz">Repetir test</string>
+    <string name="interactive_seven_day_plan">Tu plan de 7 días</string>
+    <string name="interactive_start_technique">Iniciar %1$s →</string>
+    <string name="interactive_rate_how_feel">Evalúa cómo te sientes hoy</string>
+    <string name="interactive_sleep_quality">Calidad del sueño</string>
+    <string name="interactive_anxiety_level">Nivel de ansiedad</string>
+    <string name="interactive_focus">Concentración</string>
+    <string name="interactive_energy">Energía</string>
+    <string name="interactive_your_stress_score">Tu nivel de estrés:</string>
+    <string name="interactive_calculate_plan">Calcular mi plan →</string>
+    <string name="interactive_adjust_scores">Ajustar puntuaciones</string>
+    <string name="interactive_whats_driving">Qué influye en tu puntuación</string>
+    <string name="interactive_start_your_plan">Iniciar mi plan →</string>
+    <string name="interactive_quiz_question_breathing_from">¿Desde dónde respiras?</string>
+    <string name="interactive_quiz_question_mouth">¿Respiras por la boca?</string>
+    <string name="interactive_quiz_question_bedtime">¿Cómo te sientes al acostarte?</string>
+    <string name="interactive_quiz_question_sigh_yawn">¿Suspiras o bostezas mucho?</string>
+    <string name="interactive_quiz_question_energy_midday">¿Energía al mediodía?</string>
+    <string name="interactive_quiz_option_chest">Pecho</string>
+    <string name="interactive_quiz_option_belly">Abdomen</string>
+    <string name="interactive_quiz_option_not_sure">No estoy seguro/a</string>
+    <string name="interactive_quiz_option_often">A menudo</string>
+    <string name="interactive_quiz_option_sometimes">A veces</string>
+    <string name="interactive_quiz_option_rarely">Rara vez</string>
+    <string name="interactive_quiz_option_racing_thoughts">Pensamientos acelerados</string>
+    <string name="interactive_quiz_option_a_bit_restless">Algo inquieto/a</string>
+    <string name="interactive_quiz_option_calm">Tranquilo/a</string>
+    <string name="interactive_quiz_option_yes_constantly">Sí, constantemente</string>
+    <string name="interactive_quiz_option_not_really">No mucho</string>
+    <string name="interactive_quiz_option_exhausted">Exhausto/a</string>
+    <string name="interactive_quiz_option_a_bit_tired">Un poco cansado/a</string>
+    <string name="interactive_quiz_option_still_going">Sigo adelante</string>
+    <string name="interactive_score_low_stress">Estrés bajo</string>
+    <string name="interactive_score_moderate_stress">Estrés moderado</string>
+    <string name="interactive_score_high_stress">Estrés alto</string>
+    <string name="interactive_breakdown_sleep_lever">El sueño es tu mayor palanca ahora mismo</string>
+    <string name="interactive_breakdown_anxiety_spiking">La ansiedad está elevando tu estrés base</string>
+    <string name="interactive_breakdown_focus_fatigue">La baja concentración sugiere fatiga mental: prueba respiración cuadrada antes de trabajar</string>
+    <string name="interactive_breakdown_energy_help">Una rutina matutina ayudaría a tus niveles de energía</string>
+    <string name="interactive_breakdown_healthy_balance">Mantén tu equilibrio actual</string>
+    <string name="interactive_breakdown_coherent_deeper">Añade respiración coherente para profundizar</string>
+    <string name="interactive_breakdown_evening_wind_down">Se recomienda una sesión de relajación al final del día</string>
+    <string name="interactive_plan_stress_day1_2">Día 1–2: Reinicia tu línea base con 4-7-8</string>
+    <string name="interactive_plan_stress_day3_5">Día 3–5: Respiración cuadrada para la calma diurna</string>
+    <string name="interactive_plan_stress_day6_7">Día 6–7: Fija la relajación nocturna</string>
+    <string name="interactive_plan_shallow_day1_2">Día 1–2: Base de respiración abdominal</string>
+    <string name="interactive_plan_shallow_day3_5">Día 3–5: Amplía a respiración coherente</string>
+    <string name="interactive_plan_shallow_day6_7">Día 6–7: Hábito completo de activación del diafragma</string>
+    <string name="interactive_plan_natural_day1_2">Día 1–2: Establece la resonancia de 5.5 BPM</string>
+    <string name="interactive_plan_natural_day3_5">Día 3–5: Seguimiento de VFC + impulso Wim Hof</string>
+    <string name="interactive_plan_natural_day6_7">Día 6–7: Fija tu rutina de máximo rendimiento</string>
+    <string name="result_stress_breather_title">Respirador estresado</string>
+    <string name="result_stress_breather_desc">Tu sistema nervioso está sobrecargado. Las retenciones cortas y las exhalaciones lentas restaurarán el equilibrio rápidamente.</string>
+    <string name="result_stress_breather_technique">Respiración 4-7-8</string>
+    <string name="result_shallow_breather_title">Respirador superficial</string>
+    <string name="result_shallow_breather_desc">Solo usas la parte superior de tus pulmones. La respiración abdominal libera más oxígeno y calma.</string>
+    <string name="result_shallow_breather_technique">Respiración abdominal</string>
+    <string name="result_natural_breather_title">Respirador natural</string>
+    <string name="result_natural_breather_desc">Tienes buenos instintos de respiración. La respiración coherente te llevará al siguiente nivel.</string>
+    <string name="result_natural_breather_technique">Respiración coherente</string>
+
+    <!-- Fallback achievements -->
+    <string name="achievements_api_unavailable">La API de logros no está disponible (%1$d)</string>
+    <string name="achievement_unit_sessions">sesiones</string>
+    <string name="achievement_unit_minutes">minutos</string>
+    <string name="achievement_unit_sources">fuentes</string>
+    <string name="achievement_unit_nights">noches</string>
+    <string name="achievement_unit_hours">horas</string>
+
+    <string name="achievement_first_breath_title">Primer aliento</string>
+    <string name="achievement_first_breath_desc">Completa sesiones de meditación desde la app o el sitio web. El progreso se comparte entre ambos.</string>
+    <string name="achievement_first_breath_level_1_title">Inicio</string>
+    <string name="achievement_first_breath_level_1_desc">Completa tu primera sesión.</string>
+    <string name="achievement_first_breath_level_2_title">Establecido</string>
+    <string name="achievement_first_breath_level_2_desc">Crea un ritmo inicial.</string>
+    <string name="achievement_first_breath_level_3_title">Comprometido</string>
+    <string name="achievement_first_breath_level_3_desc">Convierte la práctica en hábito.</string>
+
+    <string name="achievement_streak_builder_title">Constructor de rachas</string>
+    <string name="achievement_streak_builder_desc">Mantén el hábito vivo en todos los dispositivos y plataformas.</string>
+    <string name="achievement_streak_builder_level_1_title">Calentamiento</string>
+    <string name="achievement_reach_day_streak_desc">Alcanza una racha de %1$d días.</string>
+    <string name="achievement_streak_builder_level_2_title">Enfocado</string>
+    <string name="achievement_streak_builder_level_3_title">Ininterrumpido</string>
+
+    <string name="achievement_breath_minutes_title">Minutos de respiración</string>
+    <string name="achievement_breath_minutes_desc">Los minutos totales de meditación de la web y la app cuentan para un objetivo compartido.</string>
+    <string name="achievement_breath_minutes_level_1_title">Flujo bronce</string>
+    <string name="achievement_meditate_hours_desc">Medita %1$d horas en total.</string>
+    <string name="achievement_breath_minutes_level_2_title">Flujo plata</string>
+    <string name="achievement_breath_minutes_level_3_title">Flujo oro</string>
+
+    <string name="achievement_health_sync_title">Sincronización de salud</string>
+    <string name="achievement_health_sync_desc">Conecta wearables y mantiene los datos de salud en la misma cuenta.</string>
+    <string name="achievement_health_sync_level_1_desc">Conecta tu primera fuente de salud.</string>
+    <string name="achievement_health_sync_level_2_title">En capas</string>
+    <string name="achievement_health_sync_level_2_desc">Conecta dos fuentes sincronizadas.</string>
+    <string name="achievement_health_sync_level_3_title">Unificado</string>
+    <string name="achievement_health_sync_level_3_desc">Construye una pila conectada completa.</string>
+
+    <string name="achievement_sleep_rhythm_title">Ritmo de sueño</string>
+    <string name="achievement_sleep_rhythm_desc">Haz seguimiento de las noches de sueño de tu reloj y crea una base estable.</string>
+    <string name="achievement_sleep_rhythm_level_1_title">Observado</string>
+    <string name="achievement_sync_nights_desc">Sincroniza %1$d noches.</string>
+    <string name="achievement_sleep_rhythm_level_2_title">Patrón</string>
+    <string name="achievement_sleep_rhythm_level_3_title">Anclado</string>
+
+    <string name="achievement_recovery_heart_title">Corazón de recuperación</string>
+    <string name="achievement_recovery_heart_desc">Deja que la sincronización de la frecuencia cardíaca construya una imagen de recuperación a largo plazo.</string>
+    <string name="achievement_recovery_heart_level_1_title">Lectura</string>
+    <string name="achievement_capture_heart_rate_days_desc">Registra datos de frecuencia cardíaca durante %1$d días.</string>
+    <string name="achievement_recovery_heart_level_2_title">Línea base</string>
+    <string name="achievement_recovery_heart_level_3_title">Adaptativo</string>
+
+    <string name="achievement_sleep_hours_title">Horas de sueño</string>
+    <string name="achievement_sleep_hours_desc">Construye horas recuperadas totales a partir de registros de sueño sincronizados.</string>
+    <string name="achievement_sleep_hours_level_1_title">Descansado</string>
+    <string name="achievement_reach_tracked_sleep_hours_desc">Alcanza %1$d horas de sueño registradas.</string>
+    <string name="achievement_sleep_hours_level_2_title">Recuperando</string>
+    <string name="achievement_sleep_hours_level_3_title">Recargado</string>
+
+    <string name="achievement_session_marathon_title">Maratón de sesiones</string>
+    <string name="achievement_session_marathon_desc">Repite sesiones de forma constante, sin importar dónde se completen.</string>
+    <string name="achievement_count_unit_title">%1$d %2$s</string>
+    <string name="achievement_complete_total_sessions_desc">Completa %1$d sesiones en total.</string>
+
+    <!-- Health Connect sync steps -->
+    <string name="hc_step_checking_permissions">Verificando permisos…</string>
+    <string name="hc_step_reading_sleep">Leyendo datos de sueño…</string>
+    <string name="hc_step_reading_heart_rate">Leyendo frecuencia cardíaca…</string>
+    <string name="hc_step_reading_steps">Leyendo pasos…</string>
+    <string name="hc_step_sending">Enviando al servidor…</string>
+    <string name="hc_no_data_error">No se encontraron datos de Health Connect en los últimos 30 días</string>
+
+    <!-- Notification content -->
+    <string name="notification_title">Hora de respirar</string>
+    <string name="notification_body">Tómate un momento para tu ejercicio de respiración diario</string>
+
+    <!-- Missing localized strings for full app coverage -->
+    <string name="home_try_again">Intentar de nuevo</string>
+    <string name="breathe_section_presets">PREAJUSTES</string>
+    <string name="breathe_section_techniques">TÉCNICAS Y GUÍAS</string>
+    <string name="tab_home">Inicio</string>
+    <string name="tab_breathe">Respira</string>
+    <string name="tab_stats">Estadísticas</string>
+    <string name="tab_profile">Perfil</string>
+    <string name="tab_sessions">Sesiones</string>
+    <string name="tab_progress">Progreso</string>
+    <string name="tab_challenges">Desafíos</string>
+    <string name="tab_devices">Dispositivos</string>
+    <string name="journal_session_minutes">%1$d min</string>
+    <string name="journal_mood_delta">+%1$d ánimo</string>
+    <string name="achievements_detail_title">Logro</string>
+    <string name="achievements_not_found">Logro no encontrado</string>
+    <string name="achievements_count_in_progress">%1$d/%2$d en progreso</string>
+    <string name="achievements_unlocked_on">Desbloqueado el %1$s</string>
+    <string name="challenges_ai_recommended">Recomendado por IA</string>
+    <string name="challenges_my_active">Mis desafíos activos</string>
+    <string name="challenges_available">Desafíos disponibles</string>
+    <string name="challenges_join_now">Unirse ahora</string>
+    <string name="challenges_join">Unirse</string>
+    <string name="challenges_days_progress">%1$d/%2$s días</string>
+    <string name="profile_age_years">%1$s años</string>
+    <string name="breathe_paused_state">Pausado</string>
+    <string name="breathe_ready_state">Listo</string>
+    <string name="breathe_start_button">▶  Iniciar respiración</string>
+    <string name="breathe_end_button">Terminar</string>
+    <string name="breathe_apply">Aplicar</string>
+    <string name="breathe_read_guide">Leer guía →</string>
+    <string name="faq_title">FAQ</string>
+    <string name="faq_subtitle">Ayuda y preguntas frecuentes</string>
+    <string name="faq_no_results">No se encontraron resultados</string>
+    <string name="faq_question_count">%1$d preg.</string>
+    <string name="faq_search_placeholder">Buscar preguntas...</string>
+    <string name="faq_still_questions">¿Aún tienes preguntas?</string>
+    <string name="globe_no_posts">Aún no hay publicaciones</string>
+    <string name="globe_no_spots">Aún no hay sitios</string>
+    <string name="globe_fly_there">Ir allí</string>
+    <string name="globe_whats_on_mind">¿Qué tienes en mente?</string>
+    <string name="globe_post_button">Publicar</string>
+    <string name="globe_use_gps">Usar GPS</string>
+    <string name="globe_title_optional">Título (opcional)</string>
+    <string name="globe_meditation_spot">Lugar de meditación</string>
+    <string name="globe_note_optional">Nota (opcional)</string>
+    <string name="globe_city">Ciudad</string>
+    <string name="globe_country">País</string>
+    <string name="globe_technique">Técnica</string>
+    <string name="globe_pin_spot">Fijar lugar</string>
+    <string name="globe_new_post">Nueva publicación</string>
+    <string name="globe_add_spot">Añadir lugar</string>
+    <string name="globe_like">Me gusta</string>
+    <string name="privacy_title">Política de privacidad</string>
+    <string name="privacy_last_updated">Última actualización: %1$s</string>
+    <string name="privacy_email_label">Correo: </string>
+    <string name="privacy_questions_email">¿Preguntas? Escribe a </string>
+    <string name="meditation_sessions_total">%1$d sesiones en total</string>
+    <string name="meditation_trend_improved">Mejorado</string>
+    <string name="meditation_trend_decreased">Disminuido</string>
+    <string name="meditation_no_data_label">Sin datos</string>
+    <string name="meditation_positive_label">positivo</string>
+    <string name="meditation_entries_count">%1$d entradas</string>
+    <string name="meditation_most_common">Más común: %1$d/10 (%2$d×)</string>
+    <string name="meditation_avg_mood">ÁNIMO PROMEDIO</string>
+    <string name="meditation_unique_scores">puntuaciones únicas</string>
+    <string name="meditation_score_variety">VARIEDAD DE PUNTUACIONES</string>
+    <string name="meditation_chart_minutes">Minutos</string>
+    <string name="meditation_chart_sessions">Sesiones</string>
+    <string name="meditation_chart_no_data">Aún no hay datos</string>
+    <string name="meditation_emotional_score">Puntuación emocional</string>
+    <string name="meditation_recurring_themes">Temas recurrentes</string>
+    <string name="meditation_sentiment_split">REPARTO DE SENTIMIENTO</string>
+    <string name="sleep_fell_asleep">%1$s Se durmió</string>
+    <string name="sleep_woke_up">%1$s Se despertó</string>
+    <string name="sleep_open_profile">Abrir perfil</string>
+    <string name="sleep_no_data_yet">Aún no hay datos de sueño</string>
+    <string name="sleep_connect_hc_unlock">Conecta Health Connect para desbloquear la duración nocturna, las fases del sueño, las tendencias de la hora de acostarte y los datos de recuperación.</string>
+    <string name="sleep_checklist_consistency">Ver coherencia de acostarte y despertarte</string>
+    <string name="sleep_checklist_stages">Seguimiento de sueño profundo, ligero, REM y despierto</string>
+    <string name="sleep_checklist_local">Obtén interpretación local del sueño al instante</string>
+    <string name="sleep_viewing">Viendo</string>
+    <string name="btn_prev">Anterior</string>
+    <string name="btn_latest">Más reciente</string>
+    <string name="btn_next">Siguiente</string>
+    <string name="register_confirm_password">Confirmar contraseña</string>
+    <string name="stats_activity_section">ACTIVIDAD</string>
+    <string name="stats_weekly_practice">Práctica semanal</string>
+    <string name="stats_monthly_consistency">Consistencia mensual</string>
+    <string name="stats_yearly_rhythm">Ritmo anual</string>
+    <string name="stats_summary_format">%1$d min total · %2$s</string>
+
+    <!-- Extra localized UI labels -->
+    <string name="profile_language">Idioma</string>
+    <string name="form_height_label">Altura</string>
+    <string name="form_weight_label">Peso</string>
+    <string name="form_age_label">Edad</string>
+    <string name="history_less_than_minute">&lt;1 min</string>
+    <string name="breathe_resume_button">Reanudar</string>
+    <string name="breathe_pause_button">Pausa</string>
+    <string name="breathe_time_label">Tiempo</string>
+    <string name="breathe_cycles_label">Ciclos</string>
+    <string name="breathe_heart_rate_label">Frecuencia cardíaca</string>
+    <string name="sleep_schedule_title">Horario de sueño</string>
+    <string name="sleep_avg_fall_asleep_label">Hora media de conciliar el sueño</string>
+    <string name="sleep_sleep_regularity_label">Regularidad del sueño</string>
+    <string name="sleep_latest_fall_asleep_time">Última hora de conciliación: %1$s</string>
+    <string name="sleep_avg_wake_up_label">Hora media de despertar</string>
+    <string name="sleep_wake_up_regularity_label">Regularidad del despertar</string>
+    <string name="sleep_earliest_wake_up_time">Hora más temprana de despertar: %1$s</string>
+    <string name="sleep_regular">Regular</string>
+    <string name="sleep_irregular">Irregular</string>
+    <string name="sleep_unknown">Desconocido</string>
+    <string name="globe_report_submitted">Reporte enviado. Gracias.</string>
+    <string name="globe_report_failed">No se pudo enviar el reporte. Inténtalo de nuevo.</string>
+    <string name="globe_user_blocked">Usuario bloqueado.</string>
+    <string name="globe_block_user_failed">No se pudo bloquear al usuario. Inténtalo de nuevo.</string>
+    <string name="globe_data_collection_off">La recopilación de datos está desactivada. Actívala en Perfil → Privacidad y datos para añadir sitios.</string>
+    <string name="globe_server_error">Error del servidor %1$d</string>
+    <string name="globe_network_error">Error de red</string>
+    <string name="goal_better_sleep">Dormir mejor</string>
+    <string name="goal_less_stress">Menos estrés</string>
+    <string name="goal_more_focus">Más concentración</string>
+    <string name="goal_more_energy">Más energía</string>
+    <string name="goal_general_wellness">Bienestar general</string>
+    <string name="gender_male">Masculino</string>
+    <string name="gender_female">Femenino</string>
+    <string name="gender_other">Otro</string>
+    <string name="gender_prefer_not_to_say">Prefiero no decirlo</string>
+    <string name="language_english">Inglés</string>
+    <string name="language_russian">Ruso</string>
+    <string name="language_spanish">Español</string>
+
+    <!-- Plurals -->
+    <plurals name="cycle_count">
+        <item quantity="one">%d ciclo</item>
+        <item quantity="other">%d ciclos</item>
+    </plurals>
+    <plurals name="stats_active_days">
+        <item quantity="one">%d día activo</item>
+        <item quantity="other">%d días activos</item>
+    </plurals>
+    <plurals name="stats_active_months">
+        <item quantity="one">%d mes activo</item>
+        <item quantity="other">%d meses activos</item>
+    </plurals>
+</resources>

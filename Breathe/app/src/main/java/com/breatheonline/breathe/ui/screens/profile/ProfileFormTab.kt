@@ -18,6 +18,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.os.LocaleListCompat
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -41,6 +43,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.breatheonline.breathe.R
 import com.breatheonline.breathe.ui.theme.AppColors
 import java.util.Locale
 
@@ -110,34 +114,73 @@ internal fun ProfileFormTab(
         }
 
         // ── My Goal ───────────────────────────────────────────────────────────
-        SectionCard("My Goal", colors) {
+        SectionCard(stringResource(R.string.form_my_goal), colors) {
             FlowPills(items = GOALS, selected = goal, colors = colors, onSelect = onGoalChange)
         }
 
         // ── Theme ─────────────────────────────────────────────────────────────
-        SectionCard("Theme", colors) {
+        SectionCard(stringResource(R.string.form_theme), colors) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf("Ocean", "Forest", "Sunset").forEach { theme ->
+                listOf(
+                    "Ocean" to R.string.form_theme_ocean,
+                    "Forest" to R.string.form_theme_forest,
+                    "Sunset" to R.string.form_theme_sunset,
+                    "Day" to R.string.form_theme_day,
+                ).forEach { (themeValue, labelRes) ->
                     ProfileChip(
-                        text    = theme,
+                        text    = stringResource(labelRes),
                         colors  = colors,
-                        active  = currentTheme == theme,
-                        onClick = { onThemeChange(theme) },
+                        active  = currentTheme == themeValue,
+                        onClick = { onThemeChange(themeValue) },
+                    )
+                }
+            }
+        }
+
+        // ── Language ──────────────────────────────────────────────────────────
+        SectionCard(stringResource(R.string.profile_language), colors) {
+            var selectedLang by remember {
+                val tags = AppCompatDelegate.getApplicationLocales().toLanguageTags()
+                mutableStateOf(when {
+                    tags.contains("ru") -> "ru"
+                    tags.contains("es") -> "es"
+                    else -> "en"
+                })
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(
+                    "en" to R.string.language_english,
+                    "ru" to R.string.language_russian,
+                    "es" to R.string.language_spanish,
+                ).forEach { (code, labelRes) ->
+                    val label = when (code) {
+                        "en" -> "🇬🇧 ${stringResource(labelRes)}"
+                        "ru" -> "🇷🇺 ${stringResource(labelRes)}"
+                        else -> "🇪🇸 ${stringResource(labelRes)}"
+                    }
+                    ProfileChip(
+                        text    = label,
+                        colors  = colors,
+                        active  = selectedLang == code,
+                        onClick = {
+                            selectedLang = code
+                            AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(code))
+                        },
                     )
                 }
             }
         }
 
         // ── Notifications ─────────────────────────────────────────────────────
-        SectionCard("Notifications", colors) {
+        SectionCard(stringResource(R.string.form_notifications), colors) {
             Row(
                 modifier              = Modifier.fillMaxWidth(),
                 verticalAlignment     = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
                 Column(Modifier.weight(1f)) {
-                    Text("Daily reminder",                        color = colors.title,                        style = MaterialTheme.typography.bodyMedium)
-                    Text("Notify me every day about meditation.", color = colors.subtitle.copy(alpha = 0.75f), style = MaterialTheme.typography.labelSmall)
+                    Text(stringResource(R.string.form_daily_reminder),      color = colors.title,                        style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(R.string.form_daily_reminder_hint), color = colors.subtitle.copy(alpha = 0.75f), style = MaterialTheme.typography.labelSmall)
                 }
                 Switch(
                     checked         = notificationsEnabled,
@@ -165,9 +208,9 @@ internal fun ProfileFormTab(
                     verticalAlignment     = Alignment.CenterVertically,
                 ) {
                     Column {
-                        Text("Reminder time", color = colors.title, style = MaterialTheme.typography.bodyMedium)
+                        Text(stringResource(R.string.form_reminder_time), color = colors.title, style = MaterialTheme.typography.bodyMedium)
                         if (!reminderIsExact) {
-                            Text("Approximate on this device.", color = colors.subtitle.copy(alpha = 0.75f), style = MaterialTheme.typography.labelSmall)
+                            Text(stringResource(R.string.form_approximate_on_device), color = colors.subtitle.copy(alpha = 0.75f), style = MaterialTheme.typography.labelSmall)
                         }
                     }
                     Text(
@@ -180,7 +223,7 @@ internal fun ProfileFormTab(
         }
 
         // ── Privacy & Data ────────────────────────────────────────────────────
-        SectionCard("Privacy & Data", colors) {
+        SectionCard(stringResource(R.string.form_privacy_data), colors) {
             Row(
                 modifier              = Modifier.fillMaxWidth(),
                 verticalAlignment     = Alignment.CenterVertically,
@@ -188,12 +231,12 @@ internal fun ProfileFormTab(
             ) {
                 Column(Modifier.weight(1f)) {
                     Text(
-                        "Allow data collection",
+                        stringResource(R.string.form_allow_data_collection),
                         color = colors.title,
                         style = MaterialTheme.typography.bodyMedium,
                     )
                     Text(
-                        "Share breathing stats and location data to improve your experience. You can turn this off at any time.",
+                        stringResource(R.string.form_share_stats_hint),
                         color = colors.subtitle.copy(alpha = 0.75f),
                         style = MaterialTheme.typography.labelSmall,
                     )
@@ -213,7 +256,7 @@ internal fun ProfileFormTab(
             if (!dataCollectionEnabled) {
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    text  = "Optional data collection is off. Login and core app features still work normally.",
+                    text  = stringResource(R.string.form_data_collection_off),
                     color = colors.subtitle.copy(alpha = 0.70f),
                     style = MaterialTheme.typography.labelSmall,
                 )
@@ -221,7 +264,7 @@ internal fun ProfileFormTab(
         }
 
         // ── How we use this (bottom) ──────────────────────────────────────────
-        SectionCard("How we use this", colors) {
+        SectionCard(stringResource(R.string.form_how_we_use), colors) {
             Box(
                 Modifier
                     .fillMaxWidth()
@@ -229,7 +272,7 @@ internal fun ProfileFormTab(
                     .padding(12.dp),
             ) {
                 Text(
-                    text  = "Your age, height and weight help calibrate breathing pacing. Your goal shapes the first recommendations.",
+                    text  = stringResource(R.string.form_data_calibration),
                     color = colors.text.copy(alpha = 0.80f),
                     style = MaterialTheme.typography.bodySmall,
                 )
@@ -248,7 +291,7 @@ internal fun ProfileFormTab(
             ),
         ) {
             if (saving) CircularProgressIndicator(modifier = Modifier.size(20.dp), color = colors.onPrimary, strokeWidth = 2.dp)
-            else        Text("Save changes", color = colors.onPrimary)
+            else        Text(stringResource(R.string.form_save_changes), color = colors.onPrimary)
         }
     }
 }
@@ -288,7 +331,7 @@ private fun CollapsiblePersonalInfo(
             verticalAlignment     = Alignment.CenterVertically,
         ) {
             Text(
-                text          = "PERSONAL INFO",
+                text          = stringResource(R.string.form_personal_info),
                 style         = MaterialTheme.typography.labelSmall,
                 color         = colors.subtitle,
                 letterSpacing = 1.sp,
@@ -308,7 +351,7 @@ private fun CollapsiblePersonalInfo(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 // Display name
-                Text("DISPLAY NAME", style = MaterialTheme.typography.labelSmall, color = colors.subtitle, letterSpacing = 1.sp)
+                Text(stringResource(R.string.form_display_name), style = MaterialTheme.typography.labelSmall, color = colors.subtitle, letterSpacing = 1.sp)
                 BasicTextField(
                     value         = nickname,
                     onValueChange = onNicknameChange,
@@ -327,21 +370,21 @@ private fun CollapsiblePersonalInfo(
                         }
                     },
                 )
-                Text("Shown in community and leaderboards.", color = colors.subtitle.copy(alpha = 0.75f), style = MaterialTheme.typography.labelSmall)
+                Text(stringResource(R.string.form_shown_in_community), color = colors.subtitle.copy(alpha = 0.75f), style = MaterialTheme.typography.labelSmall)
 
                 // Body data
-                Text("BODY DATA", style = MaterialTheme.typography.labelSmall, color = colors.subtitle, letterSpacing = 1.sp)
+                Text(stringResource(R.string.form_body_data), style = MaterialTheme.typography.labelSmall, color = colors.subtitle, letterSpacing = 1.sp)
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                     modifier              = Modifier.fillMaxWidth(),
                 ) {
-                    MiniInput("Height", "cm",  heightCm, colors, onHeightChange, Modifier.weight(1f))
-                    MiniInput("Weight", "kg",  weightKg, colors, onWeightChange, Modifier.weight(1f))
+                    MiniInput(stringResource(R.string.form_height_label), stringResource(R.string.form_height_unit),  heightCm, colors, onHeightChange, Modifier.weight(1f))
+                    MiniInput(stringResource(R.string.form_weight_label), stringResource(R.string.form_weight_unit),  weightKg, colors, onWeightChange, Modifier.weight(1f))
                 }
-                MiniInput("Age", "years", age, colors, onAgeChange, Modifier.fillMaxWidth())
+                MiniInput(stringResource(R.string.form_age_label), stringResource(R.string.form_age_unit), age, colors, onAgeChange, Modifier.fillMaxWidth())
 
                 // Gender
-                Text("GENDER", style = MaterialTheme.typography.labelSmall, color = colors.subtitle, letterSpacing = 1.sp)
+                Text(stringResource(R.string.form_gender), style = MaterialTheme.typography.labelSmall, color = colors.subtitle, letterSpacing = 1.sp)
                 FlowPills(items = GENDERS, selected = gender, colors = colors, onSelect = onGenderChange)
             }
         }
@@ -352,7 +395,7 @@ private fun CollapsiblePersonalInfo(
 
 @Composable
 private fun FlowPills(
-    items:    List<Pair<String, String>>,
+    items:    List<ChoiceItem>,
     selected: String,
     colors: AppColors,
     onSelect: (String) -> Unit,
@@ -361,12 +404,12 @@ private fun FlowPills(
         Modifier.horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        items.forEach { (value, label) ->
+        items.forEach { item ->
             ProfileChip(
-                text    = label,
+                text    = stringResource(item.labelRes),
                 colors  = colors,
-                active  = selected == value,
-                onClick = { onSelect(value) },
+                active  = selected == item.value,
+                onClick = { onSelect(item.value) },
             )
         }
     }

@@ -1,6 +1,8 @@
 package com.breatheonline.breathe.data.api
 
 import com.breatheonline.breathe.data.models.AuthResponse
+import com.breatheonline.breathe.data.models.AchievementDto
+import com.breatheonline.breathe.data.models.AchievementHighlightsResponse
 import com.breatheonline.breathe.data.models.ChallengeDto
 import com.breatheonline.breathe.data.models.ChallengeRecommendationDto
 import com.breatheonline.breathe.data.models.CoachMessageRequest
@@ -10,6 +12,7 @@ import com.breatheonline.breathe.data.models.CreatePostRequest
 import com.breatheonline.breathe.data.models.CreateSessionRequest
 import com.breatheonline.breathe.data.models.GlobePinDto
 import com.breatheonline.breathe.data.models.GlobeStatsDto
+import com.breatheonline.breathe.data.models.HealthConnectImportRequest
 import com.breatheonline.breathe.data.models.IntegrationStatusDto
 import com.breatheonline.breathe.data.models.LikeResponse
 import com.breatheonline.breathe.data.models.LoginRequest
@@ -71,6 +74,17 @@ interface ApiService {
     suspend fun createSession(
         @Body request: CreateSessionRequest,
     ): Response<RemoteSession>
+
+    @GET("achievements")
+    suspend fun getAchievements(): Response<List<AchievementDto>>
+
+    @GET("achievements/highlights")
+    suspend fun getAchievementHighlights(
+        @Query("limit") limit: Int = 3,
+    ): Response<AchievementHighlightsResponse>
+
+    @GET("achievements/{slug}")
+    suspend fun getAchievement(@Path("slug") slug: String): Response<AchievementDto>
 
     // ── Journal / NLP ─────────────────────────────────────────────────────────
 
@@ -149,11 +163,17 @@ interface ApiService {
 
     // ── Integrations ──────────────────────────────────────────────────────────
 
-    @GET("integrations")
+    @GET("integrations/status")
     suspend fun getIntegrationStatus(): Response<List<IntegrationStatusDto>>
 
     @POST("integrations/sync")
     suspend fun syncIntegrations(): Response<Unit>
+
+    @DELETE("integrations/{provider}")
+    suspend fun disconnectIntegration(@Path("provider") provider: String): Response<Unit>
+
+    @POST("integrations/apple-health")
+    suspend fun importHealthData(@Body data: HealthConnectImportRequest): Response<Unit>
 }
 
 // Google Login Request

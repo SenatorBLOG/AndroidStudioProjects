@@ -26,10 +26,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.breatheonline.breathe.R
 import com.breatheonline.breathe.ui.theme.AppColors
 import com.breatheonline.breathe.viewmodel.DurationBuckets
 import com.breatheonline.breathe.viewmodel.MoodPoint
@@ -44,7 +46,6 @@ import androidx.compose.ui.graphics.lerp
 @Composable
 internal fun DurationDonutSection(buckets: DurationBuckets, colors: AppColors) {
     if (buckets.total == 0) return
-    MeditationSectionLabel("SESSION DURATION", colors)
 
     val bucketColors = listOf(
         colors.primary,
@@ -55,20 +56,25 @@ internal fun DurationDonutSection(buckets: DurationBuckets, colors: AppColors) {
     val labels   = listOf("Short ≤5m", "Medium 6-15m", "Long 16-30m", "Extended 30+m")
     val counts   = listOf(buckets.short, buckets.medium, buckets.long, buckets.extended)
     val total    = buckets.total.toFloat()
-    val avgMins  = listOf(2.5f, 10f, 22.5f, 45f)
-        .zip(counts) { mid, cnt -> mid * cnt }
-        .sum() / total
+    // Use precomputed actual average; fall back to bucket-midpoint estimate only if unavailable
+    val avgMins  = if (buckets.avgMinutes > 0f) buckets.avgMinutes
+    else listOf(2.5f, 10f, 22.5f, 45f).zip(counts) { mid, cnt -> mid * cnt }.sum() / total
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(20.dp))
             .background(colors.surface)
-            .border(1.dp, colors.subtitle.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
+            .border(1.dp, colors.primary.copy(alpha = 0.08f), RoundedCornerShape(20.dp))
             .padding(horizontal = 14.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        Text(
+            text = "Session duration",
+            style = MaterialTheme.typography.titleSmall,
+            color = colors.title,
+        )
         Row(
             modifier          = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -166,7 +172,7 @@ internal fun DurationDonutSection(buckets: DurationBuckets, colors: AppColors) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment     = Alignment.CenterVertically,
         ) {
-            Text("${buckets.total} sessions total",
+            Text(stringResource(R.string.meditation_sessions_total, buckets.total),
                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
                 color = colors.subtitle)
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -194,8 +200,6 @@ internal fun DurationDonutSection(buckets: DurationBuckets, colors: AppColors) {
 
 @Composable
 internal fun StatsCardsGrid(state: StatsState, colors: AppColors) {
-    MeditationSectionLabel("THIS WEEK", colors)
-
     val sparkMins   = state.weeklyData.map { it.minutes.toFloat() }
     val sparkActive = state.weeklyData.map { if (it.minutes > 0) 1f else 0f }
 
@@ -215,6 +219,12 @@ internal fun StatsCardsGrid(state: StatsState, colors: AppColors) {
         modifier            = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
+        Text(
+            text = "This week",
+            style = MaterialTheme.typography.titleSmall,
+            color = colors.title,
+            modifier = Modifier.padding(bottom = 2.dp),
+        )
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             MiniStatCard(
                 value    = "${state.sessionsThisWeek}",
@@ -392,7 +402,7 @@ internal fun MiniStatCard(
         modifier = modifier
             .clip(RoundedCornerShape(16.dp))
             .background(colors.surface)
-            .border(1.dp, colors.subtitle.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
+            .border(1.dp, colors.primary.copy(alpha = 0.08f), RoundedCornerShape(16.dp))
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
@@ -439,7 +449,12 @@ internal fun MoodGrid(points: List<MoodPoint>, colors: AppColors) {
             .fillMaxWidth()
             .padding(horizontal = 20.dp),
     ) {
-        MeditationSectionLabel("MOOD LIFT", colors)
+        Text(
+            text = "Mood lift",
+            style = MaterialTheme.typography.titleSmall,
+            color = colors.title,
+            modifier = Modifier.padding(bottom = 10.dp),
+        )
 
         val rows = points.take(35).chunked(7)
         rows.forEach { row ->
@@ -458,11 +473,11 @@ internal fun MoodGrid(points: List<MoodPoint>, colors: AppColors) {
         Spacer(Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             LegendDot(lerp(Color(0xFF388E3C), Color(0xFFA5D6A7), 0.3f))
-            Text("  Improved  ", style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp), color = colors.subtitle)
+            Text("  ${stringResource(R.string.meditation_trend_improved)}  ", style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp), color = colors.subtitle)
             LegendDot(lerp(Color(0xFFD32F2F), Color(0xFFEF9A9A), 0.3f))
-            Text("  Decreased  ", style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp), color = colors.subtitle)
+            Text("  ${stringResource(R.string.meditation_trend_decreased)}  ", style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp), color = colors.subtitle)
             LegendDot(colors.subtitle.copy(alpha = 0.20f))
-            Text("  No data", style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp), color = colors.subtitle)
+            Text("  ${stringResource(R.string.meditation_no_data_label)}", style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp), color = colors.subtitle)
         }
     }
 }
@@ -501,17 +516,22 @@ internal fun MoodBreakdownSection(mood: MoodStats, colors: AppColors) {
     val blue  = Color(0xFF4A9EFF)
     val red   = Color(0xFFFF8A8A)
 
-    MeditationSectionLabel("MOOD OVERVIEW", colors)
     Column(
         modifier            = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
+        Text(
+            text = "Mood overview",
+            style = MaterialTheme.typography.titleSmall,
+            color = colors.title,
+            modifier = Modifier.padding(bottom = 2.dp),
+        )
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(16.dp))
+                .clip(RoundedCornerShape(20.dp))
                 .background(colors.surface)
-                .border(1.dp, colors.subtitle.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
+                .border(1.dp, colors.primary.copy(alpha = 0.08f), RoundedCornerShape(20.dp))
                 .padding(horizontal = 14.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
@@ -523,10 +543,10 @@ internal fun MoodBreakdownSection(mood: MoodStats, colors: AppColors) {
                 Column {
                     Text("${mood.positivePct}%",
                         style = MaterialTheme.typography.titleLarge, color = colors.title, fontWeight = FontWeight.Bold)
-                    Text("positive",
+                    Text(stringResource(R.string.meditation_positive_label),
                         style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = colors.subtitle)
                 }
-                Text("${mood.total} entries",
+                Text(stringResource(R.string.meditation_entries_count, mood.total),
                     style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = colors.subtitle)
             }
             listOf(
@@ -566,19 +586,19 @@ internal fun MoodBreakdownSection(mood: MoodStats, colors: AppColors) {
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .clip(RoundedCornerShape(16.dp))
+                    .clip(RoundedCornerShape(20.dp))
                     .background(colors.surface)
-                    .border(1.dp, colors.subtitle.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
+                    .border(1.dp, colors.primary.copy(alpha = 0.08f), RoundedCornerShape(20.dp))
                     .padding(horizontal = 14.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Text("${"%.1f".format(mood.avgScore)}/10",
                     style = MaterialTheme.typography.titleLarge, color = colors.title, fontWeight = FontWeight.Bold)
                 if (mood.topScoreCount > 0) {
-                    Text("Most common: ${mood.topScore}/10 (${mood.topScoreCount}×)",
+                    Text(stringResource(R.string.meditation_most_common, mood.topScore, mood.topScoreCount),
                         style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = colors.subtitle)
                 }
-                Text("AVG MOOD",
+                Text(stringResource(R.string.meditation_avg_mood),
                     style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp, letterSpacing = 1.sp),
                     color = colors.subtitle)
                 val maxDist = mood.distribution.maxOrNull()?.coerceAtLeast(1) ?: 1
@@ -611,17 +631,17 @@ internal fun MoodBreakdownSection(mood: MoodStats, colors: AppColors) {
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .clip(RoundedCornerShape(16.dp))
+                    .clip(RoundedCornerShape(20.dp))
                     .background(colors.surface)
-                    .border(1.dp, colors.subtitle.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
+                    .border(1.dp, colors.primary.copy(alpha = 0.08f), RoundedCornerShape(20.dp))
                     .padding(horizontal = 14.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 Text("${mood.uniqueScores}/10",
                     style = MaterialTheme.typography.titleLarge, color = colors.title, fontWeight = FontWeight.Bold)
-                Text("unique scores",
+                Text(stringResource(R.string.meditation_unique_scores),
                     style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = colors.subtitle)
-                Text("SCORE VARIETY",
+                Text(stringResource(R.string.meditation_score_variety),
                     style = MaterialTheme.typography.labelSmall.copy(fontSize = 8.sp, letterSpacing = 1.sp),
                     color = colors.subtitle)
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {

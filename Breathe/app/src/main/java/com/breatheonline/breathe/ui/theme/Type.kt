@@ -49,17 +49,17 @@ val AppTypography = Typography(
     // Primary screen title  e.g. "Breathe Better"
     headlineLarge = TextStyle(
         fontFamily   = MontserratFontFamily,
-        fontWeight   = FontWeight.Medium,
-        fontSize     = 28.sp,
-        lineHeight   = 34.sp,
+        fontWeight   = FontWeight.SemiBold,
+        fontSize     = 30.sp,
+        lineHeight   = 36.sp,
         letterSpacing = (-0.25).sp,
     ),
     // Section heading  e.g. "Hello, Mikhail!"
     headlineMedium = TextStyle(
         fontFamily   = MontserratFontFamily,
         fontWeight   = FontWeight.Medium,
-        fontSize     = 22.sp,
-        lineHeight   = 28.sp,
+        fontSize     = 24.sp,
+        lineHeight   = 30.sp,
     ),
     // Sub-section heading  e.g. card titles in Profile
     headlineSmall = TextStyle(
@@ -74,8 +74,8 @@ val AppTypography = Typography(
     titleLarge = TextStyle(
         fontFamily   = MontserratFontFamily,
         fontWeight   = FontWeight.SemiBold,
-        fontSize     = 18.sp,
-        lineHeight   = 24.sp,
+        fontSize     = 20.sp,
+        lineHeight   = 26.sp,
     ),
     // Subtitle below main heading  e.g. "Meditation for Sleep & Relaxation"
     titleMedium = TextStyle(
@@ -141,6 +141,5 @@ val AppTypography = Typography(
         fontSize     = 11.sp,
         lineHeight   = 16.sp,
         letterSpacing = 0.5.sp,
-        textAlign    = TextAlign.Center,
     ),
 )

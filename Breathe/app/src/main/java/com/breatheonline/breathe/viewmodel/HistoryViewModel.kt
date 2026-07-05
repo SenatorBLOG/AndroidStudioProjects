@@ -4,19 +4,21 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.breatheonline.breathe.data.api.ApiService
 import com.breatheonline.breathe.data.models.RemoteSession
-import com.example.breathe.data.repository.MeditationRepository
+import com.breatheonline.breathe.data.repository.MeditationRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Instant
 import javax.inject.Inject
 
 data class HistoryState(
-    val sessions: List<RemoteSession> = emptyList(),
-    val status:   SessionsStatus      = SessionsStatus.Loading,
+    val sessions:    List<RemoteSession> = emptyList(),
+    val status:      SessionsStatus      = SessionsStatus.Loading,
+    val hasApiData:  Boolean             = false,
 )
 
 @HiltViewModel
@@ -39,12 +41,18 @@ class HistoryViewModel @Inject constructor(
      */
     private fun observeLocal() {
         viewModelScope.launch {
-            meditationRepo.getAllSessions().collect { local ->
+            meditationRepo.getAllSessions()
+                .catch { err ->
+                    _state.update { current ->
+                        if (current.sessions.isEmpty())
+                            current.copy(status = SessionsStatus.Error(err.message ?: "Database error"))
+                        else current
+                    }
+                }
+                .collect { local ->
                 _state.update { current ->
                     // Don't overwrite a successful API response with local data
-                    if (current.status is SessionsStatus.Success &&
-                        current.sessions.any { it.id.length > 10 }  // looks like a Mongo id
-                    ) return@update current
+                    if (current.hasApiData) return@update current
 
                     val mapped = local
                         .sortedByDescending { it.date }
@@ -71,12 +79,13 @@ class HistoryViewModel @Inject constructor(
             .onSuccess { resp ->
                 if (resp.isSuccessful) {
                     val list = (resp.body() ?: emptyList())
-                        .sortedByDescending { it.completedAt }
+                        .sortedByDescending { it.effectiveDate }
                     _state.update {
                         it.copy(
-                            sessions = list,
-                            status   = if (list.isEmpty()) SessionsStatus.Empty
-                                       else               SessionsStatus.Success,
+                            sessions   = list,
+                            status     = if (list.isEmpty()) SessionsStatus.Empty
+                                         else               SessionsStatus.Success,
+                            hasApiData = true,
                         )
                     }
                 } else {

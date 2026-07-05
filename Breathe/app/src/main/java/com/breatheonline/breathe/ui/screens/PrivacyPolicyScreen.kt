@@ -41,16 +41,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.breatheonline.breathe.R
 import com.breatheonline.breathe.ui.theme.AppColors
 
-private const val PRIVACY_LAST_UPDATED = "March 23, 2026"
-private const val PRIVACY_EMAIL = "privacy@breatheapp.co"
+// Section content lives in PrivacyPolicyContent.kt
 
 @Composable
 fun PrivacyPolicyScreen(colors: AppColors, navController: NavController) {
@@ -68,7 +69,7 @@ fun PrivacyPolicyScreen(colors: AppColors, navController: NavController) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = { navController.popBackStack() }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = colors.title)
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.cd_back), tint = colors.title)
             }
         }
 
@@ -76,7 +77,7 @@ fun PrivacyPolicyScreen(colors: AppColors, navController: NavController) {
             modifier = Modifier.padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            // ── Header ────────────────────────────────────────────────────────────
+            // ── Header ────────────────────────────────────────────────────────
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Box(
                     modifier = Modifier
@@ -88,8 +89,8 @@ fun PrivacyPolicyScreen(colors: AppColors, navController: NavController) {
                 ) {
                     Icon(Icons.Default.Shield, contentDescription = null, tint = colors.primary, modifier = Modifier.size(24.dp))
                 }
-                Text("Privacy Policy", style = MaterialTheme.typography.headlineLarge, color = colors.title, fontWeight = FontWeight.Bold)
-                Text("Last updated: $PRIVACY_LAST_UPDATED", style = MaterialTheme.typography.bodySmall, color = colors.subtitle)
+                Text(stringResource(R.string.privacy_title), style = MaterialTheme.typography.headlineLarge, color = colors.title, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.privacy_last_updated, PRIVACY_LAST_UPDATED), style = MaterialTheme.typography.bodySmall, color = colors.subtitle)
                 Text(
                     "Breathe is built on a simple principle: your health data belongs to you. This policy explains exactly what we collect, why, and how you can control it.",
                     style = MaterialTheme.typography.bodySmall,
@@ -97,87 +98,28 @@ fun PrivacyPolicyScreen(colors: AppColors, navController: NavController) {
                 )
             }
 
-            // ── Section 1: Information We Collect ─────────────────────────────────
-            PolicySection(colors = colors, icon = Icons.Default.Storage, title = "Information We Collect") {
-                PText(colors, "We collect only what is necessary to provide Breathe's features:")
-                BulletItem(colors) { BoldRest(colors, "Account data", " — email address and display name, provided voluntarily when you sign up. Google OAuth provides only your name and email.") }
-                BulletItem(colors) { BoldRest(colors, "Session data", " — breathing technique used, session duration, phase timings, and optional notes you write.") }
-                BulletItem(colors) { BoldRest(colors, "Biometric data (opt-in)", " — heart rate readings from your device, collected only with your explicit consent via the Data Consent screen.") }
-                BulletItem(colors) { BoldRest(colors, "Globe pins", " — latitude, longitude, and optional public message if you choose to drop a pin on the community globe.") }
-                BulletItem(colors) { BoldRest(colors, "Usage data", " — anonymous analytics such as page views and feature interactions. No personally identifiable information is attached.") }
-                PText(colors, "You can use all core breathing features without creating an account. Account creation is optional.")
-            }
+            // ── Sections (driven by PRIVACY_SECTIONS data) ────────────────────
+            PRIVACY_SECTIONS.forEach { section ->
+                PolicySection(colors = colors, icon = section.icon.toImageVector(), title = section.title) {
+                    section.items.forEach { item -> RenderPolicyItem(colors, item) }
 
-            // ── Section 2: How We Use Your Data ───────────────────────────────────
-            PolicySection(colors = colors, icon = Icons.Default.Visibility, title = "How We Use Your Data") {
-                PText(colors, "Your data is used solely to operate and improve Breathe:")
-                BulletItem(colors) { PText(colors, "Saving and displaying your session history and streaks.") }
-                BulletItem(colors) { PText(colors, "Personalising your breathing statistics and progress charts.") }
-                BulletItem(colors) { PText(colors, "Powering the community globe (only pins you explicitly create are shown publicly).") }
-                BulletItem(colors) { PText(colors, "Sending optional push notifications for streak reminders (only if you enable them).") }
-                BulletItem(colors) { PText(colors, "Improving app performance and fixing bugs using anonymised usage analytics.") }
-                BoldRest(colors, "We never", " sell your data, use it for advertising, or share it with third parties for their own purposes.")
-            }
-
-            // ── Section 3: Data Storage & Security ────────────────────────────────
-            PolicySection(colors = colors, icon = Icons.Default.Lock, title = "Data Storage & Security") {
-                BulletItem(colors) { PText(colors, "All data is encrypted in transit via HTTPS/TLS and encrypted at rest in our database.") }
-                BulletItem(colors) { PText(colors, "Passwords are hashed using bcrypt. We never store plaintext passwords.") }
-                BulletItem(colors) { PText(colors, "Biometric (heart rate) data is stored separately and access-controlled so only you can read it.") }
-                BulletItem(colors) { PText(colors, "We use industry-standard practices to protect against unauthorised access, alteration, and deletion.") }
-                PText(colors, "Despite our best efforts, no system is 100% secure. If you discover a security issue, please contact us at $PRIVACY_EMAIL.")
-            }
-
-            // ── Section 4: Third-Party Services ───────────────────────────────────
-            PolicySection(colors = colors, icon = Icons.Default.Language, title = "Third-Party Services") {
-                PText(colors, "Breathe uses a small number of third-party services:")
-                BulletItem(colors) { BoldRest(colors, "Google OAuth", " — for social sign-in. Google receives only the authentication request. We store only your name and email.") }
-                BulletItem(colors) { BoldRest(colors, "MongoDB Atlas", " — our database host. Data is stored in encrypted clusters with strict access controls.") }
-                BulletItem(colors) { BoldRest(colors, "Web Speech API", " — voice guidance runs entirely in your browser. No audio is sent to any server.") }
-                PText(colors, "No data is shared with advertising networks, data brokers, or social media platforms.")
-            }
-
-            // ── Section 5: Your Rights ─────────────────────────────────────────────
-            PolicySection(colors = colors, icon = Icons.Default.HowToReg, title = "Your Rights") {
-                PText(colors, "You have full control over your data:")
-                BulletItem(colors) { BoldRest(colors, "Access", " — view all your session history and stats from your Profile page at any time.") }
-                BulletItem(colors) { BoldRest(colors, "Delete sessions", " — remove individual sessions from your session history.") }
-                BulletItem(colors) { BoldRest(colors, "Delete biometric data", " — revoke heart-rate consent and erase all stored readings from Profile → Data & Privacy.") }
-                BulletItem(colors) { BoldRest(colors, "Delete account", " — permanently erase your account and all associated data. Contact us at the email below.") }
-                BulletItem(colors) { BoldRest(colors, "Export", " — request a copy of your data at any time by emailing us.") }
-                PText(colors, "If you are in the EU/EEA, you also have rights under GDPR including the right to object to processing and to lodge a complaint with your supervisory authority.")
-            }
-
-            // ── Section 6: Data Retention ─────────────────────────────────────────
-            PolicySection(colors = colors, icon = Icons.Default.Delete, title = "Data Retention") {
-                BulletItem(colors) { PText(colors, "Session data is retained for as long as your account is active or until you delete it.") }
-                BulletItem(colors) { PText(colors, "If you delete your account, all personal data is permanently removed within 30 days.") }
-                BulletItem(colors) { PText(colors, "Anonymised, aggregated analytics data (no personal identifiers) may be retained indefinitely to improve the service.") }
-                BulletItem(colors) { PText(colors, "Globe pins you have posted are removed immediately when you delete them or your account.") }
-            }
-
-            // ── Section 7: Children's Privacy ─────────────────────────────────────
-            PolicySection(colors = colors, icon = Icons.Default.Security, title = "Children's Privacy") {
-                PText(colors, "Breathe is not directed at children under 13. We do not knowingly collect personal information from children under 13. If you believe a child has provided us personal data, please contact us and we will delete it promptly.")
-            }
-
-            // ── Section 8: Contact Us ──────────────────────────────────────────────
-            PolicySection(colors = colors, icon = Icons.Default.Email, title = "Contact Us") {
-                PText(colors, "For privacy questions, data requests, or to report a concern:")
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Email: ", style = MaterialTheme.typography.bodySmall, color = colors.subtitle)
-                    Text(
-                        PRIVACY_EMAIL,
-                        style    = MaterialTheme.typography.bodySmall,
-                        color    = colors.primary,
-                        fontWeight = FontWeight.Medium,
-                        modifier = Modifier.clickable { uriHandler.openUri("mailto:$PRIVACY_EMAIL") },
-                    )
+                    // Special case: Contact Us section gets the email row
+                    if (section.icon == PolicyIcon.EMAIL) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(stringResource(R.string.privacy_email_label), style = MaterialTheme.typography.bodySmall, color = colors.subtitle)
+                            Text(
+                                PRIVACY_CONTACT_EMAIL,
+                                style      = MaterialTheme.typography.bodySmall,
+                                color      = colors.primary,
+                                fontWeight = FontWeight.Medium,
+                                modifier   = Modifier.clickable { uriHandler.openUri("mailto:$PRIVACY_CONTACT_EMAIL") },
+                            )
+                        }
+                    }
                 }
-                PText(colors, "We aim to respond to all privacy-related requests within 5 business days.")
             }
 
-            // ── Footer note ───────────────────────────────────────────────────────
+            // ── Footer note ───────────────────────────────────────────────────
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -189,13 +131,13 @@ fun PrivacyPolicyScreen(colors: AppColors, navController: NavController) {
             ) {
                 PText(colors, "This policy may be updated from time to time. We will notify you of significant changes via the app or email. By continuing to use Breathe after changes take effect, you accept the revised policy.")
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text("Questions? Email ", style = MaterialTheme.typography.bodySmall, color = colors.subtitle)
+                    Text(stringResource(R.string.privacy_questions_email), style = MaterialTheme.typography.bodySmall, color = colors.subtitle)
                     Text(
-                        PRIVACY_EMAIL,
+                        PRIVACY_CONTACT_EMAIL,
                         style      = MaterialTheme.typography.bodySmall,
                         color      = colors.primary,
                         fontWeight = FontWeight.Medium,
-                        modifier   = Modifier.clickable { uriHandler.openUri("mailto:$PRIVACY_EMAIL") },
+                        modifier   = Modifier.clickable { uriHandler.openUri("mailto:$PRIVACY_CONTACT_EMAIL") },
                     )
                     Text(".", style = MaterialTheme.typography.bodySmall, color = colors.subtitle)
                 }
@@ -206,7 +148,29 @@ fun PrivacyPolicyScreen(colors: AppColors, navController: NavController) {
     }
 }
 
-// ── Private helpers ───────────────────────────────────────────────────────────
+// ── Render helpers ────────────────────────────────────────────────────────────
+
+@Composable
+private fun RenderPolicyItem(colors: AppColors, item: PolicyItem) {
+    when (item) {
+        is PolicyItem.Plain      -> PText(colors, item.text)
+        is PolicyItem.BoldPrefix -> BoldRest(colors, item.bold, item.rest)
+        is PolicyItem.Bullet     -> BulletItem(colors) { RenderPolicyItem(colors, item.inner) }
+    }
+}
+
+private fun PolicyIcon.toImageVector(): ImageVector = when (this) {
+    PolicyIcon.STORAGE    -> Icons.Default.Storage
+    PolicyIcon.VISIBILITY -> Icons.Default.Visibility
+    PolicyIcon.LOCK       -> Icons.Default.Lock
+    PolicyIcon.LANGUAGE   -> Icons.Default.Language
+    PolicyIcon.HOW_TO_REG -> Icons.Default.HowToReg
+    PolicyIcon.DELETE     -> Icons.Default.Delete
+    PolicyIcon.SECURITY   -> Icons.Default.Security
+    PolicyIcon.EMAIL      -> Icons.Default.Email
+}
+
+// ── Composable building blocks ────────────────────────────────────────────────
 
 @Composable
 private fun PolicySection(

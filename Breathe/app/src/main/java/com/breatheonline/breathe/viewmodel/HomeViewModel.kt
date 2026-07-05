@@ -3,7 +3,11 @@ package com.breatheonline.breathe.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.breatheonline.breathe.data.api.ApiService
-import com.example.breathe.data.repository.MeditationRepository
+import com.breatheonline.breathe.data.repository.IntegrationRepository
+import com.breatheonline.breathe.data.repository.MeditationRepository
+import com.breatheonline.breathe.utils.SessionCalculations
+import com.breatheonline.breathe.utils.mergeHeartRateDays
+import com.breatheonline.breathe.utils.mergeSleepDays
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,20 +19,19 @@ import java.time.LocalDate
 import java.time.ZoneId
 import javax.inject.Inject
 
-// ── UI state ──────────────────────────────────────────────────────────────────
-
 data class HomeUiState(
-    val userName:      String = "",
-    val todayMinutes:  Int    = 0,
-    val currentStreak: Int    = 0,
+    val userName: String = "",
+    val todayMinutes: Int = 0,
+    val currentStreak: Int = 0,
+    val restingHeartRate: Int? = null,
+    val lastSleepHours: Double? = null,
 )
-
-// ── ViewModel ─────────────────────────────────────────────────────────────────
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val apiService: ApiService,
     private val meditationRepository: MeditationRepository,
+    private val integrationRepository: IntegrationRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeUiState())
@@ -37,9 +40,9 @@ class HomeViewModel @Inject constructor(
     init {
         fetchProfile()
         observeLocalSessions()
+        observeIntegrations()
+        viewModelScope.launch { integrationRepository.refresh() }
     }
-
-    // ── Profile (first name for greeting) ─────────────────────────────────────
 
     private fun fetchProfile() {
         viewModelScope.launch {
@@ -53,41 +56,38 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-    // ── Local sessions → today's minutes + current streak ─────────────────────
-
     private fun observeLocalSessions() {
         viewModelScope.launch {
             meditationRepository.getAllSessions().collect { sessions ->
-                val zone  = ZoneId.systemDefault()
+                val zone = ZoneId.systemDefault()
                 val today = LocalDate.now(zone)
-
                 val todayMinutes = sessions
                     .filter { epochToDate(it.date, zone) == today }
                     .sumOf { it.duration } / 60
-
-                val dates  = sessions.map { epochToDate(it.date, zone) }.toSet()
-                val streak = computeCurrentStreak(dates, today)
-
+                val dates = sessions.map { epochToDate(it.date, zone) }.toSet()
+                val streak = SessionCalculations.computeCurrentStreak(dates, today)
                 _state.update { it.copy(todayMinutes = todayMinutes, currentStreak = streak) }
+            }
+        }
+    }
+
+    private fun observeIntegrations() {
+        viewModelScope.launch {
+            integrationRepository.integrations.collect { integrations ->
+                if (integrations.isEmpty()) return@collect
+                val latestHr = mergeHeartRateDays(
+                    integrations.flatMap { it.data?.heartRate.orEmpty() }
+                ).lastOrNull()?.let { it.restingRate ?: it.avgRate }
+
+                val latestSleep = mergeSleepDays(
+                    integrations.flatMap { it.data?.sleep.orEmpty() }
+                ).lastOrNull()?.duration?.let { it / 60.0 }
+
+                _state.update { it.copy(restingHeartRate = latestHr, lastSleepHours = latestSleep) }
             }
         }
     }
 
     private fun epochToDate(ms: Long, zone: ZoneId): LocalDate =
         Instant.ofEpochMilli(ms).atZone(zone).toLocalDate()
-
-    /**
-     * Count consecutive days ending today (or yesterday if today has no session).
-     */
-    private fun computeCurrentStreak(dates: Set<LocalDate>, today: LocalDate): Int {
-        val start = when {
-            dates.contains(today)               -> today
-            dates.contains(today.minusDays(1))  -> today.minusDays(1)
-            else                                -> return 0
-        }
-        var count = 0
-        var day   = start
-        while (dates.contains(day)) { count++; day = day.minusDays(1) }
-        return count
-    }
 }

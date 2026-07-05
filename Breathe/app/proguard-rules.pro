@@ -2,6 +2,13 @@
 -keepattributes SourceFile,LineNumberTable
 -renamesourcefileattribute SourceFile
 
+# ── Strip Log.d / Log.v from release (privacy + log size) ────────────────────
+# Log.e / Log.w are kept (they go to Crashlytics if wired).
+-assumenosideeffects class android.util.Log {
+    public static *** d(...);
+    public static *** v(...);
+}
+
 # ── Kotlin ────────────────────────────────────────────────────────────────────
 -keep class kotlin.Metadata { *; }
 -dontwarn kotlin.**
@@ -26,8 +33,8 @@
 -dontwarn com.google.gson.**
 -keep class com.google.gson.** { *; }
 # Keep all data classes serialized/deserialized by Gson
--keep class com.example.breathe.data.models.** { *; }
--keepclassmembers class com.example.breathe.data.models.** { *; }
+-keep class com.breatheonline.breathe.data.models.** { *; }
+-keepclassmembers class com.breatheonline.breathe.data.models.** { *; }
 
 # ── Hilt / Dagger ─────────────────────────────────────────────────────────────
 -keep class dagger.hilt.** { *; }
@@ -72,8 +79,8 @@
 -dontwarn kotlinx.coroutines.**
 
 # ── Broadcast receivers / Services (Hilt injected) ───────────────────────────
--keep class com.example.breathe.receiver.** { *; }
--keep class com.example.breathe.worker.**   { *; }
+-keep class com.breatheonline.breathe.receiver.** { *; }
+-keep class com.breatheonline.breathe.worker.**   { *; }
 
 # ── Enums (used in sealed classes and API models) ────────────────────────────
 -keepclassmembers enum * {

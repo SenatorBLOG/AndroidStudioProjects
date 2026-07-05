@@ -86,6 +86,9 @@ fun StatsScreen(
                 SleepStatsContent(
                     state = state,
                     onViewChange = { viewModel.setSleepView(it) },
+                    onMoveSelection = { viewModel.moveSleepSelection(it) },
+                    onJumpToLatest = { viewModel.jumpToLatestSleep() },
+                    onInsightFeedback = { viewModel.setSleepInsightFeedback(it) },
                     onConnect = { navController.navigate(Route.PROFILE) },
                     colors = colors,
                 )

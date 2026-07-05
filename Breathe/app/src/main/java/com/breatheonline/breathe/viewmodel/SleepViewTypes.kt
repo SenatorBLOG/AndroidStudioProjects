@@ -10,6 +10,16 @@ data class StageTotals(
     val deepMin: Int, val lightMin: Int, val remMin: Int, val awakeMin: Int,
 ) { val totalMin get() = deepMin + lightMin + remMin + awakeMin }
 
+enum class MetricTone { POSITIVE, NEUTRAL, CAUTION, MUTED }
+
+data class NightMetric(
+    val label: String,
+    val value: String,
+    val status: String,
+    val supporting: String,
+    val tone: MetricTone,
+)
+
 data class SleepDayView(
     val date: LocalDate,
     val durationMin: Int,
@@ -21,6 +31,7 @@ data class SleepDayView(
     val qualityLabel: String,
     val avgSleepingHrBpm: Int?,
     val deltaVsAvg7dMin: Int?,
+    val nightMetrics: List<NightMetric>,
 )
 
 data class DayScorePoint(val date: LocalDate, val score: Int?)

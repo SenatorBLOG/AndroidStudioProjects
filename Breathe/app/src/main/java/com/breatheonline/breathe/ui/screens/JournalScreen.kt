@@ -30,7 +30,7 @@ import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.CircularProgressIndicator
+import com.breatheonline.breathe.ui.components.ShimmerCardList
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -52,7 +52,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
+import com.breatheonline.breathe.R
 import com.breatheonline.breathe.data.models.JournalSession
 import com.breatheonline.breathe.data.models.NlpData
 import com.breatheonline.breathe.data.models.NlpInsights
@@ -62,6 +64,7 @@ import com.breatheonline.breathe.viewmodel.JournalViewModel
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 // ── Sentiment helpers ─────────────────────────────────────────────────────────
 
@@ -80,11 +83,12 @@ private fun sentimentEmoji(s: String?) = when (s) {
     else       -> "😐"
 }
 
+@Composable
 private fun avgLabel(score: Double?) = when {
     score == null        -> null
-    score > 0.2          -> "Generally positive"
-    score < -0.2         -> "Challenging period"
-    else                 -> "Balanced"
+    score > 0.2          -> stringResource(R.string.journal_mood_generally_positive)
+    score < -0.2         -> stringResource(R.string.journal_mood_challenging)
+    else                 -> stringResource(R.string.journal_mood_balanced)
 }
 
 // ── Screen ────────────────────────────────────────────────────────────────────
@@ -121,8 +125,8 @@ fun JournalScreen(
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text("Emotional Journal", style = MaterialTheme.typography.titleLarge, color = colors.title, fontWeight = FontWeight.SemiBold)
-                Text("AI-powered session insights", style = MaterialTheme.typography.labelSmall, color = colors.subtitle)
+                Text(stringResource(R.string.journal_title), style = MaterialTheme.typography.titleLarge, color = colors.title, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.journal_subtitle), style = MaterialTheme.typography.labelSmall, color = colors.subtitle)
             }
             if (!state.isLoading) {
                 Box(
@@ -148,19 +152,18 @@ fun JournalScreen(
                 .padding(horizontal = 20.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            val capturedInsights = state.insights
             when {
                 state.isLoading -> {
-                    Box(Modifier.fillMaxWidth().padding(vertical = 80.dp), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = colors.primary, modifier = Modifier.size(28.dp), strokeWidth = 2.dp)
-                    }
+                    ShimmerCardList(rows = 5, modifier = Modifier.fillMaxWidth().padding(top = 8.dp))
                 }
 
-                state.error != null && state.insights == null -> {
+                state.error != null && capturedInsights == null -> {
                     ErrorCard(colors = colors, onRetry = { viewModel.load() })
                 }
 
-                state.insights != null -> {
-                    val insights = state.insights!!
+                capturedInsights != null -> {
+                    val insights = capturedInsights
                     val sessions = insights.sessions
 
                     // Overview card
@@ -225,7 +228,7 @@ private fun OverviewCard(insights: NlpInsights, colors: AppColors) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Icon(Icons.Default.AutoAwesome, null, tint = colors.primary, modifier = Modifier.size(14.dp))
             Text(
-                "30-DAY OVERVIEW",
+                stringResource(R.string.journal_30_day_overview),
                 style         = MaterialTheme.typography.labelSmall,
                 color         = colors.subtitle,
                 letterSpacing = 1.sp,
@@ -234,19 +237,19 @@ private fun OverviewCard(insights: NlpInsights, colors: AppColors) {
 
         // 3 metrics
         Row(horizontalArrangement = Arrangement.spacedBy(0.dp), modifier = Modifier.fillMaxWidth()) {
-            MetricCell("${insights.totalAnalyzed}", "analyzed",      colors, Modifier.weight(1f))
+            MetricCell("${insights.totalAnalyzed}", stringResource(R.string.journal_analyzed), colors, Modifier.weight(1f))
             if (label != null) {
-                MetricCell(label, "overall mood", colors, Modifier.weight(1.4f),
+                MetricCell(label, stringResource(R.string.journal_overall_mood), colors, Modifier.weight(1.4f),
                     valueColor = sentimentColor(sentStr, colors.primary))
             }
-            MetricCell("${insights.sentimentDist.positive}", "positive", colors, Modifier.weight(1f),
+            MetricCell("${insights.sentimentDist.positive}", stringResource(R.string.journal_positive_pct), colors, Modifier.weight(1f),
                 valueColor = colors.primary)
         }
 
         // Top themes
         if (insights.topThemes.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("Recurring themes", style = MaterialTheme.typography.labelSmall, color = colors.subtitle, letterSpacing = 0.5.sp)
+                Text(stringResource(R.string.journal_recurring_themes), style = MaterialTheme.typography.labelSmall, color = colors.subtitle, letterSpacing = 0.5.sp)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     insights.topThemes.forEach { (theme, count) ->
                         ThemeChip(text = "$theme · $count", accent = colors.primary)
@@ -395,11 +398,11 @@ private fun JournalEntry(
                                 .background(colors.primary.copy(alpha = 0.12f))
                                 .padding(horizontal = 8.dp, vertical = 2.dp),
                         ) {
-                            Text("${session.sessionLength.toInt()}m", style = MaterialTheme.typography.labelSmall, color = colors.primary)
+                            Text(stringResource(R.string.journal_session_minutes, session.sessionLength.toInt()), style = MaterialTheme.typography.labelSmall, color = colors.primary)
                         }
                     }
                     if (moodDelta > 0) {
-                        Text("+$moodDelta mood", style = MaterialTheme.typography.labelSmall, color = colors.primary)
+                        Text(stringResource(R.string.journal_mood_delta, moodDelta), style = MaterialTheme.typography.labelSmall, color = colors.primary)
                     }
                 }
 
@@ -483,7 +486,7 @@ private fun JournalEntry(
                             .padding(12.dp),
                         verticalArrangement = Arrangement.spacedBy(6.dp),
                     ) {
-                        Text("YOUR NOTES", style = MaterialTheme.typography.labelSmall, color = colors.subtitle, letterSpacing = 1.sp)
+                        Text(stringResource(R.string.journal_your_notes), style = MaterialTheme.typography.labelSmall, color = colors.subtitle, letterSpacing = 1.sp)
                         Text(session.notes, style = MaterialTheme.typography.bodySmall, color = colors.text.copy(alpha = 0.8f), lineHeight = 18.sp)
                     }
                 }
@@ -498,7 +501,7 @@ private fun ScoreRow(nlp: NlpData, colors: AppColors) {
     val barFraction = ((score + 1.0) / 2.0).toFloat().coerceIn(0f, 1f)
     val barColor = sentimentColor(nlp.sentiment, colors.primary)
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text("EMOTIONAL SCORE", style = MaterialTheme.typography.labelSmall, color = colors.subtitle, letterSpacing = 0.8.sp)
+        Text(stringResource(R.string.journal_emotional_score), style = MaterialTheme.typography.labelSmall, color = colors.subtitle, letterSpacing = 0.8.sp)
         Box(
             modifier = Modifier
                 .weight(1f)
@@ -525,14 +528,14 @@ private fun ScoreRow(nlp: NlpData, colors: AppColors) {
 
 @Composable
 private fun TechniqueRow(technique: String, colors: AppColors, navController: NavController) {
-    val label = TECHNIQUE_LABELS[technique] ?: technique
+    val label = techniqueLabel(technique)
     val exerciseType = TECHNIQUE_TYPES[technique]
 
     Row(
         modifier          = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text("Recommended: ", style = MaterialTheme.typography.bodySmall, color = colors.subtitle)
+        Text(stringResource(R.string.journal_recommended), style = MaterialTheme.typography.bodySmall, color = colors.subtitle)
         Text(label, style = MaterialTheme.typography.bodySmall, color = colors.text, fontWeight = FontWeight.SemiBold)
         Spacer(Modifier.weight(1f))
         if (exerciseType != null) {
@@ -544,7 +547,7 @@ private fun TechniqueRow(technique: String, colors: AppColors, navController: Na
                     .clickable { navController.navigate(Route.breathe(exerciseType)) }
                     .padding(horizontal = 10.dp, vertical = 4.dp),
             ) {
-                Text("Try it →", style = MaterialTheme.typography.labelSmall, color = colors.primary, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.journal_try_it), style = MaterialTheme.typography.labelSmall, color = colors.primary, fontWeight = FontWeight.SemiBold)
             }
         }
     }
@@ -598,9 +601,9 @@ private fun EmptyJournalCard(colors: AppColors, navController: NavController) {
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Icon(Icons.Default.MenuBook, null, tint = colors.subtitle.copy(alpha = 0.4f), modifier = Modifier.size(36.dp))
-        Text("Your journal is empty", color = colors.title, fontWeight = FontWeight.SemiBold)
+        Text(stringResource(R.string.journal_empty_title), color = colors.title, fontWeight = FontWeight.SemiBold)
         Text(
-            "Add notes to your breathing sessions.\nThe AI will analyze your emotions and\nsuggest the right technique.",
+            stringResource(R.string.journal_empty_message),
             style     = MaterialTheme.typography.bodySmall,
             color     = colors.subtitle,
             textAlign = TextAlign.Center,
@@ -615,7 +618,7 @@ private fun EmptyJournalCard(colors: AppColors, navController: NavController) {
                 .clickable { navController.navigate(Route.breathe()) }
                 .padding(horizontal = 20.dp, vertical = 10.dp),
         ) {
-            Text("Start a session →", style = MaterialTheme.typography.bodySmall, color = colors.onPrimary, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(R.string.journal_start_session), style = MaterialTheme.typography.bodySmall, color = colors.onPrimary, fontWeight = FontWeight.SemiBold)
         }
     }
 }
@@ -632,8 +635,8 @@ private fun ErrorCard(colors: AppColors, onRetry: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Text("Could not load journal", color = colors.title, fontWeight = FontWeight.SemiBold)
-        Text("Check your connection and try again", style = MaterialTheme.typography.bodySmall, color = colors.subtitle)
+        Text(stringResource(R.string.journal_could_not_load), color = colors.title, fontWeight = FontWeight.SemiBold)
+        Text(stringResource(R.string.journal_check_connection), style = MaterialTheme.typography.bodySmall, color = colors.subtitle)
         Spacer(Modifier.height(4.dp))
         Box(
             modifier = Modifier
@@ -643,24 +646,23 @@ private fun ErrorCard(colors: AppColors, onRetry: () -> Unit) {
                 .clickable(onClick = onRetry)
                 .padding(horizontal = 16.dp, vertical = 8.dp),
         ) {
-            Text("Retry", style = MaterialTheme.typography.bodySmall, color = colors.subtitle)
+            Text(stringResource(R.string.btn_retry), style = MaterialTheme.typography.bodySmall, color = colors.subtitle)
         }
     }
 }
 
 // ── Pure helpers ──────────────────────────────────────────────────────────────
 
-private val TECHNIQUE_LABELS = mapOf(
-    "box-breathing"  to "Box Breathing",
-    "box"            to "Box Breathing",
-    "4-7-8"          to "4-7-8 Breathing",
-    "wim-hof"        to "Wim Hof Method",
-    "wimhof"         to "Wim Hof Method",
-    "coherent"       to "Coherent Breathing",
-    "belly"          to "Belly Breathing",
-    "morning-ritual" to "Morning Ritual",
-    "morning"        to "Morning Ritual",
-)
+@Composable
+private fun techniqueLabel(key: String): String = when (key) {
+    "box-breathing", "box"        -> stringResource(R.string.history_session_box)
+    "4-7-8"                       -> stringResource(R.string.history_session_4_7_8)
+    "wim-hof", "wimhof"           -> stringResource(R.string.history_session_wim_hof)
+    "coherent"                    -> stringResource(R.string.history_session_coherent)
+    "belly"                       -> stringResource(R.string.history_session_belly)
+    "morning-ritual", "morning"   -> stringResource(R.string.history_session_morning)
+    else                          -> key
+}
 
 private val TECHNIQUE_TYPES = mapOf(
     "box-breathing"  to "box",
@@ -675,7 +677,7 @@ private val TECHNIQUE_TYPES = mapOf(
 )
 
 private fun groupByMonth(sessions: List<JournalSession>): LinkedHashMap<String, List<JournalSession>> {
-    val fmt = DateTimeFormatter.ofPattern("MMMM yyyy")
+    val fmt = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault())
     val zone = ZoneId.systemDefault()
     val result = LinkedHashMap<String, MutableList<JournalSession>>()
     sessions.forEach { s ->

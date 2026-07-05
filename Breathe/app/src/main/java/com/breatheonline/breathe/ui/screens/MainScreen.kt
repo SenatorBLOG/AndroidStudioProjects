@@ -25,7 +25,9 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -36,24 +38,27 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.breatheonline.breathe.R
 import com.breatheonline.breathe.ui.theme.AppColors
 
 private data class BottomTab(
     val route: String,
-    val label: String,
+    @StringRes val labelRes: Int,
     val icon: ImageVector,
     val isCenter: Boolean = false,
 )
 
 private val TABS = listOf(
-    BottomTab(Route.HOME, "Home", Icons.Default.Home),
-    BottomTab(Route.MEDITATION, "Breathe", Icons.Default.Spa, isCenter = true),
-    BottomTab(Route.HISTORY, "Stats", Icons.Default.BarChart),
-    BottomTab(Route.PROFILE, "Profile", Icons.Default.Person),
+    BottomTab(Route.HOME, R.string.tab_home, Icons.Default.Home),
+    BottomTab(Route.MEDITATION, R.string.tab_breathe, Icons.Default.Spa, isCenter = true),
+    BottomTab(Route.HISTORY, R.string.tab_stats, Icons.Default.BarChart),
+    BottomTab(Route.PROFILE, R.string.tab_profile, Icons.Default.Person),
 )
 
 private val BottomBarShellHeight = 84.dp
@@ -142,16 +147,16 @@ private fun NavItem(
             ) {
                 Icon(
                     imageVector = tab.icon,
-                    contentDescription = tab.label,
+                    contentDescription = stringResource(tab.labelRes),
                     tint = Color.White,
                     modifier = Modifier.size(22.dp),
                 )
             }
             Spacer(Modifier.height(4.dp))
             Text(
-                text = tab.label,
-                fontSize = 10.sp,
-                color = if (selected) colors.primary else colors.subtitle,
+                text      = stringResource(tab.labelRes),
+                style     = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, textAlign = TextAlign.Center),
+                color     = if (selected) colors.primary else colors.subtitle,
                 fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
             )
         }
@@ -174,16 +179,16 @@ private fun NavItem(
                 }
                 Icon(
                     imageVector = tab.icon,
-                    contentDescription = tab.label,
+                    contentDescription = stringResource(tab.labelRes),
                     tint = if (selected) colors.primary else colors.subtitle,
                     modifier = Modifier.size(20.dp),
                 )
             }
             Spacer(Modifier.height(2.dp))
             Text(
-                text = tab.label,
-                fontSize = 10.sp,
-                color = if (selected) colors.primary else colors.subtitle,
+                text      = stringResource(tab.labelRes),
+                style     = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, textAlign = TextAlign.Center),
+                color     = if (selected) colors.primary else colors.subtitle,
                 fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
             )
         }

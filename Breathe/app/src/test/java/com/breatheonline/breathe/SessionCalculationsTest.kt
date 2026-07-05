@@ -1,4 +1,4 @@
-package com.example.breathe
+package com.breatheonline.breathe
 
 import com.breatheonline.breathe.utils.SessionCalculations
 import org.junit.Assert.assertEquals

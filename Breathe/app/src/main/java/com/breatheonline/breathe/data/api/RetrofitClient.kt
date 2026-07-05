@@ -4,6 +4,7 @@ import com.breatheonline.breathe.BuildConfig
 import com.breatheonline.breathe.utils.AuthEvent
 import com.breatheonline.breathe.utils.AuthEventBus
 import com.breatheonline.breathe.utils.TokenManager
+import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -13,6 +14,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
+import javax.inject.Named
 import javax.inject.Singleton
 
 /**
@@ -26,7 +28,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object RetrofitClient {
 
-    private const val BASE_URL        = "https://breatheonline.app/api/"
+    private const val BASE_URL        = "https://breathe-api-amut.onrender.com/api/"
     private const val TIMEOUT_SECONDS = 30L
 
     // ── OkHttpClient ──────────────────────────────────────────────────────────
@@ -88,4 +90,22 @@ object RetrofitClient {
     fun provideApiService(retrofit: Retrofit): ApiService {
         return retrofit.create(ApiService::class.java)
     }
+
+    // ── Shared Gson instance ──────────────────────────────────────────────────
+
+    @Provides
+    @Singleton
+    fun provideGson(): Gson = Gson()
+
+    // ── Bare OkHttpClient (no auth interceptors) for external APIs ────────────
+
+    @Provides
+    @Singleton
+    @Named("bare")
+    fun provideBareOkHttpClient(): OkHttpClient =
+        OkHttpClient.Builder()
+            .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .build()
 }

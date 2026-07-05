@@ -1,4 +1,4 @@
-package com.breatheonline.breathe.ui.screens
+﻿package com.breatheonline.breathe.ui.screens
 
 import android.Manifest
 import android.content.Context
@@ -32,31 +32,21 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Forum
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
@@ -65,7 +55,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
@@ -79,36 +68,27 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.breatheonline.breathe.R
 import com.breatheonline.breathe.data.models.GlobePinDto
 import com.breatheonline.breathe.data.models.PostDto
+import com.breatheonline.breathe.ui.icons.LucideAppIcons
 import com.breatheonline.breathe.ui.theme.AppColors
 import com.breatheonline.breathe.viewmodel.GlobePinsViewModel
 import com.breatheonline.breathe.viewmodel.PinsStatus
 import com.breatheonline.breathe.viewmodel.PostsStatus
 import com.breatheonline.breathe.viewmodel.PostsViewModel
-import com.mapbox.geojson.Point
-import com.mapbox.maps.CameraOptions
-import com.mapbox.maps.MapView
-import com.mapbox.maps.MapboxMap
-import com.mapbox.maps.Style
-import com.mapbox.maps.plugin.animation.camera
-import com.mapbox.maps.plugin.annotation.annotations
-import com.mapbox.maps.plugin.annotation.generated.CircleAnnotationManager
-import com.mapbox.maps.plugin.annotation.generated.CircleAnnotationOptions
-import com.mapbox.maps.plugin.annotation.generated.OnCircleAnnotationClickListener
-import com.mapbox.maps.plugin.annotation.generated.createCircleAnnotationManager
 import java.time.Duration
 import java.time.Instant
-import kotlin.collections.forEach
 import kotlin.math.absoluteValue
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -122,10 +102,10 @@ private val FILTER_CATS = listOf(
 )
 
 private val COMPOSE_CATS = listOf(
-    "experience"  to "✨ Experience",
-    "question"    to "❓ Question",
-    "achievement" to "🏆 Achievement",
-    "tip"         to "💡 Tip",
+    "experience"  to "Experience",
+    "question"    to "Question",
+    "achievement" to "Achievement",
+    "tip"         to "Tip",
 )
 
 private val AVATAR_COLORS = listOf(
@@ -151,16 +131,6 @@ private val TECHNIQUE_COLORS = mapOf(
     "belly"     to Color(0xFFFFD97D),
     "alternate" to Color(0xFFC084FC),
     "other"     to Color(0xFF94A3B8),
-)
-
-private val TECHNIQUE_EMOJIS = mapOf(
-    "box"       to "🔵",
-    "4-7-8"     to "🌙",
-    "wim-hof"   to "🔥",
-    "coherent"  to "💚",
-    "belly"     to "🌊",
-    "alternate" to "🌸",
-    "other"     to "🧘",
 )
 
 private val FILTER_TECHS = listOf("all" to "All") +
@@ -189,14 +159,30 @@ private fun timeAgo(iso: String): String = try {
     }
 } catch (_: Exception) { "" }
 
-private fun authorName(post: PostDto): String =
+private fun authorName(post: PostDto, fallback: String): String =
     post.author?.name?.takeIf { it.isNotBlank() }
         ?: post.author?.username?.takeIf { it.isNotBlank() }
-        ?: "User"
+        ?: fallback
 
 private fun techColor(tech: String): Color = TECHNIQUE_COLORS[tech] ?: Color(0xFF94A3B8)
 private fun techLabel(tech: String): String = TECHNIQUE_LABELS[tech] ?: tech.replaceFirstChar { it.uppercase() }
-private fun techEmoji(tech: String): String = TECHNIQUE_EMOJIS[tech] ?: "🧘"
+private fun techIcon(tech: String): ImageVector = when (tech) {
+    "box" -> LucideAppIcons.MapPin
+    "4-7-8" -> LucideAppIcons.MoonStar
+    "wim-hof" -> LucideAppIcons.Zap
+    "coherent" -> LucideAppIcons.Heart
+    "belly" -> LucideAppIcons.Waves
+    "alternate" -> LucideAppIcons.Leaf
+    else -> LucideAppIcons.Wind
+}
+
+private fun postCategoryIcon(cat: String): ImageVector = when (cat) {
+    "experience" -> LucideAppIcons.Sparkles
+    "question" -> LucideAppIcons.CircleHelp
+    "achievement" -> LucideAppIcons.Trophy
+    "tip" -> LucideAppIcons.Lightbulb
+    else -> LucideAppIcons.MessageCircle
+}
 
 /** Hex color string for a breathing technique — used for Mapbox circle annotations. */
 private fun techHex(tech: String?): String = when (tech) {
@@ -214,9 +200,9 @@ private fun techHex(tech: String?): String = when (tech) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GlobeScreen(
-    colors: AppColors,
-    postsVm: PostsViewModel = hiltViewModel(),
-    pinsVm: GlobePinsViewModel = hiltViewModel(),
+    colors:  AppColors,
+    postsVm: PostsViewModel     = hiltViewModel(),
+    pinsVm:  GlobePinsViewModel = hiltViewModel(),
 ) {
     var selectedTab by remember { mutableStateOf(0) }
 
@@ -234,7 +220,7 @@ fun GlobeScreen(
                 .padding(top = 20.dp, bottom = 8.dp),
         ) {
             Text(
-                text          = "COMMUNITY",
+                text          = stringResource(R.string.globe_community_label),
                 style         = MaterialTheme.typography.labelSmall,
                 color         = colors.primary,
                 fontWeight    = FontWeight.SemiBold,
@@ -242,7 +228,7 @@ fun GlobeScreen(
             )
             Spacer(Modifier.height(4.dp))
             Text(
-                text       = "Share your journey",
+                text       = stringResource(R.string.globe_share_journey),
                 style      = MaterialTheme.typography.headlineMedium,
                 color      = colors.title,
                 fontWeight = FontWeight.Light,
@@ -267,22 +253,38 @@ fun GlobeScreen(
                 selected = selectedTab == 0,
                 onClick  = { selectedTab = 0 },
                 text = {
-                    Text(
-                        text       = "💬 Posts",
-                        fontWeight = if (selectedTab == 0) FontWeight.SemiBold else FontWeight.Normal,
-                        color      = if (selectedTab == 0) colors.primary else colors.subtitle,
-                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = LucideAppIcons.MessageCircle,
+                            contentDescription = null,
+                            tint = if (selectedTab == 0) colors.primary else colors.subtitle,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Text(
+                            text = stringResource(R.string.globe_tab_posts),
+                            fontWeight = if (selectedTab == 0) FontWeight.SemiBold else FontWeight.Normal,
+                            color = if (selectedTab == 0) colors.primary else colors.subtitle,
+                        )
+                    }
                 },
             )
             Tab(
                 selected = selectedTab == 1,
                 onClick  = { selectedTab = 1 },
                 text = {
-                    Text(
-                        text       = "🌍 Spots",
-                        fontWeight = if (selectedTab == 1) FontWeight.SemiBold else FontWeight.Normal,
-                        color      = if (selectedTab == 1) colors.primary else colors.subtitle,
-                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = LucideAppIcons.Globe,
+                            contentDescription = null,
+                            tint = if (selectedTab == 1) colors.primary else colors.subtitle,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Text(
+                            text = stringResource(R.string.globe_tab_spots),
+                            fontWeight = if (selectedTab == 1) FontWeight.SemiBold else FontWeight.Normal,
+                            color = if (selectedTab == 1) colors.primary else colors.subtitle,
+                        )
+                    }
                 },
             )
         }
@@ -302,12 +304,11 @@ fun GlobeScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PostsTab(
-    colors: AppColors,
+    colors:    AppColors,
     viewModel: PostsViewModel,
 ) {
     val state     by viewModel.state.collectAsState()
     val listState  = rememberLazyListState()
-    val scope      = rememberCoroutineScope()
 
     val shouldLoadMore by remember {
         derivedStateOf {
@@ -323,19 +324,6 @@ private fun PostsTab(
     var showCompose by remember { mutableStateOf(false) }
     var composeText by remember { mutableStateOf("") }
     var composeCat  by remember { mutableStateOf("experience") }
-
-    // ── Moderation state ──────────────────────────────────────────────────────
-    val snackbarHostState          = remember { SnackbarHostState() }
-    var reportPostId               by remember { mutableStateOf<String?>(null) }
-    var blockUserId                by remember { mutableStateOf<String?>(null) }
-    var blockUserName              by remember { mutableStateOf<String?>(null) }
-
-    LaunchedEffect(state.snackbarMessage) {
-        state.snackbarMessage?.let { msg ->
-            scope.launch { snackbarHostState.showSnackbar(msg) }
-            viewModel.consumeSnackbar()
-        }
-    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
@@ -401,7 +389,7 @@ private fun PostsTab(
                             )
                             Spacer(Modifier.height(12.dp))
                             TextButton(onClick = viewModel::load) {
-                                Text("Retry", color = colors.primary)
+                                Text(stringResource(R.string.btn_retry), color = colors.primary)
                             }
                         }
                     }
@@ -419,7 +407,7 @@ private fun PostsTab(
                                 modifier           = Modifier.size(48.dp),
                             )
                             Spacer(Modifier.height(12.dp))
-                            Text("No posts yet", style = MaterialTheme.typography.bodyMedium, color = colors.subtitle)
+                            Text(stringResource(R.string.globe_no_posts), style = MaterialTheme.typography.bodyMedium, color = colors.subtitle)
                             Text(
                                 text     = "Be the first to share!",
                                 style    = MaterialTheme.typography.bodySmall,
@@ -435,13 +423,6 @@ private fun PostsTab(
                             post     = post,
                             colors   = colors,
                             onLike   = { viewModel.toggleLike(post.id) },
-                            onReport = { reportPostId = post.id },
-                            onBlock  = {
-                                val uid  = post.author?.id
-                                val name = post.author?.name?.takeIf { it.isNotBlank() }
-                                    ?: post.author?.username ?: "this user"
-                                if (uid != null) { blockUserId = uid; blockUserName = name }
-                            },
                             modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp),
                         )
                     }
@@ -473,52 +454,8 @@ private fun PostsTab(
                 .navigationBarsPadding()
                 .padding(end = 20.dp, bottom = 20.dp),
         ) {
-            Icon(Icons.Default.Add, contentDescription = "New post")
+            Icon(Icons.Default.Add, contentDescription = stringResource(R.string.globe_new_post))
         }
-
-        SnackbarHost(
-            hostState = snackbarHostState,
-            modifier  = Modifier.align(Alignment.BottomCenter).navigationBarsPadding(),
-            snackbar  = { Snackbar(it) },
-        )
-    }
-
-    // ── Report confirmation ───────────────────────────────────────────────────
-    reportPostId?.let { postId ->
-        AlertDialog(
-            onDismissRequest = { reportPostId = null },
-            title   = { Text("Report post?") },
-            text    = { Text("This post will be reviewed by our moderation team.") },
-            confirmButton = {
-                TextButton(onClick = { viewModel.reportPost(postId); reportPostId = null }) {
-                    Text("Report", color = Color(0xFFF87171))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { reportPostId = null }) { Text("Cancel") }
-            },
-        )
-    }
-
-    // ── Block user confirmation ───────────────────────────────────────────────
-    blockUserId?.let { userId ->
-        AlertDialog(
-            onDismissRequest = { blockUserId = null; blockUserName = null },
-            title   = { Text("Block $blockUserName?") },
-            text    = { Text("You won't see their posts anymore.") },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.blockUser(userId)
-                    blockUserId   = null
-                    blockUserName = null
-                }) {
-                    Text("Block", color = Color(0xFFF87171))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { blockUserId = null; blockUserName = null }) { Text("Cancel") }
-            },
-        )
     }
 
     if (showCompose) {
@@ -557,18 +494,14 @@ private fun PostsTab(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SpotsTab(
-    colors: AppColors,
+    colors:    AppColors,
     viewModel: GlobePinsViewModel,
 ) {
-    val state  by viewModel.state.collectAsState()
-    val scope  = rememberCoroutineScope()
+    val state by viewModel.state.collectAsState()
+    val scope = rememberCoroutineScope()
     var selectedPin by remember { mutableStateOf<GlobePinDto?>(null) }
     var showAddPin  by remember { mutableStateOf(false) }
-
-    val snackbarHostState   = remember { SnackbarHostState() }
-    var reportPinId         by remember { mutableStateOf<String?>(null) }
-    var blockPinUserId      by remember { mutableStateOf<String?>(null) }
-    var blockPinUserName    by remember { mutableStateOf<String?>(null) }
+    val snackbarHostState = remember { androidx.compose.material3.SnackbarHostState() }
 
     LaunchedEffect(state.snackbarMessage) {
         state.snackbarMessage?.let { msg ->
@@ -577,140 +510,135 @@ private fun SpotsTab(
         }
     }
 
-    // Refs held across recompositions
-    val mapViewRef         = remember { mutableStateOf<MapView?>(null) }
-    val mapboxMapState     = remember { mutableStateOf<MapboxMap?>(null) }
-    val circleManagerState = remember { mutableStateOf<CircleAnnotationManager?>(null) }
-    // Stable identity map: Mapbox annotation String ID → GlobePinDto
-    val annotationIndex    = remember { mutableMapOf<String, GlobePinDto>() }
-
-    // Destroy MapView when this composable leaves composition
-    DisposableEffect(Unit) {
-        onDispose { mapViewRef.value?.onDestroy() }
-    }
-
-    // Sync pins to map whenever the list changes OR manager first becomes ready
-    LaunchedEffect(state.pins, circleManagerState.value) {
-        val mgr = circleManagerState.value ?: return@LaunchedEffect
-        mgr.deleteAll()
-        annotationIndex.clear()
-        state.pins.forEach { pin ->
-            val annotation = mgr.create(
-                CircleAnnotationOptions()
-                    .withPoint(Point.fromLngLat(pin.lng, pin.lat))
-                    .withCircleRadius(8.0)
-                    .withCircleColor(techHex(pin.technique))
-                    .withCircleStrokeWidth(2.0)
-                    .withCircleStrokeColor("#FFFFFF")
-                    .withCircleOpacity(0.9)
-            )
-            annotationIndex[annotation.id] = pin
-        }
-    }
-
     Box(modifier = Modifier.fillMaxSize()) {
-
-        // ── Mapbox map view ───────────────────────────────────────────────────
-        AndroidView(
+        LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            factory  = { ctx ->
-                MapView(ctx).also { mv ->
-                    mapViewRef.value = mv
-                    mv.mapboxMap.loadStyle(Style.DARK) {
-                        val mgr = mv.annotations.createCircleAnnotationManager()
-                        mgr.addClickListener(OnCircleAnnotationClickListener { annotation ->
-                            selectedPin = annotationIndex[annotation.id]
-                            true
-                        })
-                        circleManagerState.value = mgr
-                        mapboxMapState.value     = mv.mapboxMap
-                    }
-                    // Initial world view — broad overview centered on Europe/Africa
-                    mv.mapboxMap.setCamera(
-                        CameraOptions.Builder()
-                            .center(Point.fromLngLat(20.0, 20.0))
-                            .zoom(1.5)
-                            .build()
-                    )
-                }
-            },
-        )
-
-        // ── Technique filter chips — overlaid at top ──────────────────────────
-        LazyRow(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .fillMaxWidth()
-                .background(colors.background.copy(alpha = 0.82f))
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 96.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            items(FILTER_TECHS) { (key, label) ->
-                val selected = state.filterTech == key
-                val tc = if (key == "all") colors.primary else techColor(key)
-                Box(
-                    contentAlignment = Alignment.Center,
+            item {
+                LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    items(FILTER_TECHS) { (key, label) ->
+                        val selected = state.filterTech == key
+                        val tc = if (key == "all") colors.primary else techColor(key)
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .background(
+                                    color = if (selected) tc else colors.surface,
+                                    shape = RoundedCornerShape(20.dp),
+                                )
+                                .clickable { viewModel.setFilterTech(key) }
+                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                if (key != "all") {
+                                    Icon(
+                                        imageVector = techIcon(key),
+                                        contentDescription = null,
+                                        tint = if (selected) Color.White else tc,
+                                        modifier = Modifier.size(14.dp),
+                                    )
+                                }
+                                Text(
+                                    text = label,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = if (selected) Color.White else colors.subtitle,
+                                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+            state.stats?.let { stats ->
+                item {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        GlobeStatBadge("${stats.totalPins} spots", colors)
+                        GlobeStatBadge("${stats.countries} countries", colors)
+                    }
+                }
+            }
+            item {
+                Column(
                     modifier = Modifier
-                        .background(
-                            color = if (selected) tc else colors.surface.copy(alpha = 0.88f),
-                            shape = RoundedCornerShape(20.dp),
-                        )
-                        .clickable { viewModel.setFilterTech(key) }
-                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(24.dp))
+                        .background(colors.surface)
+                        .padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     Text(
-                        text       = if (key == "all") "All" else "${techEmoji(key)} $label",
-                        style      = MaterialTheme.typography.labelSmall,
-                        color      = if (selected) Color.White else colors.subtitle,
-                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                        text = "Breathing spots",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = colors.title,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    Text(
+                        text = "Browse saved places, open details, and keep the community flow working without the map SDK.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.subtitle,
                     )
                 }
             }
-        }
-
-        // ── Stats badges — overlaid below filter row ──────────────────────────
-        state.stats?.let { stats ->
-            Row(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 48.dp, end = 12.dp),
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                GlobeStatBadge("📍 ${stats.totalPins}", colors)
-                GlobeStatBadge("🌐 ${stats.countries}", colors)
-            }
-        }
-
-        // ── Loading overlay ────────────────────────────────────────────────────
-        if (state.status is PinsStatus.Loading) {
-            CircularProgressIndicator(
-                color    = colors.primary,
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .size(36.dp),
-            )
-        }
-
-        // ── Error overlay ──────────────────────────────────────────────────────
-        if (state.status is PinsStatus.Error) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .background(colors.surface.copy(alpha = 0.92f), RoundedCornerShape(16.dp))
-                    .padding(24.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text       = "Failed to load spots",
-                        color      = colors.title,
-                        style      = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
+            when (val status = state.status) {
+                is PinsStatus.Loading -> items(5) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(112.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(colors.surface.copy(alpha = 0.55f)),
                     )
-                    Spacer(Modifier.height(8.dp))
-                    TextButton(onClick = viewModel::loadPins) {
-                        Text("Retry", color = colors.primary)
+                }
+                is PinsStatus.Error -> item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(colors.surface)
+                            .padding(24.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Text(
+                            text = status.message,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = colors.title,
+                            textAlign = TextAlign.Center,
+                        )
+                        Spacer(Modifier.height(10.dp))
+                        TextButton(onClick = viewModel::loadPins) {
+                            Text(stringResource(R.string.btn_retry), color = colors.primary)
+                        }
                     }
+                }
+                is PinsStatus.Empty -> item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(colors.surface)
+                            .padding(28.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = null,
+                            tint = colors.subtitle,
+                            modifier = Modifier.size(44.dp),
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        Text(stringResource(R.string.globe_no_spots), style = MaterialTheme.typography.titleMedium, color = colors.title)
+                        Text(
+                            text = "Add the first breathing place for this technique.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.subtitle,
+                            textAlign = TextAlign.Center,
+                        )
+                    }
+                }
+                is PinsStatus.Success -> items(state.pins, key = { it.id }) { pin ->
+                    SpotCard(pin = pin, colors = colors, onOpen = { selectedPin = pin })
                 }
             }
         }
@@ -725,51 +653,13 @@ private fun SpotsTab(
                 .navigationBarsPadding()
                 .padding(end = 20.dp, bottom = 20.dp),
         ) {
-            Icon(Icons.Default.Add, contentDescription = "Add spot")
+            Icon(Icons.Default.Add, contentDescription = stringResource(R.string.globe_add_spot))
         }
 
-        SnackbarHost(
+        androidx.compose.material3.SnackbarHost(
             hostState = snackbarHostState,
-            modifier  = Modifier.align(Alignment.BottomCenter).navigationBarsPadding(),
-            snackbar  = { Snackbar(it) },
-        )
-    }
-
-    // ── Report confirmation ───────────────────────────────────────────────────
-    reportPinId?.let { pinId ->
-        AlertDialog(
-            onDismissRequest = { reportPinId = null },
-            title   = { Text("Report spot?") },
-            text    = { Text("This spot will be reviewed by our moderation team.") },
-            confirmButton = {
-                TextButton(onClick = { viewModel.reportPin(pinId); reportPinId = null }) {
-                    Text("Report", color = Color(0xFFF87171))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { reportPinId = null }) { Text("Cancel") }
-            },
-        )
-    }
-
-    // ── Block user confirmation ───────────────────────────────────────────────
-    blockPinUserId?.let { userId ->
-        AlertDialog(
-            onDismissRequest = { blockPinUserId = null; blockPinUserName = null },
-            title   = { Text("Block $blockPinUserName?") },
-            text    = { Text("You won't see their spots anymore.") },
-            confirmButton = {
-                TextButton(onClick = {
-                    viewModel.blockUser(userId)
-                    blockPinUserId   = null
-                    blockPinUserName = null
-                }) {
-                    Text("Block", color = Color(0xFFF87171))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { blockPinUserId = null; blockPinUserName = null }) { Text("Cancel") }
-            },
+            modifier = Modifier.align(Alignment.BottomCenter).navigationBarsPadding(),
+            snackbar = { androidx.compose.material3.Snackbar(it) },
         )
     }
 
@@ -808,27 +698,106 @@ private fun SpotsTab(
                     viewModel.likePin(pin.id)
                     selectedPin = null
                 },
-                onFlyTo = {
-                    // Animate Mapbox camera to the selected pin
-                    mapViewRef.value?.camera?.flyTo(
-                        CameraOptions.Builder()
-                            .center(Point.fromLngLat(pin.lng, pin.lat))
-                            .zoom(10.0)
-                            .build()
+                onFlyTo = { selectedPin = null },
+            )
+        }
+    }
+}
+
+@Composable
+private fun SpotCard(
+    pin: GlobePinDto,
+    colors: AppColors,
+    onOpen: () -> Unit,
+) {
+    val tech = pin.technique ?: "other"
+    val location = listOfNotNull(
+        pin.city?.takeIf { it.isNotBlank() },
+        pin.country?.takeIf { it.isNotBlank() },
+    ).joinToString(", ")
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(colors.surface)
+            .clickable(onClick = onOpen)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(techColor(tech).copy(alpha = 0.14f)),
+            ) {
+                Icon(
+                    imageVector = techIcon(tech),
+                    contentDescription = techLabel(tech),
+                    tint = techColor(tech),
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = pin.title ?: "Meditation spot",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = colors.title,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (location.isNotBlank()) {
+                    Text(
+                        text = location,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.subtitle,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
-                    selectedPin = null
-                },
-                onReport = {
-                    selectedPin = null
-                    reportPinId = pin.id
-                },
-                onBlock = pin.userId?.let { uid ->
-                    {
-                        selectedPin      = null
-                        blockPinUserId   = uid
-                        blockPinUserName = pin.username ?: "this user"
-                    }
-                },
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .background(techColor(tech).copy(alpha = 0.14f), RoundedCornerShape(10.dp))
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+            ) {
+                Text(
+                    text = techLabel(tech),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = techColor(tech),
+                    fontWeight = FontWeight.SemiBold,
+                )
+            }
+        }
+
+        if (!pin.note.isNullOrBlank()) {
+            Text(
+                text = pin.note,
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.title.copy(alpha = 0.84f),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "by ${pin.username ?: "Anonymous"}",
+                style = MaterialTheme.typography.labelSmall,
+                color = colors.subtitle,
+            )
+            Text(
+                text = "${pin.likeCount} likes",
+                style = MaterialTheme.typography.labelSmall,
+                color = colors.subtitle,
             )
         }
     }
@@ -838,12 +807,10 @@ private fun SpotsTab(
 
 @Composable
 private fun PinDetailSheet(
-    pin: GlobePinDto,
+    pin:    GlobePinDto,
     colors: AppColors,
     onLike:  () -> Unit,
     onFlyTo: () -> Unit,
-    onReport: () -> Unit,
-    onBlock:  (() -> Unit)?,
 ) {
     val tech = pin.technique ?: "other"
     val tc   = techColor(tech)
@@ -864,7 +831,12 @@ private fun PinDetailSheet(
                     .clip(RoundedCornerShape(12.dp))
                     .background(tc.copy(alpha = 0.15f)),
             ) {
-                Text(text = techEmoji(tech), style = MaterialTheme.typography.titleMedium)
+                Icon(
+                    imageVector = techIcon(tech),
+                    contentDescription = techLabel(tech),
+                    tint = tc,
+                    modifier = Modifier.size(20.dp),
+                )
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
@@ -879,11 +851,19 @@ private fun PinDetailSheet(
                     pin.country?.takeIf { it.isNotBlank() },
                 ).joinToString(", ")
                 if (location.isNotBlank()) {
-                    Text(
-                        text  = "📍 $location",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = colors.subtitle,
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Icon(
+                            imageVector = LucideAppIcons.MapPin,
+                            contentDescription = null,
+                            tint = colors.subtitle,
+                            modifier = Modifier.size(14.dp),
+                        )
+                        Text(
+                            text = location,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.subtitle,
+                        )
+                    }
                 }
             }
             Box(
@@ -924,7 +904,15 @@ private fun PinDetailSheet(
                 ),
                 shape = RoundedCornerShape(12.dp),
             ) {
-                Text("🗺 Fly there")
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Icon(
+                        imageVector = LucideAppIcons.Globe,
+                        contentDescription = null,
+                        tint = colors.onPrimary,
+                        modifier = Modifier.size(16.dp),
+                    )
+                    Text(stringResource(R.string.globe_fly_there))
+                }
             }
             Button(
                 onClick  = onLike,
@@ -935,30 +923,14 @@ private fun PinDetailSheet(
                 ),
                 shape = RoundedCornerShape(12.dp),
             ) {
-                Text("❤️ ${pin.likeCount}")
-            }
-        }
-
-        Row(
-            modifier              = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            TextButton(
-                onClick = onReport,
-                modifier = Modifier.weight(1f),
-            ) {
-                Icon(Icons.Default.Flag, null, tint = Color(0xFFF87171), modifier = Modifier.size(16.dp))
-                Spacer(Modifier.width(4.dp))
-                Text("Report spot", color = Color(0xFFF87171), style = MaterialTheme.typography.labelMedium)
-            }
-            if (onBlock != null) {
-                TextButton(
-                    onClick  = onBlock,
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Icon(Icons.Default.Block, null, tint = colors.subtitle, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.width(4.dp))
-                    Text("Block user", color = colors.subtitle, style = MaterialTheme.typography.labelMedium)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Icon(
+                        imageVector = LucideAppIcons.Heart,
+                        contentDescription = null,
+                        tint = Color(0xFFF87171),
+                        modifier = Modifier.size(16.dp),
+                    )
+                    Text("${pin.likeCount}")
                 }
             }
         }
@@ -969,17 +941,14 @@ private fun PinDetailSheet(
 
 @Composable
 private fun PostCard(
-    post: PostDto,
-    colors: AppColors,
+    post:     PostDto,
+    colors:   AppColors,
     onLike:   () -> Unit,
-    onReport: () -> Unit,
-    onBlock:  () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val name    = authorName(post)
+    val name    = authorName(post, stringResource(R.string.globe_author_fallback))
     val initial = name.firstOrNull()?.uppercaseChar()?.toString() ?: "?"
     val cc      = catColor(post.category)
-    var showMenu by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -1029,28 +998,6 @@ private fun PostCard(
                     fontWeight = FontWeight.SemiBold,
                 )
             }
-            Box {
-                IconButton(onClick = { showMenu = true }, modifier = Modifier.size(28.dp)) {
-                    Icon(
-                        imageVector        = Icons.Default.MoreVert,
-                        contentDescription = "More options",
-                        tint               = colors.subtitle,
-                        modifier           = Modifier.size(18.dp),
-                    )
-                }
-                DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
-                    DropdownMenuItem(
-                        text        = { Text("Report post") },
-                        leadingIcon = { Icon(Icons.Default.Flag, null, tint = Color(0xFFF87171), modifier = Modifier.size(18.dp)) },
-                        onClick     = { showMenu = false; onReport() },
-                    )
-                    DropdownMenuItem(
-                        text        = { Text("Block user") },
-                        leadingIcon = { Icon(Icons.Default.Block, null, tint = colors.subtitle, modifier = Modifier.size(18.dp)) },
-                        onClick     = { showMenu = false; onBlock() },
-                    )
-                }
-            }
         }
 
         Spacer(Modifier.height(10.dp))
@@ -1089,7 +1036,7 @@ private fun PostCard(
             ) {
                 Icon(
                     imageVector        = if (post.likedByMe) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                    contentDescription = "Like",
+                    contentDescription = stringResource(R.string.globe_like),
                     tint               = heartColor,
                     modifier           = Modifier.size(18.dp),
                 )
@@ -1102,11 +1049,19 @@ private fun PostCard(
             }
             if (post.commentCount > 0) {
                 Spacer(Modifier.width(16.dp))
-                Text(
-                    text  = "💬 ${post.commentCount}",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = colors.subtitle,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Icon(
+                        imageVector = LucideAppIcons.MessageCircle,
+                        contentDescription = null,
+                        tint = colors.subtitle,
+                        modifier = Modifier.size(16.dp),
+                    )
+                    Text(
+                        text = "${post.commentCount}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = colors.subtitle,
+                    )
+                }
             }
         }
     }
@@ -1134,7 +1089,7 @@ private fun GlobeStatBadge(text: String, colors: AppColors) {
 
 @Composable
 private fun ComposePostSheet(
-    colors: AppColors,
+    colors:    AppColors,
     text:      String,
     onText:    (String) -> Unit,
     category:  String,
@@ -1150,7 +1105,7 @@ private fun ComposePostSheet(
             .navigationBarsPadding(),
     ) {
         Text(
-            text       = "New post",
+            text       = stringResource(R.string.globe_new_post),
             style      = MaterialTheme.typography.titleMedium,
             color      = colors.title,
             fontWeight = FontWeight.SemiBold,
@@ -1160,7 +1115,7 @@ private fun ComposePostSheet(
         OutlinedTextField(
             value         = text,
             onValueChange = { if (it.length <= 600) onText(it) },
-            placeholder   = { Text("What's on your mind?", color = colors.subtitle) },
+            placeholder   = { Text(stringResource(R.string.globe_whats_on_mind), color = colors.subtitle) },
             modifier      = Modifier.fillMaxWidth().height(140.dp),
             maxLines      = 6,
             colors        = outlineFieldColors(colors),
@@ -1191,12 +1146,20 @@ private fun ComposePostSheet(
                         .clickable { onCat(key) }
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                 ) {
-                    Text(
-                        text       = label,
-                        style      = MaterialTheme.typography.labelMedium,
-                        color      = if (selected) colors.onPrimary else colors.subtitle,
-                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Icon(
+                            imageVector = postCategoryIcon(key),
+                            contentDescription = null,
+                            tint = if (selected) colors.onPrimary else colors.subtitle,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = if (selected) colors.onPrimary else colors.subtitle,
+                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                        )
+                    }
                 }
             }
         }
@@ -1221,7 +1184,7 @@ private fun ComposePostSheet(
                     modifier    = Modifier.size(18.dp),
                 )
             } else {
-                Text("Post", fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.globe_post_button), fontWeight = FontWeight.SemiBold)
             }
         }
     }
@@ -1231,7 +1194,7 @@ private fun ComposePostSheet(
 
 @Composable
 private fun AddPinSheet(
-    colors: AppColors,
+    colors:    AppColors,
     isAdding:  Boolean,
     onAdd:     (lat: Double, lng: Double, city: String, country: String, title: String, note: String, technique: String) -> Unit,
     onDismiss: () -> Unit,
@@ -1308,14 +1271,14 @@ private fun AddPinSheet(
                         Manifest.permission.ACCESS_COARSE_LOCATION,
                     ))
                 }
-            }) { Text("Use GPS", color = colors.primary) }
+            }) { Text(stringResource(R.string.globe_use_gps), color = colors.primary) }
         }
 
         OutlinedTextField(
             value         = title,
             onValueChange = { title = it },
-            label         = { Text("Title (optional)", color = colors.subtitle) },
-            placeholder   = { Text("Meditation spot", color = colors.subtitle.copy(alpha = 0.5f)) },
+            label         = { Text(stringResource(R.string.globe_title_optional), color = colors.subtitle) },
+            placeholder   = { Text(stringResource(R.string.globe_meditation_spot), color = colors.subtitle.copy(alpha = 0.5f)) },
             singleLine    = true,
             modifier      = Modifier.fillMaxWidth(),
             colors        = outlineFieldColors(colors),
@@ -1324,7 +1287,7 @@ private fun AddPinSheet(
         OutlinedTextField(
             value         = note,
             onValueChange = { if (it.length <= 300) note = it },
-            label         = { Text("Note (optional)", color = colors.subtitle) },
+            label         = { Text(stringResource(R.string.globe_note_optional), color = colors.subtitle) },
             modifier      = Modifier.fillMaxWidth().height(96.dp),
             maxLines      = 4,
             colors        = outlineFieldColors(colors),
@@ -1334,7 +1297,7 @@ private fun AddPinSheet(
             OutlinedTextField(
                 value         = city,
                 onValueChange = { city = it },
-                label         = { Text("City", color = colors.subtitle) },
+                label         = { Text(stringResource(R.string.globe_city), color = colors.subtitle) },
                 singleLine    = true,
                 modifier      = Modifier.weight(1f),
                 colors        = outlineFieldColors(colors),
@@ -1342,14 +1305,14 @@ private fun AddPinSheet(
             OutlinedTextField(
                 value         = country,
                 onValueChange = { country = it },
-                label         = { Text("Country", color = colors.subtitle) },
+                label         = { Text(stringResource(R.string.globe_country), color = colors.subtitle) },
                 singleLine    = true,
                 modifier      = Modifier.weight(1f),
                 colors        = outlineFieldColors(colors),
             )
         }
 
-        Text("Technique", style = MaterialTheme.typography.labelMedium, color = colors.subtitle)
+        Text(stringResource(R.string.globe_technique), style = MaterialTheme.typography.labelMedium, color = colors.subtitle)
 
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             items(TECHNIQUE_LABELS.entries.toList()) { (key, label) ->
@@ -1370,12 +1333,20 @@ private fun AddPinSheet(
                         .clickable { technique = key }
                         .padding(horizontal = 12.dp, vertical = 8.dp),
                 ) {
-                    Text(
-                        text       = "${techEmoji(key)} $label",
-                        style      = MaterialTheme.typography.labelMedium,
-                        color      = if (selected) Color.White else colors.subtitle,
-                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Icon(
+                            imageVector = techIcon(key),
+                            contentDescription = null,
+                            tint = if (selected) Color.White else tc,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.labelMedium,
+                            color = if (selected) Color.White else colors.subtitle,
+                            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+                        )
+                    }
                 }
             }
         }
@@ -1402,7 +1373,7 @@ private fun AddPinSheet(
                     modifier    = Modifier.size(18.dp),
                 )
             } else {
-                Text("Pin spot", fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.globe_pin_spot), fontWeight = FontWeight.SemiBold)
             }
         }
     }
@@ -1431,3 +1402,4 @@ private fun getLastLocation(context: Context): Pair<Double, Double>? {
     }
     return null
 }
+

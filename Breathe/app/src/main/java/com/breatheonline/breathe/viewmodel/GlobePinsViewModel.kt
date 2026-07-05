@@ -3,6 +3,7 @@ package com.breatheonline.breathe.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import android.content.Context
+import com.breatheonline.breathe.R
 import com.breatheonline.breathe.data.api.ApiService
 import com.breatheonline.breathe.data.models.CreatePinRequest
 import com.breatheonline.breathe.data.models.GlobePinDto
@@ -71,11 +72,11 @@ class GlobePinsViewModel @Inject constructor(
                             )
                         }
                     } else {
-                        _state.update { it.copy(status = PinsStatus.Error("Server error ${resp.code()}")) }
+                        _state.update { it.copy(status = PinsStatus.Error(context.getString(R.string.globe_server_error, resp.code()))) }
                     }
                 }
                 .onFailure { err ->
-                    _state.update { it.copy(status = PinsStatus.Error(err.message ?: "Network error")) }
+                    _state.update { it.copy(status = PinsStatus.Error(err.message ?: context.getString(R.string.globe_network_error))) }
                 }
         }
     }
@@ -131,8 +132,8 @@ class GlobePinsViewModel @Inject constructor(
     fun reportPin(pinId: String) {
         viewModelScope.launch {
             runCatching { apiService.reportPin(pinId, ReportRequest()) }
-                .onSuccess { _state.update { it.copy(snackbarMessage = "Report submitted. Thank you.") } }
-                .onFailure { _state.update { it.copy(snackbarMessage = "Could not submit report. Try again.") } }
+                .onSuccess { _state.update { it.copy(snackbarMessage = context.getString(R.string.globe_report_submitted)) } }
+                .onFailure { _state.update { it.copy(snackbarMessage = context.getString(R.string.globe_report_failed)) } }
         }
     }
 
@@ -143,11 +144,11 @@ class GlobePinsViewModel @Inject constructor(
                     _state.update { s ->
                         s.copy(
                             pins            = s.pins.filter { it.userId != userId },
-                            snackbarMessage = "User blocked.",
+                            snackbarMessage = context.getString(R.string.globe_user_blocked),
                         )
                     }
                 }
-                .onFailure { _state.update { it.copy(snackbarMessage = "Could not block user. Try again.") } }
+                .onFailure { _state.update { it.copy(snackbarMessage = context.getString(R.string.globe_block_user_failed)) } }
         }
     }
 
@@ -170,7 +171,7 @@ class GlobePinsViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             if (!dataCollectionAllowed()) {
-                _state.update { it.copy(snackbarMessage = "Data collection is off. Enable it in Profile → Privacy & Data to add spots.") }
+                _state.update { it.copy(snackbarMessage = context.getString(R.string.globe_data_collection_off)) }
                 return@launch
             }
             _state.update { it.copy(isAddingPin = true) }
@@ -181,7 +182,7 @@ class GlobePinsViewModel @Inject constructor(
                         lng = lng,
                         city = city,
                         country = country,
-                        title = title.ifBlank { "Meditation spot" },
+                        title = title.ifBlank { context.getString(R.string.globe_meditation_spot) },
                         note = note,
                         technique = technique,
                     )

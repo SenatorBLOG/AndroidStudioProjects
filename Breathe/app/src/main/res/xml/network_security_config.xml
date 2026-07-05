@@ -12,15 +12,17 @@
         <domain includeSubdomains="true">breatheonline.app</domain>
     </domain-config>
 
-    <!-- Debug only: allow cleartext to localhost for local API testing -->
+    <!-- Local dev: cleartext to localhost is fine (traffic never leaves device) -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">localhost</domain>
+        <domain includeSubdomains="false">10.0.2.2</domain>
+    </domain-config>
+
+    <!-- Debug only: trust user-installed CAs (Charles / mitmproxy) -->
     <debug-overrides>
         <trust-anchors>
             <certificates src="user" />
         </trust-anchors>
-        <domain-config cleartextTrafficPermitted="true">
-            <domain includeSubdomains="true">localhost</domain>
-            <domain includeSubdomains="true">10.0.2.2</domain>
-        </domain-config>
     </debug-overrides>
 
 </network-security-config>

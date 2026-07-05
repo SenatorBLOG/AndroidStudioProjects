@@ -1,0 +1,725 @@
+<resources>
+    <string name="app_name">Breathe</string>
+
+    <!-- Greetings -->
+    <string name="greeting_morning">Доброе утро</string>
+    <string name="greeting_afternoon">Добрый день</string>
+    <string name="greeting_evening">Добрый вечер</string>
+
+    <!-- Splash -->
+    <string name="splash_tagline">дыши · расслабляйся · спи</string>
+
+    <!-- Home screen -->
+    <string name="tagline">дыши · расслабляйся · спи</string>
+    <string name="home_breathe_header">ДЫШИ</string>
+    <string name="home_streak_count">%1$d дней подряд</string>
+    <string name="home_today_minutes">%1$d мин сегодня</string>
+    <string name="home_bpm">%1$d уд/мин</string>
+    <string name="home_sleep_prefix">%1$s</string>
+    <string name="home_start_meditation">Начать медитацию</string>
+    <string name="home_how_it_works">Как это работает →</string>
+    <string name="home_breathing_quiz">Тест дыхания →</string>
+    <string name="home_ai_coach_title">AI-тренер</string>
+    <string name="home_ai_coach_subtitle">Персональные рекомендации по дыханию и помощь перед сном</string>
+    <string name="home_community_info">Сообщество, подробные руководства и дополнительные материалы теперь доступны за пределами главного экрана.</string>
+    <string name="home_featured_section">РЕКОМЕНДУЕМ</string>
+    <string name="home_ai_sleep_story_title">AI-СКАЗКА ДЛЯ СНА</string>
+    <string name="home_close">Закрыть</string>
+    <string name="home_generate_story_hint">Нажмите «Создать» для успокаивающей сказки перед сном, созданной специально для вас.</string>
+    <string name="home_generate_story_button">Создать сказку</string>
+    <string name="home_crafting_story">Создаём вашу сказку перед сном…</string>
+    <string name="home_generate_another">Создать другую</string>
+    <string name="home_powered_by_gemini">РАБОТАЕТ НА GEMINI AI</string>
+    <string name="home_try_again">Попробовать снова</string>
+
+    <!-- Breathe screen sections -->
+    <string name="breathe_section_presets">ПРЕСЕТЫ</string>
+    <string name="breathe_section_techniques">ТЕХНИКИ И ГАЙДЫ</string>
+
+    <!-- Bottom navigation tabs -->
+    <string name="tab_home">Главная</string>
+    <string name="tab_breathe">Дыхание</string>
+    <string name="tab_stats">Статистика</string>
+    <string name="tab_profile">Профиль</string>
+    <string name="tab_sessions">Сессии</string>
+    <string name="tab_progress">Прогресс</string>
+    <string name="tab_challenges">Челленджи</string>
+    <string name="tab_devices">Устройства</string>
+    <string name="home_daily_inspiration">ЕЖЕДНЕВНОЕ ВДОХНОВЕНИЕ</string>
+    <string name="home_explore_section">ИССЛЕДОВАТЬ</string>
+    <string name="home_sleep_guides_section">ГИДЫ ДЛЯ СНА</string>
+    <string name="section_quick_exercises">БЫСТРЫЕ УПРАЖНЕНИЯ</string>
+    <string name="section_recent_sessions">НЕДАВНИЕ СЕССИИ</string>
+    <string name="btn_view_all">Смотреть все</string>
+    <string name="featured_title">Найдите минутку</string>
+    <string name="featured_subtitle">чтобы подышать</string>
+    <string name="btn_start_breathing">Начать дышать →</string>
+    <string name="stat_label_today">Сегодня</string>
+    <string name="stat_label_streak">Серия</string>
+    <string name="stat_unit_min">мин</string>
+    <string name="stat_unit_days">дней</string>
+    <string name="no_sessions_yet">Нет сессий</string>
+    <string name="no_sessions_hint">Завершите упражнение по дыханию,\nчтобы увидеть историю здесь</string>
+    <string name="btn_retry">Повторить</string>
+    <string name="home_exercise_desc_4_7_8">Быстро снять тревогу</string>
+    <string name="home_exercise_desc_box">Концентрация и перезагрузка</string>
+    <string name="home_exercise_desc_wimhof">Энергия и бодрость</string>
+    <string name="home_exercise_desc_coherent">Баланс сердечного ритма</string>
+    <string name="home_exercise_desc_belly">Глубокое расслабление</string>
+    <string name="home_exercise_desc_morning">Мягкое пробуждение</string>
+    <string name="home_exercise_desc_alternate">Баланс и ясность</string>
+    <string name="globe_community_label">СООБЩЕСТВО</string>
+    <string name="globe_share_journey">Поделитесь своим путём</string>
+    <string name="globe_tab_posts">Публикации</string>
+    <string name="globe_tab_spots">Места</string>
+    <string name="globe_author_fallback">Пользователь</string>
+    <string name="faq_try_different_search">Попробуйте другой поисковый запрос</string>
+
+    <!-- Breathe screen -->
+    <string name="cd_back">Назад</string>
+    <string name="cd_avatar">Аватар</string>
+    <string name="breathe_pattern_title">ПАТТЕРН ДЫХАНИЯ</string>
+    <string name="breathe_active">Активно</string>
+    <string name="breathe_inhale">Вдох</string>
+    <string name="breathe_hold">Задержка</string>
+    <string name="breathe_exhale">Выдох</string>
+    <string name="breathe_pause">Пауза</string>
+    <string name="breathe_presets">ПРЕСЕТЫ</string>
+    <string name="breathe_techniques_guides">ТЕХНИКИ И ГИДЫ</string>
+    <string name="breathe_pattern_guides_message">Паттерны и гиды будут доступны после завершения сессии.</string>
+    <string name="technique_box_breathing_title">Квадратное дыхание</string>
+    <string name="technique_box_breathing_tag">Спокойствие · Фокус</string>
+    <string name="technique_box_breathing_desc">Равные 4-счётные фазы, которые помогают сбросить напряжение и успокоить нервную систему.</string>
+    <string name="technique_478_sleep_title">4-7-8 для сна</string>
+    <string name="technique_478_sleep_tag">Сон · Расслабление</string>
+    <string name="technique_478_sleep_desc">Долгий выдох активирует парасимпатическую систему и помогает быстрее заснуть глубоко.</string>
+    <string name="technique_wim_hof_title">Дыхание Вим Хофа</string>
+    <string name="technique_wim_hof_tag">Энергия · Фокус</string>
+    <string name="technique_wim_hof_desc">Короткие быстрые циклы с задержкой повышают бодрость и эффективность использования кислорода.</string>
+    <string name="technique_coherent_title">Когерентное дыхание</string>
+    <string name="technique_coherent_tag">Баланс · ВСР</string>
+    <string name="technique_coherent_desc">5-секундный вдох и выдох синхронизируют вариабельность сердечного ритма и надолго успокаивают.</string>
+    <string name="phase_inhale">Вдох\u2026</string>
+    <string name="phase_hold">Задержка\u2026</string>
+    <string name="phase_exhale">Выдох\u2026</string>
+    <string name="btn_end_session">Завершить сессию</string>
+    <string name="exit_dialog_title">Завершить сессию?</string>
+    <string name="exit_dialog_body_with_progress">Вы дышали %1$s.\nСессия завершится досрочно, прогресс будет сохранён.</string>
+    <string name="exit_dialog_body_no_progress">Завершить сессию досрочно?</string>
+    <string name="exit_dialog_confirm">Завершить</string>
+    <string name="exit_dialog_dismiss">Продолжить</string>
+    <string name="cd_complete">Завершено</string>
+    <string name="session_complete">Сессия завершена</string>
+    <string name="btn_done">Готово</string>
+
+    <!-- Guidance picker -->
+    <string name="guidance_mode_label">РЕЖИМ ПОДСКАЗОК</string>
+    <string name="guidance_silent">Тихий</string>
+    <string name="guidance_vibration">Вибрация</string>
+    <string name="guidance_ai_voice">AI-голос</string>
+    <string name="guidance_voice_style">СТИЛЬ ГОЛОСА</string>
+    <string name="guidance_female">Женский</string>
+    <string name="guidance_male">Мужской</string>
+
+    <!-- Session feedback modal -->
+    <string name="feedback_session_complete">Сессия завершена</string>
+    <string name="feedback_data_trains_ai">Ваши данные обучают персонального AI-тренера</string>
+    <string name="feedback_skip">Пропустить</string>
+    <string name="feedback_step_progress">ШАГ %1$d ИЗ 4</string>
+    <string name="feedback_mood_shift">Как изменилось ваше настроение?</string>
+    <string name="feedback_slide_before_after">Сдвиньте ползунок «до» и «после», чтобы отследить прогресс</string>
+    <string name="feedback_mood_before">ДО</string>
+    <string name="feedback_mood_after">ПОСЛЕ</string>
+    <string name="feedback_mood_better">+%1$d лучше</string>
+    <string name="feedback_mood_worse">%1$d хуже</string>
+    <string name="feedback_no_change">без изменений</string>
+    <string name="feedback_how_feel_now">Как вы себя чувствуете сейчас?</string>
+    <string name="feedback_pick_all">Выберите всё подходящее</string>
+    <string name="feedback_session_quality">Качество сессии</string>
+    <string name="feedback_session_quality_subtitle">Быстрые оценки помогают AI-тренеру персонализировать сессии</string>
+    <string name="feedback_focus_level">Концентрация</string>
+    <string name="feedback_calmness">Спокойствие</string>
+    <string name="feedback_breath_depth">Глубина дыхания</string>
+    <string name="feedback_stress_level">Уровень стресса</string>
+    <string name="feedback_distractions">Отвлечения</string>
+    <string name="feedback_noise_level">Уровень шума</string>
+    <string name="feedback_any_thoughts">Мысли?</string>
+    <string name="feedback_optional">(необязательно)</string>
+    <string name="feedback_trains_coach">Ваш отзыв обучает персонального AI-тренера по дыханию.</string>
+    <string name="feedback_notes_placeholder">Как прошла сессия? Есть наблюдения…</string>
+    <string name="feedback_continue">Продолжи��ь</string>
+    <string name="feedback_save">Сохранить</string>
+    <string name="feedback_back">Назад</string>
+    <string name="feedback_time_morning">Утро</string>
+    <string name="feedback_time_afternoon">День</string>
+    <string name="feedback_time_evening">Вечер</string>
+    <string name="feedback_time_night">Ночь</string>
+    <string name="feedback_feeling_focused">Сосредоточен</string>
+    <string name="feedback_feeling_calm">Спокоен</string>
+    <string name="feedback_feeling_energized">Энергичен</string>
+    <string name="feedback_feeling_drowsy">Сонлив</string>
+    <string name="feedback_feeling_distracted">Рассеян</string>
+    <string name="feedback_feeling_peaceful">Умиротворён</string>
+    <string name="feedback_feeling_anxious">Тревожен</string>
+    <string name="feedback_feeling_refreshed">Освежён</string>
+    <string name="feedback_noise_silent">Тишина</string>
+    <string name="feedback_noise_quiet">Тихо</string>
+    <string name="feedback_noise_moderate">Умеренно</string>
+    <string name="feedback_noise_noisy">Шумно</string>
+    <string name="cd_hide_password">Скрыть пароль</string>
+    <string name="cd_show_password">Показать пароль</string>
+
+    <!-- Login screen -->
+    <string name="login_email">Электронная почта</string>
+    <string name="login_password">Пароль</string>
+    <string name="login_sign_in">Войти</string>
+    <string name="login_or_divider">ИЛИ</string>
+    <string name="login_continue_google">Войти через Google</string>
+    <string name="login_no_account">Нет аккаунта?</string>
+    <string name="login_register_link">Зарегистрироваться</string>
+    <string name="login_email_error">Введите корректный адрес электронной почты</string>
+    <string name="login_password_error">Пароль должен содержать не менее 6 символов</string>
+
+    <!-- Register screen -->
+    <string name="register_title">Создать аккаунт</string>
+    <string name="register_subtitle">Начните путь к осознанности</string>
+    <string name="register_full_name">Полное имя</string>
+    <string name="register_create_button">Создать аккаунт</string>
+    <string name="register_have_account">Уже есть аккаунт?</string>
+    <string name="register_sign_in_link">Войти</string>
+    <string name="register_name_error">Имя не может быть пустым</string>
+    <string name="register_passwords_no_match">Пароли не совпадают</string>
+
+    <!-- Profile screen -->
+    <string name="profile_title">Профиль</string>
+    <string name="profile_subtitle">Ваш аккаунт и настройки</string>
+    <string name="profile_subtitle_full">Всё в одном месте: профиль, сессии, прогресс, челленджи и устройства.</string>
+    <string name="profile_sign_out">Выйти</string>
+    <string name="profile_reminder_time_title">Время напоминания</string>
+    <string name="profile_ok">ОК</string>
+    <string name="profile_cancel">Отмена</string>
+    <string name="profile_quick_access">БЫСТРЫЙ ДОСТУП</string>
+    <string name="profile_community_title">Сообщество</string>
+    <string name="profile_community_subtitle">Глобус и сессии</string>
+    <string name="profile_journal_title">Дневник</string>
+    <string name="profile_journal_subtitle">Размышления и настроение</string>
+    <string name="profile_achievements_title">Достижения</string>
+    <string name="profile_achievements_subtitle">Общий прогресс</string>
+    <string name="profile_help_faq_title">Помощь и FAQ</string>
+    <string name="profile_help_faq_subtitle">Гиды и ответы</string>
+    <string name="profile_music_title">Музыка</string>
+    <string name="profile_music_subtitle">Треки для фокуса и сна</string>
+    <string name="profile_challenges_title">Челленджи</string>
+    <string name="profile_challenges_subtitle">Выполняйте ежедневные цели</string>
+    <string name="section_stats">СТАТИСТИКА</string>
+    <string name="stat_sessions">Сессии</string>
+    <string name="stat_minutes">Минуты</string>
+    <string name="stat_current_streak">Текущая серия</string>
+    <string name="stat_longest_streak">Рекордная серия</string>
+    <string name="section_settings">НАСТРОЙКИ</string>
+    <string name="setting_theme">Тема</string>
+    <string name="theme_ocean">Океан</string>
+    <string name="theme_forest">Лес</string>
+    <string name="theme_sunset">Закат</string>
+    <string name="setting_notifications">Уведомления</string>
+    <string name="setting_notifications_hint">Ежедневные напоминания о дыхании</string>
+    <string name="btn_sign_out">Выйти</string>
+    <string name="reminder_time_label">Время напоминания</string>
+    <string name="reminder_time_title">Установить время напоминания</string>
+    <string name="reminder_approximate_hint">Приблизительно — разрешите точные будильники для точности</string>
+
+    <!-- Profile form tab -->
+    <string name="form_personal_info">ЛИЧНЫЕ ДАННЫЕ</string>
+    <string name="form_display_name">ИМЯ ПРОФИЛЯ</string>
+    <string name="form_shown_in_community">Отображается в сообществе и таблице лидеров.</string>
+    <string name="form_body_data">ФИЗИЧЕСКИЕ ДАННЫЕ</string>
+    <string name="form_height_unit">см</string>
+    <string name="form_weight_unit">кг</string>
+    <string name="form_age_unit">лет</string>
+    <string name="form_gender">ПОЛ</string>
+    <string name="form_my_goal">Моя цель</string>
+    <string name="form_theme">Тема</string>
+    <string name="form_theme_ocean">Океан</string>
+    <string name="form_theme_forest">Лес</string>
+    <string name="form_theme_sunset">Закат</string>
+    <string name="form_theme_day">День</string>
+    <string name="form_notifications">Уведомления</string>
+    <string name="form_daily_reminder">Ежедневное напоминание</string>
+    <string name="form_daily_reminder_hint">Напоминать мне каждый день о медитации.</string>
+    <string name="form_reminder_time">Время напоминания</string>
+    <string name="form_approximate_on_device">Приблизительно на этом устройстве.</string>
+    <string name="form_privacy_data">Конфиденциальность и данные</string>
+    <string name="form_allow_data_collection">Разрешить сбор данных</string>
+    <string name="form_share_stats_hint">Делитесь статистикой дыхания и геолокацией для улучшения опыта. Вы можете отключить это в любое время.</string>
+    <string name="form_data_collection_off">Необязательный сбор данных отключён. Вход в систему и основные функции работают в обычном режиме.</string>
+    <string name="form_how_we_use">Как мы это используем</string>
+    <string name="form_data_calibration">Ваш возраст, рост и вес помогают откалибровать темп дыхания. Ваша цель формирует первые рекомендации.</string>
+    <string name="form_save_changes">Сохранить изменения</string>
+
+    <!-- Devices tab -->
+    <string name="devices_connected_services">ПОДКЛЮЧЁННЫЕ СЕРВИСЫ</string>
+    <string name="devices_sync_all">Синхронизировать всё</string>
+    <string name="devices_syncing">Синхронизация…</string>
+    <string name="devices_health_connect_section">HEALTH CONNECT</string>
+    <string name="devices_health_connect_devices">Amazfit · Xiaomi · Samsung Health · Apple Health</string>
+    <string name="devices_connected_status">Подключено</string>
+    <string name="devices_not_linked">Не привязано</string>
+    <string name="devices_synced_ago">Синхронизировано %1$s</string>
+    <string name="devices_disconnect">Отключить</string>
+    <string name="devices_connect">Подключить</string>
+    <string name="devices_fitbit_subtitle">Пульс · Сон · ВСР</string>
+    <string name="devices_google_fit_subtitle">Сон · Пульс</string>
+    <string name="devices_hc_available">Доступно на вашем устройстве</string>
+    <string name="devices_hc_not_installed">Не установлено</string>
+    <string name="devices_hc_synced_badge">Синхронизировано</string>
+    <string name="devices_hc_permissions_error">Разрешения Health Connect не предоставлены.</string>
+    <string name="devices_open_hc_settings">Открыть настройки Health Connect</string>
+    <string name="devices_resync">Повторить синк</string>
+    <string name="devices_sync_now">Синхронизировать</string>
+    <string name="devices_install_hc">Установите Health Connect из Play Store для синхронизации данных Amazfit, Xiaomi и Samsung.</string>
+
+    <!-- Sessions and progress tabs -->
+    <string name="sessions_label">СЕССИИ</string>
+    <string name="sessions_total_completed">всего завершено</string>
+    <string name="sessions_streak_label">СЕРИЯ</string>
+    <string name="sessions_best_label">РЕКОРД</string>
+    <string name="sessions_total_label">ВСЕГО</string>
+    <string name="sessions_average_label">СРЕДНЕЕ</string>
+    <string name="sessions_this_week_label">ЭТА НЕДЕЛЯ</string>
+    <string name="sessions_recent_label">Недавние сессии</string>
+    <string name="sessions_no_sessions">Нет сессий</string>
+    <string name="sessions_complete_to_see">Завершите сессию дыхания, чтобы увидеть историю</string>
+    <string name="sessions_key_metrics">Ключевые показатели</string>
+    <string name="sessions_weekly_goal">Недельная цель</string>
+    <string name="sessions_weekly_goal_pct">%1$d%% от недельной цели</string>
+    <string name="sessions_weekly_goal_target">Цель: 70 мин/нед • Среднее: %1$d мин/сессию</string>
+    <string name="sessions_stat_sessions">Сессии</string>
+    <string name="sessions_stat_minutes">Минуты</string>
+    <string name="sessions_stat_current_streak">Текущая серия</string>
+    <string name="sessions_stat_best_streak">Лучшая серия</string>
+
+    <!-- Stats screen -->
+    <string name="stats_title">Статистика</string>
+    <string name="stats_subtitle">Ваш прогресс</string>
+    <string name="stats_session_history">История сессий</string>
+    <string name="stats_meditation_regularity">Регулярность медитаций</string>
+    <string name="stats_health_data">Данные здоровья</string>
+    <string name="stats_achievements">Достижения</string>
+    <string name="stats_emotional_journal">Эмоциональный дневник</string>
+
+    <!-- History screen -->
+    <string name="history_title">История</string>
+    <string name="history_subtitle">Ваши сессии дыхания</string>
+    <string name="history_empty_title">Нет сессий</string>
+    <string name="history_empty_hint">Начните дышать, чтобы записать\nпервую сессию!</string>
+    <string name="btn_try_again">Попробовать снова</string>
+    <string name="history_today">Сегодня</string>
+    <string name="history_yesterday">Вчера</string>
+    <string name="history_session_breathing">Дыхание</string>
+    <string name="history_session_custom">Своё дыхание</string>
+    <string name="history_session_4_7_8">Дыхание 4-7-8</string>
+    <string name="history_session_box">Квадратное дыхание</string>
+    <string name="history_session_wim_hof">Метод Вим Хофа</string>
+    <string name="history_session_coherent">Когерентное дыхание</string>
+    <string name="history_session_belly">Диафрагмальное дыхание</string>
+    <string name="history_session_morning">Утренний ритуал</string>
+    <string name="history_session_alternate">Попеременное дыхание</string>
+    <string name="history_session_deep">Глубокое расслабление</string>
+    <string name="history_session_energising">Бодрящее дыхание</string>
+
+    <!-- Health stats screen -->
+    <string name="health_stats_title">Данные здоровья</string>
+    <string name="health_stats_refresh">Обновить</string>
+    <string name="health_avg_sleep">СР. СОН</string>
+    <string name="health_last_7_days">за 7 дней</string>
+    <string name="health_resting_hr">ПУЛЬС В ПОКОЕ</string>
+    <string name="health_latest_reading">последнее измерение</string>
+    <string name="health_recovery">ВОССТАНОВЛЕНИЕ</string>
+    <string name="health_great_recovery">Отличное восстановление</string>
+    <string name="health_moderate_recovery">Умеренное восстановление</string>
+    <string name="health_rest_recommended">Рекомендуется отдых</string>
+    <string name="health_no_data_title">Нет данных здоровья</string>
+    <string name="health_no_data_message">Синхронизируйте носимое устройство через Health Connect\nв разделе Профиль → Устройства.</string>
+    <string name="health_sleep_duration_chart">ПРОДОЛЖИТЕЛЬНОСТЬ СНА</string>
+    <string name="health_resting_hr_chart">ПУЛЬС В ПОКОЕ</string>
+
+    <!-- Meditation regularity screen -->
+    <string name="regularity_title">Регулярность медитаций</string>
+    <string name="regularity_total_time">Общее время медитации: %1$s</string>
+    <string name="regularity_best_streak">Лучшая серия: %1$d дней</string>
+    <string name="regularity_sessions_week">Сессий на этой неделе: %1$d</string>
+
+    <!-- Journal screen -->
+    <string name="journal_title">Эмоциональный дневник</string>
+    <string name="journal_subtitle">Инсайты сессий на основе AI</string>
+    <string name="journal_30_day_overview">ОБЗОР ЗА 30 ДНЕЙ</string>
+    <string name="journal_analyzed">проанализировано</string>
+    <string name="journal_overall_mood">общее настроение</string>
+    <string name="journal_positive_pct">позитивных</string>
+    <string name="journal_recurring_themes">Повторяющиеся темы</string>
+    <string name="journal_mood_generally_positive">В целом позитивное</string>
+    <string name="journal_mood_challenging">Сложный период</string>
+    <string name="journal_mood_balanced">Сбалансированное</string>
+    <string name="journal_sentiment_positive">Позитивное</string>
+    <string name="journal_sentiment_neutral">Нейтральное</string>
+    <string name="journal_sentiment_difficult">Сложное</string>
+    <string name="journal_intensity_label">интенсивность %1$d/10</string>
+    <string name="journal_positive_legend">Позитив %1$d</string>
+    <string name="journal_neutral_legend">Нейтрально %1$d</string>
+    <string name="journal_difficult_legend">Сложно %1$d</string>
+    <string name="journal_entry_count_one">%1$d запись</string>
+    <string name="journal_entry_count_few">%1$d записи</string>
+    <string name="journal_entry_count_many">%1$d записей</string>
+    <string name="journal_entry_count_other">%1$d записи</string>
+    <string name="journal_emotional_score">ЭМОЦИОНАЛЬНЫЙ БАЛЛ</string>
+    <string name="journal_recommended">Рекомендуем:</string>
+    <string name="journal_try_it">Попробовать →</string>
+    <string name="journal_your_notes">ВАШИ ЗАМЕТКИ</string>
+    <string name="journal_empty_title">Ваш дневник пуст</string>
+    <string name="journal_empty_message">Добавляйте заметки к сессиям дыхания.\nAI проанализирует эмоции и\nпредложит подходящую технику.</string>
+    <string name="journal_start_session">Начать сессию →</string>
+    <string name="journal_could_not_load">Не удалось загрузить дневник</string>
+    <string name="journal_check_connection">Проверьте подключение и попробуйте снова</string>
+    <string name="journal_tip">Чем больше вы ведёте дневник, тем лучше AI понимает ваши эмоциональные паттерны и может рекомендовать нужную технику в нужный момент.</string>
+    <string name="journal_session_minutes">%1$d мин</string>
+    <string name="journal_mood_delta">+%1$d настроение</string>
+
+    <!-- Music screen -->
+    <string name="music_breathe_sounds">BREATHE · ЗВУКИ</string>
+    <string name="music_library_title">Музыкальная библиотека</string>
+    <string name="music_search_placeholder">Поиск треков, исполнителей, тегов…</string>
+    <string name="music_loading">Загрузка…</string>
+    <string name="music_track_count">%1$d треков</string>
+    <string name="music_no_tracks_for">Нет треков для «%1$s»</string>
+    <string name="music_clear_search">Сбросить поиск</string>
+    <string name="music_couldnt_load">Не удалось загрузить треки</string>
+    <string name="music_no_tracks_found">Треки не найдены</string>
+    <string name="music_reload">Перезагрузить</string>
+
+    <!-- Achievements screen -->
+    <string name="achievements_title_text">Достижения</string>
+    <string name="achievements_subtitle_text">Общий прогресс в приложении, на сайте и по данным здоровья.</string>
+    <string name="achievements_no_achievements">Нет достижений</string>
+    <string name="achievements_levels">Уровни</string>
+    <string name="achievements_one_system">Единая система достижений для мобильного, веба и синхронизации здоровья.</string>
+    <string name="achievements_completed">завершено</string>
+    <string name="achievements_in_progress">в процессе</string>
+    <string name="achievements_avg_progress">средний прогресс</string>
+    <string name="achievements_highlights">Лучшее</string>
+    <string name="achievements_view_all">Посмотреть все достижения</string>
+    <string name="achievements_detail_title">Достижение</string>
+    <string name="achievements_not_found">Достижение не найдено</string>
+    <string name="achievements_count_in_progress">%1$d/%2$d в процессе</string>
+    <string name="achievements_unlocked_on">Получено %1$s</string>
+
+    <!-- Fallback achievements -->
+    <string name="achievements_api_unavailable">API достижений недоступно (%1$d)</string>
+    <string name="achievement_unit_sessions">сессий</string>
+    <string name="achievement_unit_minutes">минут</string>
+    <string name="achievement_unit_sources">источников</string>
+    <string name="achievement_unit_nights">ночей</string>
+    <string name="achievement_unit_hours">часов</string>
+
+    <string name="achievement_first_breath_title">Первый вдох</string>
+    <string name="achievement_first_breath_desc">Завершайте сессии медитации в приложении или на сайте. Прогресс общий для обеих платформ.</string>
+    <string name="achievement_first_breath_level_1_title">Старт</string>
+    <string name="achievement_first_breath_level_1_desc">Завершите первую сессию.</string>
+    <string name="achievement_first_breath_level_2_title">Ритм</string>
+    <string name="achievement_first_breath_level_2_desc">Найдите ранний ритм.</string>
+    <string name="achievement_first_breath_level_3_title">Привычка</string>
+    <string name="achievement_first_breath_level_3_desc">Превратите практику в привычку.</string>
+
+    <string name="achievement_streak_builder_title">Стабильная серия</string>
+    <string name="achievement_streak_builder_desc">Поддерживайте привычку на всех устройствах и платформах.</string>
+    <string name="achievement_streak_builder_level_1_title">Разминка</string>
+    <string name="achievement_reach_day_streak_desc">Достигните серии из %1$d дней.</string>
+    <string name="achievement_streak_builder_level_2_title">Собранность</string>
+    <string name="achievement_streak_builder_level_3_title">Без сбоев</string>
+
+    <string name="achievement_breath_minutes_title">Минуты дыхания</string>
+    <string name="achievement_breath_minutes_desc">Общие минуты медитации из веба и приложения идут к одной общей цели.</string>
+    <string name="achievement_breath_minutes_level_1_title">Бронзовый поток</string>
+    <string name="achievement_meditate_hours_desc">Медитируйте суммарно %1$d часов.</string>
+    <string name="achievement_breath_minutes_level_2_title">Серебряный поток</string>
+    <string name="achievement_breath_minutes_level_3_title">Золотой поток</string>
+
+    <string name="achievement_health_sync_title">Синхронизация здоровья</string>
+    <string name="achievement_health_sync_desc">Подключайте носимые устройства и держите данные здоровья в одном аккаунте.</string>
+    <string name="achievement_health_sync_level_1_desc">Подключите первый источник данных о здоровье.</string>
+    <string name="achievement_health_sync_level_2_title">Многослойный</string>
+    <string name="achievement_health_sync_level_2_desc">Подключите два синхронизированных источника.</string>
+    <string name="achievement_health_sync_level_3_title">Единый</string>
+    <string name="achievement_health_sync_level_3_desc">Соберите полноценную подключённую систему.</string>
+
+    <string name="achievement_sleep_rhythm_title">Ритм сна</string>
+    <string name="achievement_sleep_rhythm_desc">Отслеживайте ночи сна с часов и формируйте стабильную базу.</string>
+    <string name="achievement_sleep_rhythm_level_1_title">Наблюдение</string>
+    <string name="achievement_sync_nights_desc">Синхронизируйте %1$d ночей.</string>
+    <string name="achievement_sleep_rhythm_level_2_title">Стабильность</string>
+    <string name="achievement_sleep_rhythm_level_3_title">Закрепление</string>
+
+    <string name="achievement_recovery_heart_title">Пульс восстановления</string>
+    <string name="achievement_recovery_heart_desc">Пусть синхронизация пульса формирует более долгую картину восстановления.</string>
+    <string name="achievement_recovery_heart_level_1_title">Чтение</string>
+    <string name="achievement_capture_heart_rate_days_desc">Соберите данные пульса за %1$d дней.</string>
+    <string name="achievement_recovery_heart_level_2_title">База</string>
+    <string name="achievement_recovery_heart_level_3_title">Адаптивный</string>
+
+    <string name="achievement_sleep_hours_title">Часы сна</string>
+    <string name="achievement_sleep_hours_desc">Набирайте общее число восстановленных часов из синхронизированных записей сна.</string>
+    <string name="achievement_sleep_hours_level_1_title">Отдохнувший</string>
+    <string name="achievement_reach_tracked_sleep_hours_desc">Наберите %1$d отслеженных часов сна.</string>
+    <string name="achievement_sleep_hours_level_2_title">Восстановление</string>
+    <string name="achievement_sleep_hours_level_3_title">Заряженный</string>
+
+    <string name="achievement_session_marathon_title">Марафон сессий</string>
+    <string name="achievement_session_marathon_desc">Повторяйте сессии регулярно, где бы они ни были завершены.</string>
+    <string name="achievement_count_unit_title">%1$d %2$s</string>
+    <string name="achievement_complete_total_sessions_desc">Завершите всего %1$d сессий.</string>
+
+    <!-- Article screen -->
+    <string name="article_breatheonline">breatheonline.app</string>
+    <string name="article_could_not_load">Не удалось загрузить страницу</string>
+    <string name="article_check_internet">Проверьте интернет-соединение и попробуйте снова.</string>
+    <string name="article_retry">Повторить</string>
+
+    <!-- AI Coach -->
+    <string name="ai_coach_label">AI-ТРЕНЕР</string>
+    <string name="ai_messages_left">%1$d осталось сегодня</string>
+    <string name="ai_ask_placeholder">Спросите о медитации…</string>
+    <string name="ai_daily_limit">Дневной лимит исчерпан</string>
+    <string name="ai_resets_in">Сбросится через %1$dч. Создайте аккаунт для большего числа запросов.</string>
+    <string name="ai_powered_by_gemini">РАБОТАЕТ НА GEMINI AI</string>
+
+    <!-- Interactive screen (Breathing quiz / Stress score) -->
+    <string name="interactive_breathing_tools">Инструменты дыхания</string>
+    <string name="interactive_breathing_quiz_tab">Тест дыхания</string>
+    <string name="interactive_stress_score_tab">Уровень стресса</string>
+    <string name="interactive_question_progress">Вопрос %1$d из 5</string>
+    <string name="interactive_next">Далее →</string>
+    <string name="interactive_see_result">Мой результат →</string>
+    <string name="interactive_retake_quiz">Пройти снова</string>
+    <string name="interactive_seven_day_plan">Ваш план на 7 дней</string>
+    <string name="interactive_start_technique">Начать %1$s →</string>
+    <string name="interactive_rate_how_feel">Оцените своё состояние сегодня</string>
+    <string name="interactive_sleep_quality">Качество сна</string>
+    <string name="interactive_anxiety_level">Уровень тревоги</string>
+    <string name="interactive_focus">Концентрация</string>
+    <string name="interactive_energy">Энергия</string>
+    <string name="interactive_your_stress_score">Ваш уровень стресса:</string>
+    <string name="interactive_calculate_plan">Рассчитать мой план →</string>
+    <string name="interactive_adjust_scores">Изменить оценки</string>
+    <string name="interactive_whats_driving">Что влияет на ваш балл</string>
+    <string name="interactive_start_your_plan">Начать план →</string>
+    <string name="interactive_quiz_question_breathing_from">Откуда вы дышите?</string>
+    <string name="interactive_quiz_question_mouth">Вы дышите через рот?</string>
+    <string name="interactive_quiz_question_bedtime">Что вы чувствуете перед сном?</string>
+    <string name="interactive_quiz_question_sigh_yawn">Вы часто вздыхаете или зеваете?</string>
+    <string name="interactive_quiz_question_energy_midday">Энергия к середине дня?</string>
+    <string name="interactive_quiz_option_chest">Грудь</string>
+    <string name="interactive_quiz_option_belly">Живот</string>
+    <string name="interactive_quiz_option_not_sure">Не уверен(а)</string>
+    <string name="interactive_quiz_option_often">Часто</string>
+    <string name="interactive_quiz_option_sometimes">Иногда</string>
+    <string name="interactive_quiz_option_rarely">Редко</string>
+    <string name="interactive_quiz_option_racing_thoughts">Мысли несутся</string>
+    <string name="interactive_quiz_option_a_bit_restless">Слегка беспокойно</string>
+    <string name="interactive_quiz_option_calm">Спокойно</string>
+    <string name="interactive_quiz_option_yes_constantly">Да, постоянно</string>
+    <string name="interactive_quiz_option_not_really">Не особо</string>
+    <string name="interactive_quiz_option_exhausted">Выжат(а)</string>
+    <string name="interactive_quiz_option_a_bit_tired">Слегка устал(а)</string>
+    <string name="interactive_quiz_option_still_going">Держусь</string>
+    <string name="interactive_score_low_stress">Низкий стресс</string>
+    <string name="interactive_score_moderate_stress">Умеренный стресс</string>
+    <string name="interactive_score_high_stress">Высокий стресс</string>
+    <string name="interactive_breakdown_sleep_lever">Сон сейчас для вас главный рычаг</string>
+    <string name="interactive_breakdown_anxiety_spiking">Тревога повышает ваш базовый стресс</string>
+    <string name="interactive_breakdown_focus_fatigue">Низкая концентрация указывает на умственное переутомление — попробуйте квадратное дыхание перед работой</string>
+    <string name="interactive_breakdown_energy_help">Утренняя рутина поможет с энергией</string>
+    <string name="interactive_breakdown_healthy_balance">Сохраняйте текущий хороший баланс</string>
+    <string name="interactive_breakdown_coherent_deeper">Добавьте когерентное дыхание, чтобы углубиться</string>
+    <string name="interactive_breakdown_evening_wind_down">Рекомендуется вечерняя сессия для расслабления</string>
+    <string name="interactive_plan_stress_day1_2">День 1–2: Сбросьте базовый уровень с помощью 4-7-8</string>
+    <string name="interactive_plan_stress_day3_5">День 3–5: Квадратное дыхание для спокойствия днём</string>
+    <string name="interactive_plan_stress_day6_7">День 6–7: Закрепите вечернее расслабление</string>
+    <string name="interactive_plan_shallow_day1_2">День 1–2: Основа диафрагмального дыхания</string>
+    <string name="interactive_plan_shallow_day3_5">День 3–5: Расширяйте до когерентного дыхания</string>
+    <string name="interactive_plan_shallow_day6_7">День 6–7: Привычка полного включения диафрагмы</string>
+    <string name="interactive_plan_natural_day1_2">День 1–2: Закрепите резонанс 5.5 BPM</string>
+    <string name="interactive_plan_natural_day3_5">День 3–5: Отслеживание ВСР + импульс Вим Хофа</string>
+    <string name="interactive_plan_natural_day6_7">День 6–7: Закрепите свою рутину пиковой формы</string>
+    <string name="result_stress_breather_title">Стрессовое дыхание</string>
+    <string name="result_stress_breather_desc">Ваша нервная система перегружена. Короткие задержки дыхания и медленные выдохи быстро восстановят баланс.</string>
+    <string name="result_stress_breather_technique">Дыхание 4-7-8</string>
+    <string name="result_shallow_breather_title">Поверхностное дыхание</string>
+    <string name="result_shallow_breather_desc">Вы используете только верхнюю часть лёгких. Диафрагмальное дыхание даёт больше кислорода и спокойствия.</string>
+    <string name="result_shallow_breather_technique">Диафрагмальное дыхание</string>
+    <string name="result_natural_breather_title">Естественное дыхание</string>
+    <string name="result_natural_breather_desc">У вас хорошие инстинкты дыхания. Когерентное дыхание выведет вас на новый уровень.</string>
+    <string name="result_natural_breather_technique">Когерентное дыхание</string>
+
+    <!-- Health Connect sync steps -->
+    <string name="hc_step_checking_permissions">Проверка разрешений…</string>
+    <string name="hc_step_reading_sleep">Чтение данных сна…</string>
+    <string name="hc_step_reading_heart_rate">Чтение пульса…</string>
+    <string name="hc_step_reading_steps">Чтение шагов…</string>
+    <string name="hc_step_sending">Отправка на сервер…</string>
+    <string name="hc_no_data_error">Данные Health Connect за последние 30 дней не найдены</string>
+
+    <!-- Notification content -->
+    <string name="notification_title">Время дышать</string>
+    <string name="notification_body">Найдите минуту для ежедневного упражнения по дыханию</string>
+
+    <!-- Challenges tab -->
+    <string name="challenges_ai_recommended">AI-рекомендация</string>
+    <string name="challenges_my_active">Мои активные челленджи</string>
+    <string name="challenges_available">Доступные челленджи</string>
+    <string name="challenges_join_now">Присоединиться</string>
+    <string name="challenges_join">Вступить</string>
+    <string name="challenges_days_progress">%1$d/%2$s дн</string>
+
+    <!-- Profile header -->
+    <string name="profile_age_years">%1$s лет</string>
+
+    <!-- Breathe screen extra -->
+    <string name="breathe_paused_state">Пауза</string>
+    <string name="breathe_ready_state">Готово</string>
+    <string name="breathe_start_button">▶  Начать дыхание</string>
+    <string name="breathe_end_button">Завершить</string>
+    <string name="breathe_apply">Применить</string>
+    <string name="breathe_read_guide">Читать гид →</string>
+
+    <!-- FAQ screen -->
+    <string name="faq_title">FAQ</string>
+    <string name="faq_subtitle">Помощь и часто задаваемые вопросы</string>
+    <string name="faq_no_results">Ничего не найдено</string>
+    <string name="faq_question_count">%1$d вопр</string>
+    <string name="faq_search_placeholder">Поиск по вопросам...</string>
+    <string name="faq_still_questions">Остались вопросы?</string>
+
+    <!-- Globe screen -->
+    <string name="globe_no_posts">Нет публикаций</string>
+    <string name="globe_no_spots">Нет мест</string>
+    <string name="globe_fly_there">Лететь туда</string>
+    <string name="globe_whats_on_mind">Что у вас на уме?</string>
+    <string name="globe_post_button">Опубликовать</string>
+    <string name="globe_use_gps">Использовать GPS</string>
+    <string name="globe_title_optional">Заголовок (необязательно)</string>
+    <string name="globe_meditation_spot">Место медитации</string>
+    <string name="globe_note_optional">Заметка (необязательно)</string>
+    <string name="globe_city">Город</string>
+    <string name="globe_country">Страна</string>
+    <string name="globe_technique">Техника</string>
+    <string name="globe_pin_spot">Отметить место</string>
+    <string name="globe_new_post">Новая публикация</string>
+    <string name="globe_add_spot">Добавить место</string>
+    <string name="globe_like">Нравится</string>
+
+    <!-- Privacy Policy screen -->
+    <string name="privacy_title">Политика конфиденциальности</string>
+    <string name="privacy_last_updated">Последнее обновление: %1$s</string>
+    <string name="privacy_email_label">Email: </string>
+    <string name="privacy_questions_email">Вопросы? Напишите на </string>
+
+    <!-- Meditation stats -->
+    <string name="meditation_sessions_total">%1$d сессий всего</string>
+    <string name="meditation_trend_improved">Улучшилось</string>
+    <string name="meditation_trend_decreased">Ухудшилось</string>
+    <string name="meditation_no_data_label">Нет данных</string>
+    <string name="meditation_positive_label">позитивных</string>
+    <string name="meditation_entries_count">%1$d записей</string>
+    <string name="meditation_most_common">Чаще всего: %1$d/10 (%2$d×)</string>
+    <string name="meditation_avg_mood">СРЕДНЕЕ НАСТРОЕНИЕ</string>
+    <string name="meditation_unique_scores">уник. оценок</string>
+    <string name="meditation_score_variety">РАЗБРОС ОЦЕНОК</string>
+    <string name="meditation_chart_minutes">Минуты</string>
+    <string name="meditation_chart_sessions">Сессии</string>
+    <string name="meditation_chart_no_data">Нет данных</string>
+    <string name="meditation_emotional_score">Эмоциональный балл</string>
+    <string name="meditation_recurring_themes">Повторяющиеся темы</string>
+    <string name="meditation_sentiment_split">РАСПРЕДЕЛЕНИЕ НАСТРОЕНИЙ</string>
+
+    <!-- Sleep stats -->
+    <string name="sleep_fell_asleep">%1$s Заснул</string>
+    <string name="sleep_woke_up">%1$s Проснулся</string>
+    <string name="sleep_open_profile">Открыть профиль</string>
+    <string name="sleep_no_data_yet">Пока нет данных о сне</string>
+    <string name="sleep_connect_hc_unlock">Подключите Health Connect, чтобы открыть ночную длительность, фазы сна, тренды отбоя и оценку восстановления.</string>
+    <string name="sleep_checklist_consistency">Видеть постоянство отбоя и подъёма</string>
+    <string name="sleep_checklist_stages">Отслеживать глубокий, лёгкий и REM сон</string>
+    <string name="sleep_checklist_local">Получать интерпретацию сна мгновенно</string>
+    <string name="sleep_viewing">Просматриваете</string>
+    <string name="btn_prev">Назад</string>
+    <string name="btn_latest">Последний</string>
+    <string name="btn_next">Вперёд</string>
+    <string name="register_confirm_password">Повторите пароль</string>
+
+    <!-- Stats activity -->
+    <string name="stats_activity_section">АКТИВНОСТЬ</string>
+    <string name="stats_weekly_practice">Недельная практика</string>
+    <string name="stats_monthly_consistency">Регулярность за месяц</string>
+    <string name="stats_yearly_rhythm">Годовой ритм</string>
+    <string name="stats_summary_format">%1$d мин всего · %2$s</string>
+
+    <!-- Extra localized UI labels -->
+    <string name="profile_language">Язык</string>
+    <string name="form_height_label">Рост</string>
+    <string name="form_weight_label">Вес</string>
+    <string name="form_age_label">Возраст</string>
+    <string name="history_less_than_minute">меньше 1 мин</string>
+    <string name="breathe_resume_button">Продолжить</string>
+    <string name="breathe_pause_button">Пауза</string>
+    <string name="breathe_time_label">Время</string>
+    <string name="breathe_cycles_label">Циклы</string>
+    <string name="breathe_heart_rate_label">Пульс</string>
+    <string name="sleep_schedule_title">Режим сна</string>
+    <string name="sleep_avg_fall_asleep_label">Среднее время засыпания</string>
+    <string name="sleep_sleep_regularity_label">Регулярность сна</string>
+    <string name="sleep_latest_fall_asleep_time">Последнее засыпание: %1$s</string>
+    <string name="sleep_avg_wake_up_label">Среднее время пробуждения</string>
+    <string name="sleep_wake_up_regularity_label">Регулярность пробуждения</string>
+    <string name="sleep_earliest_wake_up_time">Самое раннее пробуждение: %1$s</string>
+    <string name="sleep_regular">Регулярно</string>
+    <string name="sleep_irregular">Нерегулярно</string>
+    <string name="sleep_unknown">Неизвестно</string>
+    <string name="globe_report_submitted">Жалоба отправлена. Спасибо.</string>
+    <string name="globe_report_failed">Не удалось отправить жалобу. Попробуйте снова.</string>
+    <string name="globe_user_blocked">Пользователь заблокирован.</string>
+    <string name="globe_block_user_failed">Не удалось заблокировать пользователя. Попробуйте снова.</string>
+    <string name="globe_data_collection_off">Сбор данных отключён. Включите его в Профиль → Конфиденциальность и данные, чтобы добавлять места.</string>
+    <string name="globe_server_error">Ошибка сервера %1$d</string>
+    <string name="globe_network_error">Ошибка сети</string>
+    <string name="goal_better_sleep">Лучший сон</string>
+    <string name="goal_less_stress">Меньше стресса</string>
+    <string name="goal_more_focus">Больше фокуса</string>
+    <string name="goal_more_energy">Больше энергии</string>
+    <string name="goal_general_wellness">Общее самочувствие</string>
+    <string name="gender_male">Мужской</string>
+    <string name="gender_female">Женский</string>
+    <string name="gender_other">Другой</string>
+    <string name="gender_prefer_not_to_say">Предпочитаю не указывать</string>
+    <string name="language_english">Английский</string>
+    <string name="language_russian">Русский</string>
+    <string name="language_spanish">Испанский</string>
+
+    <!-- Plurals -->
+    <plurals name="cycle_count">
+        <item quantity="one">%d цикл</item>
+        <item quantity="few">%d цикла</item>
+        <item quantity="many">%d циклов</item>
+        <item quantity="other">%d цикла</item>
+    </plurals>
+    <plurals name="stats_active_days">
+        <item quantity="one">%d активный день</item>
+        <item quantity="few">%d активных дня</item>
+        <item quantity="many">%d активных дней</item>
+        <item quantity="other">%d активных дней</item>
+    </plurals>
+    <plurals name="stats_active_months">
+        <item quantity="one">%d активный месяц</item>
+        <item quantity="few">%d активных месяца</item>
+        <item quantity="many">%d активных месяцев</item>
+        <item quantity="other">%d активных месяцев</item>
+    </plurals>
+</resources>

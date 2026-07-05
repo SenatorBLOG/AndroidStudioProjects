@@ -6,7 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
-import com.example.breathe.MainActivity
+import com.breatheonline.breathe.MainActivity
 import com.breatheonline.breathe.R
 import com.breatheonline.breathe.utils.NotificationScheduler
 import com.breatheonline.breathe.utils.UserPrefsKeys

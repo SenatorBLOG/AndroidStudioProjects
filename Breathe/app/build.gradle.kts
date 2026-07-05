@@ -13,18 +13,27 @@ val localProps = Properties().also { props ->
     rootProject.file("local.properties").takeIf { it.exists() }
         ?.inputStream()?.use { props.load(it) }
 }
+val mapboxAccessToken =
+    System.getenv("MAPBOX_ACCESS_TOKEN")
+        ?: localProps.getProperty("MAPBOX_ACCESS_TOKEN")
+        ?: ""
 
 val releaseStoreFilePath: String = localProps.getProperty("RELEASE_STORE_FILE") ?: ""
 
+val googleWebClientId =
+    System.getenv("GOOGLE_WEB_CLIENT_ID")
+        ?: localProps.getProperty("GOOGLE_WEB_CLIENT_ID")
+        ?: "617412317511-19s97rms2r9t3ihl041h7k128a7pqd98.apps.googleusercontent.com"
+
 android {
-    namespace  = "com.example.breathe"
-    compileSdk = 35
+    namespace  = "com.breatheonline.breathe"
+    compileSdk = 36
 
     defaultConfig {
-        applicationId = "app.breatheonline.breathe"
+        applicationId = "com.breatheonline.breathe"
         minSdk        = 26
         targetSdk     = 35
-        versionCode   = 1
+        versionCode   = 2
         versionName   = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -34,7 +43,12 @@ android {
         buildConfigField(
             "String",
             "MAPBOX_ACCESS_TOKEN",
-            "\"${localProps.getProperty("MAPBOX_ACCESS_TOKEN") ?: ""}\"",
+            "\"$mapboxAccessToken\"",
+        )
+        buildConfigField(
+            "String",
+            "GOOGLE_WEB_CLIENT_ID",
+            "\"$googleWebClientId\"",
         )
     }
 
@@ -81,18 +95,14 @@ android {
         buildConfig = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "2.0.20"
-    }
-
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     kotlin {
         compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
         }
     }
 
@@ -118,8 +128,9 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.material3:material3:1.3.2")
     implementation("androidx.compose.material:material-icons-extended")
+    implementation("com.composables:icons-lucide-android:1.1.0")
     implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.foundation:foundation-layout:1.10.5")
+    implementation("androidx.compose.foundation:foundation-layout")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     // ── Navigation Compose ────────────────────────────────────────────────────
@@ -153,16 +164,16 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.7")
 
     // ── Room ──────────────────────────────────────────────────────────────────
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
+    implementation("androidx.room:room-runtime:2.7.0")
+    implementation("androidx.room:room-ktx:2.7.0")
+    ksp("androidx.room:room-compiler:2.7.0")
 
     // ── Hilt ──────────────────────────────────────────────────────────────────
-    implementation("com.google.dagger:hilt-android:2.51.1")
-    ksp("com.google.dagger:hilt-compiler:2.51.1")
-    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-    implementation("androidx.hilt:hilt-work:1.2.0")
-    ksp("androidx.hilt:hilt-compiler:1.2.0")
+    implementation("com.google.dagger:hilt-android:2.59.2")
+    ksp("com.google.dagger:hilt-compiler:2.59.2")
+    implementation("androidx.hilt:hilt-navigation-compose:1.3.0")
+    implementation("androidx.hilt:hilt-work:1.3.0")
+    ksp("androidx.hilt:hilt-compiler:1.3.0")
 
     // ── WorkManager ───────────────────────────────────────────────────────────
     implementation("androidx.work:work-runtime-ktx:2.9.1")
@@ -175,8 +186,13 @@ dependencies {
     implementation("androidx.credentials:credentials-play-services-auth:1.3.0")
     implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
 
+    // ── Chrome Custom Tabs (OAuth browser flow) ───────────────────────────────
+    implementation("androidx.browser:browser:1.8.0")
+
+    // ── Health Connect (Amazfit · Xiaomi · Samsung health data) ──────────────
+    implementation("androidx.health.connect:connect-client:1.1.0")
+
     // ── Mapbox Maps SDK ───────────────────────────────────────────────────────
-    implementation("com.mapbox.maps:android:11.8.0")
 
     // ── Unit tests ────────────────────────────────────────────────────────────
     testImplementation("junit:junit:4.13.2")

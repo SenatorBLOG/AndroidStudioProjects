@@ -33,9 +33,20 @@ import com.breatheonline.breathe.viewmodel.HealthSummary
 @Composable
 internal fun HealthPanel(health: HealthSummary, colors: AppColors) {
     Column(
-        modifier            = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(colors.surface)
+            .border(1.dp, colors.primary.copy(alpha = 0.08f), RoundedCornerShape(20.dp))
+            .padding(horizontal = 14.dp, vertical = 14.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
+        Text(
+            text = "Health data",
+            style = MaterialTheme.typography.titleSmall,
+            color = colors.title,
+        )
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             if (health.avgSleep7dMin != null) {
                 val h = health.avgSleep7dMin / 60; val m = health.avgSleep7dMin % 60
@@ -74,9 +85,9 @@ private fun HealthTile(
 ) {
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(14.dp))
-            .background(colors.surface)
-            .border(1.dp, colors.subtitle.copy(alpha = 0.12f), RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(16.dp))
+            .background(colors.background.copy(alpha = 0.28f))
+            .border(1.dp, colors.primary.copy(alpha = 0.08f), RoundedCornerShape(16.dp))
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {

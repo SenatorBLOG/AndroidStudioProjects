@@ -14,7 +14,7 @@ import javax.inject.Inject
 
 data class JournalState(
     val insights:  NlpInsights? = null,
-    val isLoading: Boolean      = true,
+    val isLoading: Boolean      = false,
     val error:     String?      = null,
 )
 

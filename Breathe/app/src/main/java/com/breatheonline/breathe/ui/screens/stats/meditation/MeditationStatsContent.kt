@@ -22,6 +22,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -68,46 +74,40 @@ internal fun MeditationStatsContent(
     }
 
     LazyColumn(
-        modifier            = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(0.dp),
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(top = 4.dp, bottom = 28.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         // ── Period tabs ───────────────────────────────────────────────────
         item {
             MeditationPeriodTabs(selected = period, onSelect = onPeriodSelect, colors = colors)
-            Spacer(Modifier.height(16.dp))
         }
 
         // ── Activity chart ────────────────────────────────────────────────
         item {
             ActivityChart(data = chartData, period = period, colors = colors)
-            Spacer(Modifier.height(20.dp))
         }
 
         // ── Annual progress chart ─────────────────────────────────────────
         item {
             AnnualProgressSection(state = state, colors = colors)
-            Spacer(Modifier.height(20.dp))
         }
 
         // ── Stats cards grid ──────────────────────────────────────────────
         item {
             StatsCardsGrid(state = state, colors = colors)
-            Spacer(Modifier.height(20.dp))
         }
 
         // ── Duration donut ────────────────────────────────────────────────
         item {
             DurationDonutSection(buckets = state.durationBuckets, colors = colors)
-            Spacer(Modifier.height(20.dp))
         }
 
         // ── Health data panel ─────────────────────────────────────────────
         val health = state.health
         if (health != null) {
             item {
-                MeditationSectionLabel("HEALTH DATA", colors)
                 HealthPanel(health = health, colors = colors)
-                Spacer(Modifier.height(20.dp))
             }
         }
 
@@ -116,14 +116,12 @@ internal fun MeditationStatsContent(
                 colors = colors,
                 navController = navController,
             )
-            Spacer(Modifier.height(20.dp))
         }
 
         // ── Mood grid ─────────────────────────────────────────────────────
         if (state.moodPoints.any { it.delta != null }) {
             item {
                 MoodGrid(points = state.moodPoints, colors = colors)
-                Spacer(Modifier.height(20.dp))
             }
         }
 
@@ -131,16 +129,17 @@ internal fun MeditationStatsContent(
         if (state.moodStats.total > 0) {
             item {
                 MoodBreakdownSection(mood = state.moodStats, colors = colors)
-                Spacer(Modifier.height(20.dp))
             }
         }
 
         // ── AI Insights ───────────────────────────────────────────────────
         if (state.insights.isNotEmpty()) {
-            item { MeditationSectionLabel("AI INSIGHTS", colors) }
             items(state.insights) { card ->
-                InsightCardRow(card = card, colors = colors)
-                Spacer(Modifier.height(10.dp))
+                InsightCardRow(
+                    card    = card,
+                    colors  = colors,
+                    onClick = { navController.navigate(Route.SESSION_HISTORY) },
+                )
             }
         }
 
@@ -148,47 +147,49 @@ internal fun MeditationStatsContent(
         val nlp = state.nlpInsights
         if (nlp != null && nlp.totalAnalyzed > 0) {
             item {
-                MeditationSectionLabel("EMOTIONAL INTELLIGENCE", colors)
                 NlpSection(nlp = nlp, colors = colors, navController = navController)
-                Spacer(Modifier.height(20.dp))
             }
         }
 
         // ── Quick links ───────────────────────────────────────────────────
         item {
+            Spacer(Modifier.height(4.dp))
             MeditationSectionLabel("EXPLORE", colors)
             QuickLinkRow(
                 label    = stringResource(R.string.stats_session_history),
+                icon     = Icons.Filled.AccessTime,
                 onClick  = { navController.navigate(Route.SESSION_HISTORY) },
                 colors   = colors,
             )
             Spacer(Modifier.height(10.dp))
             QuickLinkRow(
                 label    = stringResource(R.string.stats_meditation_regularity),
+                icon     = Icons.Filled.CalendarMonth,
                 onClick  = { navController.navigate(Route.MEDITATION_REGULARITY) },
                 colors   = colors,
             )
             Spacer(Modifier.height(10.dp))
             QuickLinkRow(
                 label    = stringResource(R.string.stats_health_data),
+                icon     = Icons.Filled.Favorite,
                 onClick  = { navController.navigate(Route.HEALTH_STATS) },
                 colors   = colors,
             )
             Spacer(Modifier.height(10.dp))
             QuickLinkRow(
                 label    = stringResource(R.string.stats_achievements),
+                icon     = Icons.Filled.EmojiEvents,
                 onClick  = { navController.navigate(Route.ACHIEVEMENTS) },
                 colors   = colors,
             )
             Spacer(Modifier.height(10.dp))
             QuickLinkRow(
                 label    = stringResource(R.string.stats_emotional_journal),
+                icon     = Icons.Filled.MenuBook,
                 onClick  = { navController.navigate(Route.JOURNAL) },
                 colors   = colors,
             )
         }
-
-        item { Spacer(Modifier.height(32.dp)) }
     }
 }
 
@@ -200,17 +201,28 @@ internal fun MeditationPeriodTabs(selected: Int, onSelect: (Int) -> Unit, colors
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(18.dp))
             .background(colors.surface),
+        verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
-        listOf("Week", "Month", "Year").forEachIndexed { i, label ->
+        listOf(
+            stringResource(R.string.period_week),
+            stringResource(R.string.period_month),
+            stringResource(R.string.period_year),
+        ).forEachIndexed { i, label ->
             val active = i == selected
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(if (active) colors.primary else Color.Transparent)
+                    .padding(4.dp)
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(if (active) colors.primary.copy(alpha = 0.14f) else Color.Transparent)
+                    .border(
+                        width = if (active) 1.dp else 0.dp,
+                        color = if (active) colors.primary.copy(alpha = 0.24f) else Color.Transparent,
+                        shape = RoundedCornerShape(14.dp),
+                    )
                     .clickable { onSelect(i) }
                     .padding(vertical = 10.dp),
                 contentAlignment = Alignment.Center,
@@ -218,7 +230,7 @@ internal fun MeditationPeriodTabs(selected: Int, onSelect: (Int) -> Unit, colors
                 Text(
                     text       = label,
                     style      = MaterialTheme.typography.labelMedium,
-                    color      = if (active) colors.onPrimary else colors.subtitle,
+                    color      = if (active) colors.primary else colors.subtitle,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold.takeIf { active }
                         ?: androidx.compose.ui.text.font.FontWeight.Normal,
                 )
@@ -230,14 +242,20 @@ internal fun MeditationPeriodTabs(selected: Int, onSelect: (Int) -> Unit, colors
 // ── AI Insight Card Row ───────────────────────────────────────────────────────
 
 @Composable
-internal fun InsightCardRow(card: InsightCard, colors: AppColors) {
+internal fun InsightCardRow(
+    card:    InsightCard,
+    colors:  AppColors,
+    onClick: (() -> Unit)? = null,
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier          = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(20.dp))
             .background(colors.surface)
+            .border(1.dp, colors.primary.copy(alpha = 0.08f), RoundedCornerShape(20.dp))
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
             .padding(horizontal = 16.dp, vertical = 14.dp),
     ) {
         Text(text = card.emoji, fontSize = 26.sp)
@@ -256,30 +274,59 @@ internal fun InsightCardRow(card: InsightCard, colors: AppColors) {
                 modifier = Modifier.padding(top = 3.dp),
             )
         }
+        if (onClick != null) {
+            Spacer(Modifier.width(8.dp))
+            Icon(
+                imageVector        = Icons.AutoMirrored.Filled.ArrowForward,
+                contentDescription = null,
+                tint               = colors.subtitle,
+                modifier           = Modifier.size(16.dp),
+            )
+        }
     }
 }
 
 // ── Quick link row ─────────────────────────────────────────────────────────────
 
 @Composable
-internal fun QuickLinkRow(label: String, onClick: () -> Unit, colors: AppColors) {
+internal fun QuickLinkRow(
+    label:   String,
+    onClick: () -> Unit,
+    colors:  AppColors,
+    icon:    ImageVector? = null,
+) {
     Row(
         verticalAlignment     = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 20.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(20.dp))
             .background(colors.surface)
+            .border(1.dp, colors.primary.copy(alpha = 0.08f), RoundedCornerShape(20.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 16.dp),
+            .padding(horizontal = 16.dp, vertical = 14.dp),
     ) {
-        Text(
-            text       = label,
-            style      = MaterialTheme.typography.bodyMedium,
-            color      = colors.title,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier          = Modifier.weight(1f),
+        ) {
+            if (icon != null) {
+                Icon(
+                    imageVector        = icon,
+                    contentDescription = null,
+                    tint               = colors.primary,
+                    modifier           = Modifier.size(18.dp),
+                )
+                Spacer(Modifier.width(10.dp))
+            }
+            Text(
+                text       = label,
+                style      = MaterialTheme.typography.bodyMedium,
+                color      = colors.title,
+                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+            )
+        }
         Icon(
             imageVector        = Icons.AutoMirrored.Filled.ArrowForward,
             contentDescription = null,
@@ -298,7 +345,13 @@ internal fun NlpSection(
     navController: NavController,
 ) {
     Column(
-        modifier            = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(colors.surface)
+            .border(1.dp, colors.primary.copy(alpha = 0.08f), RoundedCornerShape(20.dp))
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
         Row(
@@ -306,17 +359,35 @@ internal fun NlpSection(
             verticalAlignment     = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Text(
-                "${nlp.totalAnalyzed} sessions analyzed",
-                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
-                color = colors.subtitle,
-            )
-            Text(
-                "View Journal →",
-                style    = MaterialTheme.typography.labelSmall,
-                color    = colors.primary,
+            Column {
+                Text(
+                    text = stringResource(R.string.meditation_emotional_intelligence),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = colors.title,
+                )
+                Text(
+                    text = stringResource(R.string.meditation_sessions_analyzed, nlp.totalAnalyzed),
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                    color = colors.subtitle,
+                )
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
                 modifier = Modifier.clickable { navController.navigate(Route.JOURNAL) },
-            )
+            ) {
+                Text(
+                    stringResource(R.string.meditation_view_journal),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = colors.primary,
+                )
+                Icon(
+                    imageVector        = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = null,
+                    tint               = colors.primary,
+                    modifier           = Modifier.size(12.dp),
+                )
+            }
         }
 
         if (nlp.timeline.size >= 2) {
@@ -342,7 +413,7 @@ private fun EmotionalScoreChart(timeline: List<NlpTimelinePoint>, colors: AppCol
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Text("Emotional score", style = MaterialTheme.typography.labelMedium, color = colors.title,
+        Text(stringResource(R.string.meditation_emotional_score), style = MaterialTheme.typography.labelMedium, color = colors.title,
             fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
         Text("−1 negative  →  +1 positive", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = colors.subtitle)
 
@@ -407,7 +478,7 @@ private fun ThemesSentimentCard(nlp: NlpInsights, colors: AppColors) {
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text("Recurring themes", style = MaterialTheme.typography.labelMedium, color = colors.title,
+        Text(stringResource(R.string.meditation_recurring_themes), style = MaterialTheme.typography.labelMedium, color = colors.title,
             fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold)
 
         if (nlp.topThemes.isNotEmpty()) {
@@ -426,7 +497,7 @@ private fun ThemesSentimentCard(nlp: NlpInsights, colors: AppColors) {
         }
 
         Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
-            Text("SENTIMENT SPLIT", style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = colors.subtitle)
+            Text(stringResource(R.string.meditation_sentiment_split), style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp), color = colors.subtitle)
             val dist = nlp.sentimentDist
             Row(
                 modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(3.dp)),

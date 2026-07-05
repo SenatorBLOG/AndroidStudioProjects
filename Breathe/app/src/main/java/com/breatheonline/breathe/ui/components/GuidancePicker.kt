@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,11 +34,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.breatheonline.breathe.R
 import com.breatheonline.breathe.ui.theme.AppColors
 import com.breatheonline.breathe.viewmodel.GuidanceMode
 import com.breatheonline.breathe.viewmodel.VoiceGender
+import com.composables.icons.lucide.Lucide
+import com.composables.icons.lucide.Mic
+import com.composables.icons.lucide.User
+import com.composables.icons.lucide.UserRound
+import com.composables.icons.lucide.Vibrate
+import com.composables.icons.lucide.VolumeX
 
 // ── GuidancePicker ────────────────────────────────────────────────────────────
 
@@ -71,7 +81,7 @@ fun GuidancePicker(
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
-                        text  = "GUIDANCE MODE",
+                        text  = stringResource(R.string.guidance_mode_label),
                         style = MaterialTheme.typography.labelSmall.copy(
                             color         = colors.label,
                             fontSize      = 9.sp,
@@ -80,13 +90,13 @@ fun GuidancePicker(
                         modifier = Modifier.padding(start = 4.dp, bottom = 4.dp),
                     )
 
-                    ModeOption(GuidanceMode.SILENT,    "🔇", "Silent",    mode, colors) {
+                    ModeOption(GuidanceMode.SILENT,    GuidanceMode.SILENT.icon(), stringResource(R.string.guidance_silent),    mode, colors) {
                         onChange(it, voiceGender); expanded = false
                     }
-                    ModeOption(GuidanceMode.VIBRATION, "📳", "Vibration", mode, colors) {
+                    ModeOption(GuidanceMode.VIBRATION, GuidanceMode.VIBRATION.icon(), stringResource(R.string.guidance_vibration), mode, colors) {
                         onChange(it, voiceGender); expanded = false
                     }
-                    ModeOption(GuidanceMode.VOICE,     "🎙", "AI Voice",  mode, colors) {
+                    ModeOption(GuidanceMode.VOICE,     GuidanceMode.VOICE.icon(), stringResource(R.string.guidance_ai_voice),  mode, colors) {
                         onChange(it, voiceGender)
                     }
 
@@ -102,7 +112,7 @@ fun GuidancePicker(
                             )
                             Spacer(Modifier.height(10.dp))
                             Text(
-                                text  = "VOICE STYLE",
+                                text  = stringResource(R.string.guidance_voice_style),
                                 style = MaterialTheme.typography.labelSmall.copy(
                                     color         = colors.label,
                                     fontSize      = 9.sp,
@@ -113,16 +123,16 @@ fun GuidancePicker(
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 GenderButton(
                                     gender   = VoiceGender.FEMALE,
-                                    icon     = "👩",
-                                    label    = "Female",
+                                    icon     = voiceGenderIcon(VoiceGender.FEMALE),
+                                    label    = stringResource(R.string.guidance_female),
                                     current  = voiceGender,
                                     colors   = colors,
                                     modifier = Modifier.weight(1f),
                                 ) { onChange(mode, it) }
                                 GenderButton(
                                     gender   = VoiceGender.MALE,
-                                    icon     = "👨",
-                                    label    = "Male",
+                                    icon     = voiceGenderIcon(VoiceGender.MALE),
+                                    label    = stringResource(R.string.guidance_male),
                                     current  = voiceGender,
                                     colors   = colors,
                                     modifier = Modifier.weight(1f),
@@ -161,9 +171,11 @@ fun GuidancePicker(
                 verticalAlignment     = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
             ) {
-                Text(
-                    text     = mode.icon(),
-                    fontSize = 14.sp,
+                Icon(
+                    imageVector = mode.icon(),
+                    contentDescription = null,
+                    tint = colors.subtitle,
+                    modifier = Modifier.size(14.dp),
                 )
                 Text(
                     text  = mode.label(),
@@ -183,16 +195,17 @@ fun GuidancePicker(
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-private fun GuidanceMode.icon()  = when (this) {
-    GuidanceMode.SILENT    -> "🔇"
-    GuidanceMode.VIBRATION -> "📳"
-    GuidanceMode.VOICE     -> "🎙"
+private fun GuidanceMode.icon(): ImageVector = when (this) {
+    GuidanceMode.SILENT    -> Lucide.VolumeX
+    GuidanceMode.VIBRATION -> Lucide.Vibrate
+    GuidanceMode.VOICE     -> Lucide.Mic
 }
 
+@Composable
 private fun GuidanceMode.label() = when (this) {
-    GuidanceMode.SILENT    -> "Silent"
-    GuidanceMode.VIBRATION -> "Vibration"
-    GuidanceMode.VOICE     -> "AI Voice"
+    GuidanceMode.SILENT    -> stringResource(R.string.guidance_silent)
+    GuidanceMode.VIBRATION -> stringResource(R.string.guidance_vibration)
+    GuidanceMode.VOICE     -> stringResource(R.string.guidance_ai_voice)
 }
 
 // ── Sub-composables ───────────────────────────────────────────────────────────
@@ -200,7 +213,7 @@ private fun GuidanceMode.label() = when (this) {
 @Composable
 private fun ModeOption(
     target: GuidanceMode,
-    icon:    String,
+    icon:    ImageVector,
     label:   String,
     current: GuidanceMode,
     colors: AppColors,
@@ -232,7 +245,12 @@ private fun ModeOption(
         ) {
             if (on) Box(Modifier.size(6.dp).clip(CircleShape).background(colors.primary))
         }
-        Text(icon, fontSize = 15.sp)
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = if (on) colors.primary else colors.subtitle,
+            modifier = Modifier.size(15.dp),
+        )
         Text(
             text  = label,
             style = MaterialTheme.typography.bodySmall.copy(
@@ -245,7 +263,7 @@ private fun ModeOption(
 @Composable
 private fun GenderButton(
     gender: VoiceGender,
-    icon:     String,
+    icon:     ImageVector,
     label:    String,
     current: VoiceGender,
     colors: AppColors,
@@ -274,7 +292,12 @@ private fun GenderButton(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(3.dp),
         ) {
-            Text(icon, fontSize = 18.sp)
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = if (on) colors.primary else colors.label,
+                modifier = Modifier.size(18.dp),
+            )
             Text(
                 text  = label,
                 style = MaterialTheme.typography.labelSmall.copy(
@@ -284,4 +307,9 @@ private fun GenderButton(
             )
         }
     }
+}
+
+private fun voiceGenderIcon(gender: VoiceGender): ImageVector = when (gender) {
+    VoiceGender.FEMALE -> Lucide.UserRound
+    VoiceGender.MALE -> Lucide.User
 }
