@@ -1,0 +1,1211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Breathe · The Sanctuary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gilda+Display&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Manrope:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════════════════════════════
+   THE SANCTUARY · v2 · a living design system for Breathe
+   three vibes · golden ratio · sacred geometry · breathing aura
+   ════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* φ-spaced scale */
+  --s1:10px; --s2:16px; --s3:26px; --s4:42px; --s5:68px; --s6:110px; --s7:178px;
+
+  --f-display: "Gilda Display", "Cormorant Garamond", serif;
+  --f-serif:   "Cormorant Garamond", serif;
+  --f-body:    "Manrope", system-ui, sans-serif;
+  --f-mono:    "JetBrains Mono", monospace;
+
+  --ease-spring: cubic-bezier(.34,1.56,.64,1);
+  --ease-sacred: cubic-bezier(.22,.61,.36,1);
+  --ease-breath: cubic-bezier(.45,.05,.55,.95);
+  --ease-out:    cubic-bezier(.16,1,.3,1);
+
+  /* defaults — overridden per [data-vibe] */
+  --bg:#F3EDE4; --bg2:#E0D4C2;
+  --ink:#1A2218; --ink2:#384534;
+  --muted:#8B8C84;
+  --accent:#6D9B6B; --accent2:#E0A888;
+  --line:rgba(26,34,24,.10);
+  --glass:rgba(248,243,237,.50);
+  --aura1:rgba(109,155,107,.52); --aura2:rgba(224,168,136,.40); --aura3:rgba(215,205,185,.28);
+  --geo:#6D9B6B; --geo-a:.030;
+}
+
+[data-vibe=dawn]{
+  --bg:#F3EDE4; --bg2:#E0D4C2;
+  --ink:#1A2218; --ink2:#384534; --muted:#8B8C84;
+  --accent:#6D9B6B; --accent2:#E0A888;
+  --line:rgba(26,34,24,.10);
+  --glass:rgba(248,243,237,.52);
+  --aura1:rgba(109,155,107,.52); --aura2:rgba(224,168,136,.40); --aura3:rgba(215,205,185,.28);
+  --geo:#6D9B6B; --geo-a:.030;
+}
+
+[data-vibe=focus]{
+  --bg:#06060A; --bg2:#0D0B12;
+  --ink:#EEEAE0; --ink2:#B0A898; --muted:#504C46;
+  --accent:#B03050; --accent2:#3D1828;
+  --line:rgba(238,234,224,.08);
+  --glass:rgba(13,11,18,.50);
+  --aura1:rgba(176,48,80,.45); --aura2:rgba(18,10,26,.92); --aura3:rgba(40,20,50,.55);
+  --geo:#B03050; --geo-a:.022;
+}
+
+[data-vibe=rest]{
+  --bg:#19100A; --bg2:#251610;
+  --ink:#F5E6C4; --ink2:#D6A870; --muted:#886040;
+  --accent:#D6A870; --accent2:#8C4214;
+  --line:rgba(245,230,196,.10);
+  --glass:rgba(25,16,10,.48);
+  --aura1:rgba(214,168,112,.52); --aura2:rgba(140,66,20,.42); --aura3:rgba(60,30,10,.55);
+  --geo:#D6A870; --geo-a:.034;
+}
+
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+html,body { height:100%; overflow:hidden; }
+body {
+  font-family: var(--f-body);
+  font-size: 14px; line-height: 1.55;
+  color: var(--ink); background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  cursor: none;
+  transition: background 1.4s var(--ease-sacred), color 1.2s var(--ease-sacred);
+}
+::selection { background: var(--accent); color: var(--bg); }
+
+/* canvases — back to front */
+canvas.layer { position:fixed; inset:0; pointer-events:none; }
+#geoBg    { z-index: 0; }
+#auraBg   { z-index: 1; }
+#ritualCvs{ z-index: 91; }
+#cursorCvs{ z-index: 999; }
+
+.grain {
+  position:fixed; inset:0; z-index:2; pointer-events:none;
+  opacity:.085; mix-blend-mode:overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+.vignette {
+  position:fixed; inset:0; z-index:3; pointer-events:none;
+  background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.22) 100%);
+}
+
+/* shell */
+.shell {
+  position:relative; z-index:10;
+  height:100dvh;
+  display:grid; grid-template-rows: auto 1fr auto;
+  padding: var(--s3) var(--s4); gap: var(--s3);
+  transition: opacity 1.1s var(--ease-sacred), filter 1.1s var(--ease-sacred);
+}
+
+/* ── top band ─────────────────────────────────────────────────── */
+.band-top { display:flex; align-items:center; justify-content:space-between; padding:0 var(--s2); }
+.brand {
+  font-family: var(--f-display);
+  font-size: 26px; letter-spacing: .04em;
+  display:flex; align-items:center; gap: var(--s2);
+  transition: color 1.2s;
+}
+.brand-mark { width:22px; height:22px; }
+.brand-mark circle { fill:none; stroke: var(--accent); transition: stroke 1.2s; }
+
+.center-info { text-align:center; }
+.clock {
+  font-family: var(--f-mono); font-size: 12px; letter-spacing: .20em;
+  color: var(--muted); text-transform: uppercase; transition: color 1.2s;
+}
+.clock-sub {
+  font-family: var(--f-serif); font-style: italic;
+  font-size: 12px; color: var(--muted); margin-top: 1px;
+  transition: color 1.2s;
+}
+
+.vibe-row { display:flex; align-items:center; gap: var(--s2); }
+.vibe-label {
+  font-family: var(--f-mono); font-size: 9px;
+  letter-spacing: .28em; text-transform: uppercase; color: var(--muted);
+  transition: color 1.2s;
+}
+.vibe-orb {
+  width:16px; height:16px; border-radius:50%;
+  cursor:pointer; border: 1px solid transparent;
+  transition: transform .4s var(--ease-spring), box-shadow .4s, border-color .3s;
+}
+.vibe-orb[data-v=dawn]  { background: conic-gradient(#F3EDE4, #E0A888, #6D9B6B, #F3EDE4); }
+.vibe-orb[data-v=focus] { background: conic-gradient(#06060A, #B03050, #3D1828, #06060A); }
+.vibe-orb[data-v=rest]  { background: conic-gradient(#19100A, #D6A870, #8C4214, #19100A); }
+.vibe-orb:hover { transform: scale(1.4); }
+.vibe-orb.active { transform: scale(1.6); border-color: var(--ink); box-shadow: 0 0 0 3px var(--glass), 0 0 18px var(--accent); }
+
+/* ── stage ────────────────────────────────────────────────────── */
+.stage {
+  display:grid;
+  grid-template-columns: 1fr 1.618fr 1fr;
+  gap: var(--s4); min-height: 0;
+}
+@media (max-width:960px){ .stage { grid-template-columns: 1fr; overflow-y:auto; } }
+
+.panel {
+  position:relative;
+  background: var(--glass);
+  backdrop-filter: blur(20px) saturate(1.15);
+  -webkit-backdrop-filter: blur(20px) saturate(1.15);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: var(--s4);
+  display:flex; flex-direction:column; overflow:hidden;
+  transition: background 1.2s var(--ease-sacred), border-color 1.2s var(--ease-sacred), box-shadow .5s;
+}
+.panel::before {
+  content:""; position:absolute; inset:6px;
+  border:1px solid var(--line); border-radius:1px; pointer-events:none; opacity:.45;
+  transition: border-color 1.2s;
+}
+.panel::after {
+  content:""; position:absolute; top:12px; right:12px;
+  width:5px; height:5px;
+  border-top:1px solid var(--accent); border-right:1px solid var(--accent);
+  opacity:.6; transition: border-color 1.2s;
+}
+.panel:hover { box-shadow: 0 0 0 1px var(--accent); }
+
+.eyebrow {
+  font-family: var(--f-mono); font-size: 9px; letter-spacing: .30em;
+  color: var(--muted); text-transform: uppercase;
+  margin-bottom: var(--s3);
+  display:flex; align-items:center; gap: var(--s2);
+  transition: color 1.2s;
+}
+.eyebrow::after { content:""; flex:1; height:1px; background: var(--line); }
+
+/* ── LEFT · biometric ──────────────────────────────────────────── */
+.bio-stat {
+  display:flex; align-items:baseline; justify-content:space-between;
+  padding: 9px 0; border-bottom: 1px dashed var(--line);
+}
+.bio-stat:last-of-type { border-bottom:none; }
+.bio-label {
+  font-family: var(--f-mono); font-size: 9px; letter-spacing: .24em;
+  text-transform: uppercase; color: var(--muted); transition: color 1.2s;
+}
+.bio-val {
+  font-family: var(--f-serif); font-weight: 300;
+  font-size: 50px; line-height: 1; color: var(--ink);
+  font-variant-numeric: tabular-nums; transition: color 1.2s;
+}
+.bio-unit {
+  font-family: var(--f-mono); font-size: 9px;
+  letter-spacing: .18em; color: var(--muted); margin-left: 3px;
+  transition: color 1.2s;
+}
+
+.ecg-wrap {
+  flex: 1; margin-top: var(--s3); position: relative;
+  min-height: 70px; overflow: hidden;
+  border-top: 1px solid var(--line); padding-top: var(--s3);
+}
+.ecg-wrap canvas { position:absolute; inset:var(--s3) 0 0 0; width:100%; height:calc(100% - var(--s3)); }
+.ecg-label {
+  font-family: var(--f-mono); font-size: 8px; letter-spacing: .26em;
+  text-transform: uppercase; color: var(--muted);
+  position: absolute; top: var(--s2); left: 0; transition: color 1.2s;
+}
+
+.coh-row {
+  margin-top: var(--s3);
+  font-family: var(--f-mono); font-size: 9px;
+  letter-spacing: .22em; text-transform: uppercase; color: var(--muted);
+  display:flex; justify-content:space-between; transition: color 1.2s;
+}
+.coh-bar {
+  margin-top: 8px; height: 1px; background: var(--line); position:relative; overflow:hidden;
+}
+.coh-fill {
+  position:absolute; left:0; top:0; bottom:0; background: var(--accent);
+  transition: width 3s var(--ease-sacred), background 1.2s;
+}
+.coh-glyph {
+  margin-top: var(--s3);
+  font-family: var(--f-serif); font-style: italic;
+  font-size: 13px; color: var(--ink2); line-height: 1.5;
+  transition: color 1.2s;
+}
+.coh-glyph em { color: var(--accent); transition: color 1.2s; }
+
+/* ── CENTER · altar ────────────────────────────────────────────── */
+.altar { align-items:center; justify-content:space-between; text-align:center; padding: var(--s3); }
+.altar-top { width:100%; }
+.salutation {
+  font-family: var(--f-display);
+  font-size: clamp(22px, 3.0vw, 42px);
+  color: var(--ink); line-height: 1.08;
+  transition: color 1.2s;
+}
+.salutation em { color: var(--accent); font-style:italic; transition: color 1.2s; }
+
+.garden-wrap {
+  position:relative; width:100%; aspect-ratio:1;
+  max-width: 320px; margin: var(--s2) auto;
+  cursor: none;
+}
+.garden-wrap svg { width:100%; height:100%; overflow:visible; }
+
+.progress-arc-bg { fill:none; stroke: var(--line); stroke-width: 1; }
+.progress-arc {
+  fill:none; stroke: var(--accent); stroke-width: 1.5; stroke-linecap: round;
+  transition: stroke 1.2s, stroke-dashoffset 2.4s var(--ease-out);
+}
+
+.petal-path {
+  transform-origin: 160px 200px;
+  transition: opacity 2s var(--ease-sacred), transform 2.4s var(--ease-sacred);
+  will-change: transform, opacity;
+}
+.petal-path.hidden  { opacity: 0; transform: scale(.6) translateY(12px) rotate(var(--r,0deg)); }
+.petal-path.visible { opacity: 1; transform: scale(1)  translateY(0)    rotate(var(--r,0deg)); }
+
+.lotus-glow { animation: lotus-pulse 7s var(--ease-breath) infinite; transform-origin: 160px 200px; }
+@keyframes lotus-pulse { 0%,100%{ transform:scale(.85); opacity:.6 } 50%{ transform:scale(1.15); opacity:1 } }
+
+.streak-label {
+  font-family: var(--f-mono); font-size: 8px; letter-spacing: .26em;
+  text-transform: uppercase; color: var(--muted); margin-top: 4px;
+  transition: color 1.2s;
+}
+
+.begin-btn {
+  margin-top: var(--s2);
+  background:none; border:none; cursor:none;
+  font-family: var(--f-serif); font-style: italic;
+  font-size: 22px; color: var(--ink);
+  padding: var(--s2) var(--s4);
+  position:relative; letter-spacing: .01em;
+  transition: color .5s;
+}
+.begin-btn::before, .begin-btn::after {
+  content:""; position:absolute; top:50%;
+  height:1px; background: currentColor; opacity: .4;
+  transition: width .6s var(--ease-sacred), background .5s, opacity .5s;
+}
+.begin-btn::before { right: calc(100% + 12px); width: 36px; }
+.begin-btn::after  { left:  calc(100% + 12px); width: 36px; }
+.begin-btn:hover { color: var(--accent); }
+.begin-btn:hover::before, .begin-btn:hover::after { width: 60px; opacity: 1; }
+
+.ritual-foot {
+  font-family: var(--f-mono); font-size: 9px;
+  letter-spacing: .22em; text-transform: uppercase;
+  color: var(--muted); margin-top: var(--s2); transition: color 1.2s;
+}
+
+/* ── RIGHT · flow ──────────────────────────────────────────────── */
+.flow-list { flex: 1; }
+.flow-entry {
+  display:flex; gap: var(--s2); padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  align-items:flex-start; transition: opacity .3s;
+}
+.flow-entry:last-child { border-bottom:none; }
+.flow-entry:hover { opacity: .75; }
+.flow-time {
+  font-family: var(--f-mono); font-size: 9px;
+  color: var(--muted); letter-spacing: .10em;
+  min-width: 48px; padding-top: 3px; transition: color 1.2s;
+}
+.flow-dot {
+  width:7px; height:7px; border-radius:50%;
+  background: var(--accent); margin-top: 5px; flex-shrink: 0;
+  transition: background 1.2s, box-shadow .3s;
+}
+.flow-dot.warm { background: var(--accent2); }
+.flow-dot.dim  { background: transparent; border: 1px solid var(--accent); }
+.flow-entry:hover .flow-dot { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent); }
+.flow-title {
+  font-family: var(--f-serif); font-size: 19px; font-weight: 400;
+  color: var(--ink); line-height: 1.1; transition: color 1.2s;
+}
+.flow-meta {
+  font-size: 11px; color: var(--muted); margin-top: 1px;
+  letter-spacing: .03em; transition: color 1.2s;
+}
+
+.intention {
+  margin-top: var(--s3); padding-top: var(--s3);
+  border-top: 1px solid var(--line); transition: border-color 1.2s;
+}
+.intention-text {
+  font-family: var(--f-serif); font-style: italic;
+  font-size: 14px; color: var(--ink2); line-height: 1.6;
+  transition: color 1.2s;
+}
+.intention-text::before { content: "\201C"; color: var(--accent); font-size: 22px; vertical-align: -4px; transition: color 1.2s; }
+.intention-text::after  { content: "\201D"; color: var(--accent); font-size: 22px; vertical-align: -4px; transition: color 1.2s; }
+
+/* ── dock ──────────────────────────────────────────────────────── */
+.band-bottom { display:flex; justify-content:center; padding-bottom: var(--s2); }
+.dock {
+  display:flex; gap: var(--s4);
+  padding: var(--s2) var(--s5);
+  background: var(--glass);
+  backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--line); border-radius: 999px;
+  transition: background 1.2s, border-color 1.2s;
+}
+.n-ico {
+  width:48px; height:48px; border-radius:50%;
+  display:grid; place-items:center; cursor:none;
+  color: var(--ink2); position:relative;
+  transition: color .3s;
+}
+.n-ico svg { width: 20px; height: 20px; stroke-width: 1.25; }
+.n-ico:hover { color: var(--accent); }
+.n-ico.center { color: var(--ink); }
+.n-ico.center::before {
+  content:""; position:absolute; inset:-6px; border-radius:50%;
+  border:1px solid var(--accent); opacity:.5; transition: border-color 1.2s;
+}
+.n-ico.active::after {
+  content:""; position:absolute; bottom: -2px; left: 50%;
+  transform: translateX(-50%); width: 4px; height: 4px;
+  border-radius: 50%; background: var(--accent); transition: background 1.2s;
+}
+.n-ripple {
+  position:absolute; inset:0; border-radius:50%;
+  border: 1px solid var(--accent); opacity: 0; pointer-events: none;
+}
+.n-ico.firing .n-ripple { animation: nav-ripple .85s var(--ease-out) forwards; }
+@keyframes nav-ripple {
+  0%   { transform: scale(.9); opacity: .85; }
+  100% { transform: scale(2.6); opacity: 0;  }
+}
+.n-tip {
+  position:absolute; bottom: calc(100% + 10px); left: 50%;
+  transform: translateX(-50%) translateY(6px);
+  font-family: var(--f-mono); font-size: 8px; letter-spacing: .24em;
+  text-transform: uppercase; color: var(--muted);
+  opacity: 0; pointer-events: none; white-space: nowrap;
+  transition: opacity .25s, transform .25s var(--ease-sacred);
+}
+.n-ico:hover .n-tip { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── vibe ripple wipe ──────────────────────────────────────────── */
+.vibe-wipe {
+  position:fixed; inset:0; z-index: 80;
+  pointer-events: none; opacity: 0;
+  clip-path: circle(0% at 50% 50%);
+}
+
+/* ── ritual overlay ────────────────────────────────────────────── */
+.ritual-veil {
+  position:fixed; inset:0; z-index: 90;
+  background: radial-gradient(ellipse at 50% 60%, transparent 0%, color-mix(in srgb, var(--bg) 75%, black 25%) 85%);
+  opacity: 0; pointer-events: none;
+  transition: opacity 1.4s var(--ease-sacred);
+}
+.ritual-veil.on { opacity: 1; pointer-events: all; }
+
+.ritual-stage {
+  position:fixed; inset:0; z-index: 92;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap: var(--s3);
+  opacity: 0; pointer-events: none;
+  transition: opacity 1.4s var(--ease-sacred);
+}
+.ritual-stage.on { opacity: 1; pointer-events: all; }
+
+.ritual-orb-wrap { position:relative; width:240px; height:240px; }
+.ritual-orb {
+  position:absolute; inset:0; border-radius:50%;
+  background: radial-gradient(circle at 40% 35%, var(--accent) 0%, transparent 65%);
+  filter: blur(10px);
+  animation: rorb 11s var(--ease-breath) infinite;
+}
+.ritual-ring {
+  position:absolute; border-radius:50%;
+  border: 1px solid var(--accent); opacity: 0; pointer-events: none;
+  transition: border-color 1.2s;
+}
+.ritual-ring:nth-child(2){ inset:-28px; animation: rring 11s var(--ease-breath) infinite 0s; }
+.ritual-ring:nth-child(3){ inset:-50px; animation: rring 11s var(--ease-breath) infinite .6s; }
+.ritual-ring:nth-child(4){ inset:-74px; animation: rring 11s var(--ease-breath) infinite 1.2s; }
+.ritual-ring:nth-child(5){ inset:-100px; animation: rring 11s var(--ease-breath) infinite 1.8s; }
+
+.breath-arc-svg {
+  position:absolute; inset:-110px;
+  width: calc(100% + 220px); height: calc(100% + 220px);
+}
+.breath-arc-track { fill:none; stroke: var(--line); stroke-width: .8; }
+.breath-arc-fill {
+  fill:none; stroke: var(--accent); stroke-width: 1.5; stroke-linecap: round;
+  opacity: .8; transition: stroke 1.2s;
+}
+
+.ritual-word {
+  font-family: var(--f-display);
+  font-size: 34px; letter-spacing: .04em;
+  color: var(--ink); text-align: center;
+  min-height: 44px;
+  transition: opacity .8s var(--ease-sacred), color 1.2s;
+}
+.ritual-phase {
+  font-family: var(--f-mono); font-size: 9px;
+  letter-spacing: .30em; text-transform: uppercase;
+  color: var(--muted); transition: color 1.2s;
+}
+.ritual-dismiss {
+  margin-top: var(--s4);
+  font-family: var(--f-mono); font-size: 9px;
+  letter-spacing: .26em; text-transform: uppercase;
+  color: var(--muted); cursor:none;
+  background:none; border:none; transition: color .3s;
+}
+.ritual-dismiss:hover { color: var(--accent); }
+
+@keyframes rorb {
+  0%,100% { transform: scale(.78); filter: blur(10px) brightness(.85); }
+  44%     { transform: scale(1.18); filter: blur(7px)  brightness(1.12); }
+  80%     { transform: scale(.85); filter: blur(9px)  brightness(.95); }
+}
+@keyframes rring {
+  0%,100% { transform: scale(.82); opacity: .25; }
+  44%     { transform: scale(1.12); opacity: .60; }
+  80%     { transform: scale(.90); opacity: .30; }
+}
+
+/* enter animation */
+.enter { opacity: 0; transform: translateY(20px); animation: enter-up 1.4s var(--ease-out) forwards; }
+@keyframes enter-up { to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body data-vibe="dawn">
+
+<canvas id="geoBg"  class="layer"></canvas>
+<canvas id="auraBg" class="layer"></canvas>
+<div class="grain"></div>
+<div class="vignette"></div>
+
+<main class="shell">
+
+  <header class="band-top">
+    <div class="brand enter" style="animation-delay:.05s">
+      <svg class="brand-mark" viewBox="0 0 22 22">
+        <circle cx="11" cy="11" r="4.5" stroke-width="1"/>
+        <circle cx="11" cy="11" r="8.5" stroke-width=".6" stroke-dasharray="2 3.2"/>
+        <circle cx="11" cy="11" r="2"   fill="var(--accent)"/>
+      </svg>
+      Breathe
+    </div>
+
+    <div class="center-info enter" style="animation-delay:.18s">
+      <div class="clock" id="clk">— · — · —</div>
+      <div class="clock-sub" id="dayGreet">a sanctuary, not an app</div>
+    </div>
+
+    <div class="vibe-row enter" style="animation-delay:.32s">
+      <span class="vibe-label">vibe</span>
+      <div class="vibe-orb active" data-v="dawn"  tabindex="0" title="Dawn"></div>
+      <div class="vibe-orb"        data-v="focus" tabindex="0" title="Deep Focus"></div>
+      <div class="vibe-orb"        data-v="rest"  tabindex="0" title="Rest"></div>
+    </div>
+  </header>
+
+  <section class="stage">
+
+    <article class="panel enter" style="animation-delay:.45s">
+      <div class="eyebrow">Aura · live</div>
+
+      <div class="bio-stat">
+        <span class="bio-label">Heart</span>
+        <div><span class="bio-val" id="bpm">64</span><span class="bio-unit">BPM</span></div>
+      </div>
+      <div class="bio-stat">
+        <span class="bio-label">Breath</span>
+        <div><span class="bio-val" id="rpm">11</span><span class="bio-unit">RPM</span></div>
+      </div>
+      <div class="bio-stat">
+        <span class="bio-label">HRV</span>
+        <div><span class="bio-val" id="hrv">72</span><span class="bio-unit">MS</span></div>
+      </div>
+
+      <div class="ecg-wrap">
+        <span class="ecg-label">ECG · rhythm</span>
+        <canvas id="ecgCvs"></canvas>
+      </div>
+
+      <div>
+        <div class="coh-row"><span>Coherence</span><span id="cohVal">0.81</span></div>
+        <div class="coh-bar"><div class="coh-fill" id="cohFill" style="width:81%"></div></div>
+        <p class="coh-glyph" id="bioGlyph">
+          Your body is asking for stillness — <em>four breaths</em> before the next task.
+        </p>
+      </div>
+    </article>
+
+    <article class="panel altar enter" style="animation-delay:.62s">
+      <div class="altar-top">
+        <div class="eyebrow" style="justify-content:center">
+          <span style="flex:0" id="dayLabel">Sanctuary · Day 47</span>
+        </div>
+        <div class="salutation">Welcome home,<br><em>Mikhail</em>.</div>
+      </div>
+
+      <div class="garden-wrap" id="gardenWrap" data-bloom="2">
+        <svg viewBox="0 0 320 320">
+          <defs>
+            <radialGradient id="pg1" cx="50%" cy="30%" r="70%">
+              <stop offset="0%"   stop-color="var(--accent)"  stop-opacity=".92"/>
+              <stop offset="60%"  stop-color="var(--accent2)" stop-opacity=".50"/>
+              <stop offset="100%" stop-color="var(--accent2)" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="pg2" cx="50%" cy="40%" r="65%">
+              <stop offset="0%"   stop-color="var(--accent)"  stop-opacity=".75"/>
+              <stop offset="100%" stop-color="var(--accent)"  stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="cgr" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="var(--accent)" stop-opacity=".9"/>
+              <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"/>
+            </radialGradient>
+            <filter id="glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+
+          <circle class="progress-arc-bg" cx="160" cy="160" r="148"/>
+          <circle class="progress-arc" id="progArc" cx="160" cy="160" r="148"
+            stroke-dasharray="930" stroke-dashoffset="930"
+            transform="rotate(-90 160 160)"/>
+
+          <circle cx="160" cy="200" r="100" fill="url(#cgr)" opacity=".50"/>
+          <g id="petalsG"></g>
+          <circle cx="160" cy="200" r="22" fill="url(#pg2)" opacity=".7"/>
+          <circle class="lotus-glow" cx="160" cy="200" r="20" fill="none" stroke="var(--accent)" stroke-width=".75" opacity=".6"/>
+          <circle cx="160" cy="200" r="9" fill="var(--accent)" filter="url(#glow)"/>
+          <path d="M160,209 Q158,260 160,310" stroke="var(--ink2)" stroke-width="1" fill="none" opacity=".25"/>
+          <line x1="55" y1="310" x2="265" y2="310" stroke="var(--line)" stroke-width=".6" stroke-dasharray="3 5"/>
+        </svg>
+      </div>
+
+      <div class="streak-label" id="streakLbl">47-day streak · 70% of today's goal · click lotus to bloom</div>
+
+      <button class="begin-btn" id="beginRitual">Begin Ritual</button>
+      <div class="ritual-foot" id="ritualDesc">4 · 7 · 8  ·  11 min  ·  guided by candlelight</div>
+    </article>
+
+    <article class="panel enter" style="animation-delay:.78s">
+      <div class="eyebrow">Today's flow</div>
+
+      <div class="flow-list">
+        <div class="flow-entry">
+          <span class="flow-time">06:42</span><span class="flow-dot"></span>
+          <div><div class="flow-title">Waking breath</div><div class="flow-meta">Box 4·4·4·4 · 6 min · HRV +14</div></div>
+        </div>
+        <div class="flow-entry">
+          <span class="flow-time">12:18</span><span class="flow-dot"></span>
+          <div><div class="flow-title">Midday reset</div><div class="flow-meta">Coherent 5.5 · 9 min · mood +2</div></div>
+        </div>
+        <div class="flow-entry">
+          <span class="flow-time">16:04</span><span class="flow-dot warm"></span>
+          <div><div class="flow-title">Grief pause</div><div class="flow-meta">Unstructured · 3 min · journaled</div></div>
+        </div>
+        <div class="flow-entry" style="opacity:.45">
+          <span class="flow-time">21:30</span><span class="flow-dot dim"></span>
+          <div><div class="flow-title">Evening descent</div><div class="flow-meta">Scheduled · 4·7·8 · 11 min</div></div>
+        </div>
+      </div>
+
+      <div class="intention">
+        <p class="intention-text" id="intentionText">Today I am tending to the part of me that rushes.</p>
+      </div>
+    </article>
+
+  </section>
+
+  <footer class="band-bottom enter" style="animation-delay:.94s">
+    <nav class="dock">
+      <a class="n-ico" data-mag tabindex="0">
+        <span class="n-tip">Home</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+        <span class="n-ripple"></span>
+      </a>
+      <a class="n-ico" data-mag tabindex="0">
+        <span class="n-tip">Journal</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h14l2 2v14H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>
+        <span class="n-ripple"></span>
+      </a>
+      <a class="n-ico center active" data-mag tabindex="0">
+        <span class="n-tip">Flow</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3"/></svg>
+        <span class="n-ripple"></span>
+      </a>
+      <a class="n-ico" data-mag tabindex="0">
+        <span class="n-tip">Garden</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9"/><path d="M12 9c-4-2-6-5-6-7 4 0 6 3 6 7z"/><path d="M12 12c4-2 6-5 6-7-4 0-6 3-6 7z"/></svg>
+        <span class="n-ripple"></span>
+      </a>
+      <a class="n-ico" data-mag tabindex="0">
+        <span class="n-tip">Self</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>
+        <span class="n-ripple"></span>
+      </a>
+    </nav>
+  </footer>
+
+</main>
+
+<div class="vibe-wipe" id="vibeWipe"></div>
+
+<div class="ritual-veil" id="ritualVeil"></div>
+<canvas id="ritualCvs" class="layer"></canvas>
+<div class="ritual-stage" id="ritualStage" role="dialog">
+  <div class="ritual-orb-wrap">
+    <div class="ritual-orb"></div>
+    <div class="ritual-ring"></div>
+    <div class="ritual-ring"></div>
+    <div class="ritual-ring"></div>
+    <div class="ritual-ring"></div>
+    <svg class="breath-arc-svg" viewBox="0 0 440 440">
+      <circle class="breath-arc-track" cx="220" cy="220" r="170"/>
+      <circle class="breath-arc-fill" id="bArc" cx="220" cy="220" r="170"
+        stroke-dasharray="1068" stroke-dashoffset="1068"
+        transform="rotate(-90 220 220)"/>
+    </svg>
+  </div>
+  <div class="ritual-word" id="rWord">inhale…</div>
+  <div class="ritual-phase" id="rPhase">4 · 7 · 8  ·  breath one</div>
+  <button class="ritual-dismiss" id="rDismiss">esc · dissolve back</button>
+</div>
+
+<canvas id="cursorCvs" class="layer"></canvas>
+
+<script>
+'use strict';
+(() => {
+
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const lerp = (a,b,t) => a + (b-a)*t;
+const PI2 = Math.PI * 2;
+const cssVar = v => getComputedStyle(document.body).getPropertyValue(v).trim();
+
+const body = document.body;
+const DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+
+/* ── vibe switching · ripple wipe ──────────────────────────────── */
+const vibeOrbs = $$('.vibe-orb');
+const vibeWipe = $('#vibeWipe');
+
+const vibeAmbient = {
+  dawn:  { glyph: 'Your body is asking for stillness — <em>four breaths</em> before the next task.',
+           desc: '4 · 7 · 8  ·  11 min  ·  guided by candlelight',
+           greeting: 'a sanctuary, not an app',
+           bg: '#F3EDE4' },
+  focus: { glyph: 'Obsidian mind. The thought that just surfaced — <em>let it pass like smoke.</em>',
+           desc: '4 · 4 · 4 · 4  ·  20 min  ·  deep work gate',
+           greeting: 'enter the void · find the signal',
+           bg: '#06060A' },
+  rest:  { glyph: 'Ember warmth. You are not behind. <em>You are exactly here.</em>',
+           desc: '4 · 7 · 8  ·  15 min  ·  sleep descent',
+           greeting: 'let the day become dream',
+           bg: '#19100A' },
+};
+
+function applyVibeAmbient(v) {
+  const a = vibeAmbient[v];
+  $('#bioGlyph').innerHTML  = a.glyph;
+  $('#ritualDesc').textContent = a.desc;
+  $('#dayGreet').textContent   = a.greeting;
+}
+applyVibeAmbient('dawn');
+
+vibeOrbs.forEach(orb => {
+  orb.addEventListener('click',   e => switchVibe(orb.dataset.v, e));
+  orb.addEventListener('keydown', e => { if (e.key === 'Enter') switchVibe(orb.dataset.v, e); });
+});
+
+function switchVibe(v, e) {
+  if (body.dataset.vibe === v) return;
+  const tgt = e.target.getBoundingClientRect ? e.target : e.currentTarget;
+  const r = tgt.getBoundingClientRect();
+  const rx = ((r.left + r.width/2)  / window.innerWidth  * 100).toFixed(1) + '%';
+  const ry = ((r.top  + r.height/2) / window.innerHeight * 100).toFixed(1) + '%';
+  const newBg = vibeAmbient[v].bg;
+
+  vibeWipe.style.cssText = `
+    position:fixed; inset:0; z-index:80; pointer-events:none;
+    background:${newBg};
+    clip-path:circle(0% at ${rx} ${ry});
+    transition:none;
+    opacity:1;
+  `;
+  void vibeWipe.offsetWidth;
+  vibeWipe.style.transition = 'clip-path .9s cubic-bezier(.16,1,.3,1)';
+  vibeWipe.style.clipPath   = `circle(160% at ${rx} ${ry})`;
+
+  setTimeout(() => {
+    body.dataset.vibe = v;
+    vibeOrbs.forEach(o => o.classList.toggle('active', o.dataset.v === v));
+    applyVibeAmbient(v);
+  }, 450);
+
+  setTimeout(() => {
+    vibeWipe.style.transition = 'opacity .35s';
+    vibeWipe.style.opacity = '0';
+    setTimeout(() => {
+      vibeWipe.style.transition = 'none';
+      vibeWipe.style.clipPath = 'circle(0% at 50% 50%)';
+    }, 380);
+  }, 950);
+}
+
+/* ── clock ─────────────────────────────────────────────────────── */
+const clkEl = $('#clk');
+const tick = () => {
+  const d = new Date();
+  const p = n => String(n).padStart(2,'0');
+  clkEl.textContent = `${p(d.getHours())} · ${p(d.getMinutes())} · ${p(d.getSeconds())}`;
+};
+tick(); setInterval(tick, 1000);
+
+/* ── biometric simulation ───────────────────────────────────────── */
+let curBpm = 64, curRpm = 11, curHrv = 72, curCoh = .81, tBio = 0;
+const bpmEl = $('#bpm'), rpmEl = $('#rpm'), hrvEl = $('#hrv'),
+      cohEl = $('#cohVal'), cohFill = $('#cohFill');
+
+setInterval(() => {
+  tBio++;
+  curBpm = Math.round(lerp(curBpm, 60 + 4*Math.sin(tBio*.28) + (Math.random()-.5)*2, .35));
+  curRpm = Math.round(lerp(curRpm, 10 + 1.5*Math.sin(tBio*.10) + (Math.random()-.5)*.4, .2));
+  curHrv = Math.round(lerp(curHrv, 68 + 6*Math.sin(tBio*.20), .25));
+  curCoh = +lerp(curCoh, .76 + .10*Math.sin(tBio*.08), .15).toFixed(2);
+  bpmEl.textContent = curBpm;
+  rpmEl.textContent = curRpm;
+  hrvEl.textContent = curHrv;
+  cohEl.textContent = curCoh.toFixed(2);
+  cohFill.style.width = (curCoh * 100) + '%';
+}, 1400);
+
+/* ── canvas resize helper ──────────────────────────────────────── */
+function fitCanvas(c) {
+  c.width  = window.innerWidth  * DPR;
+  c.height = window.innerHeight * DPR;
+  c.style.width  = window.innerWidth  + 'px';
+  c.style.height = window.innerHeight + 'px';
+}
+
+/* ── sacred geometry · Flower of Life ──────────────────────────── */
+const geoCvs = $('#geoBg'); const gCtx = geoCvs.getContext('2d');
+fitCanvas(geoCvs);
+window.addEventListener('resize', () => fitCanvas(geoCvs));
+
+function drawFlowerOfLife(ctx, cx, cy, r, alpha, col) {
+  ctx.save();
+  ctx.strokeStyle = col;
+  ctx.lineWidth = .6 * DPR;
+  ctx.globalAlpha = alpha;
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, PI2); ctx.stroke();
+  for (let i = 0; i < 6; i++) {
+    const a = i * Math.PI / 3;
+    ctx.beginPath(); ctx.arc(cx + r*Math.cos(a), cy + r*Math.sin(a), r, 0, PI2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx + 2*r*Math.cos(a), cy + 2*r*Math.sin(a), r, 0, PI2); ctx.stroke();
+  }
+  for (let i = 0; i < 6; i++) {
+    const a = (i + .5) * Math.PI / 3;
+    ctx.beginPath(); ctx.arc(cx + r*Math.sqrt(3)*Math.cos(a), cy + r*Math.sqrt(3)*Math.sin(a), r, 0, PI2); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function renderGeo(ts) {
+  const rot = ts * .000018;
+  gCtx.clearRect(0, 0, geoCvs.width, geoCvs.height);
+  const alpha = parseFloat(cssVar('--geo-a')) || .03;
+  const col = cssVar('--geo') || '#888';
+  const r = Math.min(geoCvs.width, geoCvs.height) * .055;
+  gCtx.save();
+  gCtx.translate(geoCvs.width/2, geoCvs.height/2);
+  gCtx.rotate(rot);
+  drawFlowerOfLife(gCtx, 0, 0, r, alpha, col);
+  gCtx.restore();
+  requestAnimationFrame(renderGeo);
+}
+requestAnimationFrame(renderGeo);
+
+/* ── biometric aura · 3 breathing blobs ─────────────────────────── */
+const auraCvs = $('#auraBg'); const aCtx = auraCvs.getContext('2d');
+fitCanvas(auraCvs);
+window.addEventListener('resize', () => fitCanvas(auraCvs));
+
+function parseColorVar(v) {
+  const s = cssVar(v);
+  if (s.startsWith('rgba')) {
+    const m = s.match(/[\d.]+/g);
+    return m ? [+m[0], +m[1], +m[2], +m[3]] : [128,128,128,.3];
+  }
+  if (s.startsWith('rgb(')) {
+    const m = s.match(/[\d.]+/g);
+    return m ? [+m[0], +m[1], +m[2], .4] : [128,128,128,.4];
+  }
+  const hex = s.replace('#','');
+  const big = parseInt(hex, 16);
+  return [(big>>16)&255, (big>>8)&255, big&255, .4];
+}
+
+function renderAura(ts) {
+  const T = ts * .0004;
+  aCtx.clearRect(0, 0, auraCvs.width, auraCvs.height);
+  const blobs = [
+    { xf:.18, yf:.22, rf:.72, px:0,        py:0,        cv:'--aura1' },
+    { xf:.82, yf:.78, rf:.60, px:Math.PI,  py:Math.PI,  cv:'--aura2' },
+    { xf:.50, yf:.50, rf:.45, px:Math.PI/2,py:1.3,      cv:'--aura3' },
+  ];
+  blobs.forEach(b => {
+    const x = (b.xf + .06*Math.sin(T + b.px)) * auraCvs.width;
+    const y = (b.yf + .06*Math.cos(T + b.py)) * auraCvs.height;
+    const r = (b.rf + .04*Math.sin(T*1.3 + b.px)) * Math.min(auraCvs.width, auraCvs.height) * .5;
+    const c = parseColorVar(b.cv);
+    const grad = aCtx.createRadialGradient(x, y, 0, x, y, r);
+    grad.addColorStop(0, `rgba(${c[0]},${c[1]},${c[2]},${c[3]})`);
+    grad.addColorStop(1, `rgba(${c[0]},${c[1]},${c[2]},0)`);
+    aCtx.fillStyle = grad;
+    aCtx.beginPath(); aCtx.arc(x, y, r, 0, PI2); aCtx.fill();
+  });
+  requestAnimationFrame(renderAura);
+}
+requestAnimationFrame(renderAura);
+
+/* ── ECG canvas waveform with QRS spikes ───────────────────────── */
+const ecgCvs = $('#ecgCvs'); const eCtx = ecgCvs.getContext('2d');
+const ECG_N = 320;
+const ecg = new Float32Array(ECG_N);
+let ecgHead = 0, ecgTick = 0;
+
+function fitEcg() {
+  const wrap = ecgCvs.parentElement;
+  const w = wrap.offsetWidth, h = Math.max(60, wrap.offsetHeight - 26);
+  ecgCvs.width  = w * DPR;
+  ecgCvs.height = h * DPR;
+  ecgCvs.style.width  = w + 'px';
+  ecgCvs.style.height = h + 'px';
+}
+
+const gauss = (x,m,s) => Math.exp(-((x-m)**2)/(2*s*s));
+
+setInterval(() => {
+  ecgTick++;
+  const breath = .18 * Math.sin(ecgTick * .010 * PI2);
+  const heart  = .06 * Math.sin(ecgTick * .085 * PI2);
+  const phase  = (ecgTick * .085) % 1;
+  const spike  = phase < .15 ? .65 * gauss(phase, .06, .025) : 0;
+  ecg[ecgHead % ECG_N] = breath + heart + spike + (Math.random()-.5)*.04;
+  ecgHead++;
+}, 28);
+
+function renderEcg() {
+  if (!ecgCvs.width) { requestAnimationFrame(renderEcg); return; }
+  eCtx.clearRect(0, 0, ecgCvs.width, ecgCvs.height);
+  const col = cssVar('--accent');
+  eCtx.strokeStyle = col;
+  eCtx.lineWidth = 1.4 * DPR;
+  eCtx.shadowColor = col;
+  eCtx.shadowBlur = 6 * DPR;
+  eCtx.beginPath();
+  const cy = ecgCvs.height * .5, amp = ecgCvs.height * .38;
+  for (let i = 0; i < ECG_N; i++) {
+    const idx = (ecgHead - ECG_N + i + ECG_N * 10) % ECG_N;
+    const x = (i / (ECG_N - 1)) * ecgCvs.width;
+    const y = cy - ecg[idx] * amp;
+    if (i === 0) eCtx.moveTo(x, y); else eCtx.lineTo(x, y);
+  }
+  eCtx.stroke();
+  eCtx.shadowBlur = 0;
+  requestAnimationFrame(renderEcg);
+}
+setTimeout(() => { fitEcg(); renderEcg(); }, 200);
+window.addEventListener('resize', () => setTimeout(fitEcg, 50));
+
+/* ── lotus generator · Fibonacci tiers (5 + 8 + 13) ────────────── */
+const gardenWrap = $('#gardenWrap');
+const petalsG    = $('#petalsG');
+const CX = 160, CY = 200;
+
+function petalPath(cx, cy, length, width, angleDeg) {
+  const a = (angleDeg - 90) * Math.PI / 180;
+  const tx = cx + length*Math.cos(a), ty = cy + length*Math.sin(a);
+  const la = a + Math.PI/2, ra = a - Math.PI/2;
+  const lx = cx + width*Math.cos(la), ly = cy + width*Math.sin(la);
+  const rx = cx + width*Math.cos(ra), ry = cy + width*Math.sin(ra);
+  const c1lx = lx + (tx - cx)*.5, c1ly = ly + (ty - cy)*.5;
+  const c2lx = tx + (lx - cx)*.35, c2ly = ty + (ly - cy)*.35;
+  const c1rx = rx + (tx - cx)*.5, c1ry = ry + (ty - cy)*.5;
+  const c2rx = tx + (rx - cx)*.35, c2ry = ty + (ry - cy)*.35;
+  return `M${cx},${cy} C${c1lx},${c1ly} ${c2lx},${c2ly} ${tx},${ty} C${c2rx},${c2ry} ${c1rx},${c1ry} ${cx},${cy}Z`;
+}
+
+const TIERS = [
+  { n: 5,  r: 30, len: 56, wid: 16, grad: 'pg1', off: 0,    tier: 1 },
+  { n: 8,  r: 50, len: 70, wid: 17, grad: 'pg1', off: 22.5, tier: 2 },
+  { n: 13, r: 70, len: 88, wid: 19, grad: 'pg2', off: 0,    tier: 3 },
+];
+
+function buildLotus() {
+  petalsG.innerHTML = '';
+  TIERS.forEach(t => {
+    for (let i = 0; i < t.n; i++) {
+      const angle = (360 / t.n) * i + t.off;
+      const a = (angle - 90) * Math.PI / 180;
+      const pcx = CX + t.r * Math.cos(a);
+      const pcy = CY + t.r * Math.sin(a);
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', petalPath(pcx, pcy, t.len, t.wid, angle + 180));
+      path.setAttribute('fill', `url(#${t.grad})`);
+      path.setAttribute('data-tier', t.tier);
+      path.style.setProperty('--r', angle + 'deg');
+      path.classList.add('petal-path', 'hidden');
+      path.style.transitionDelay = `${(i / t.n) * .6}s`;
+      petalsG.appendChild(path);
+    }
+  });
+  applyBloom();
+}
+
+function applyBloom() {
+  const b = parseInt(gardenWrap.dataset.bloom, 10) || 0;
+  $$('.petal-path').forEach(p => {
+    const visible = parseInt(p.dataset.tier, 10) <= b;
+    p.classList.toggle('hidden',  !visible);
+    p.classList.toggle('visible',  visible);
+  });
+}
+buildLotus();
+gardenWrap.addEventListener('click', () => {
+  const b = parseInt(gardenWrap.dataset.bloom, 10) || 0;
+  gardenWrap.dataset.bloom = String(b >= 3 ? 0 : b + 1);
+  applyBloom();
+});
+
+/* ── progress arc — animate to 70% ─────────────────────────────── */
+setTimeout(() => {
+  const arc = $('#progArc');
+  const total = 2 * Math.PI * 148;
+  arc.style.strokeDasharray = total;
+  arc.style.strokeDashoffset = total * (1 - .70);
+}, 700);
+
+/* ── magnetic nav with spring physics ──────────────────────────── */
+$$('[data-mag]').forEach(el => {
+  let cx = 0, cy = 0, tx = 0, ty = 0, raf = null;
+  const spring = () => {
+    cx = lerp(cx, tx, .18); cy = lerp(cy, ty, .18);
+    el.style.transform = `translate(${cx}px,${cy}px)`;
+    if (Math.abs(cx - tx) > .1 || Math.abs(cy - ty) > .1) raf = requestAnimationFrame(spring);
+  };
+  el.addEventListener('mousemove', e => {
+    const r = el.getBoundingClientRect();
+    tx = (e.clientX - (r.left + r.width/2)) * .26;
+    ty = (e.clientY - (r.top  + r.height/2)) * .26;
+    if (!raf) raf = requestAnimationFrame(spring);
+  });
+  el.addEventListener('mouseleave', () => {
+    tx = 0; ty = 0;
+    cancelAnimationFrame(raf); raf = null;
+    const back = () => {
+      cx = lerp(cx, 0, .14); cy = lerp(cy, 0, .14);
+      el.style.transform = `translate(${cx}px,${cy}px)`;
+      if (Math.abs(cx) > .05 || Math.abs(cy) > .05) raf = requestAnimationFrame(back);
+      else { el.style.transform = ''; raf = null; }
+    };
+    raf = requestAnimationFrame(back);
+  });
+  el.addEventListener('click', () => {
+    el.classList.remove('firing');
+    void el.offsetWidth;
+    el.classList.add('firing');
+  });
+  el.addEventListener('animationend', () => el.classList.remove('firing'));
+});
+
+/* ── cursor particle trail + ring ──────────────────────────────── */
+const curCvs = $('#cursorCvs'); const cCtx = curCvs.getContext('2d');
+fitCanvas(curCvs);
+window.addEventListener('resize', () => fitCanvas(curCvs));
+
+const TRAIL = 24;
+const trail = Array.from({length: TRAIL}, () => ({ x: -100, y: -100 }));
+let mX = -100, mY = -100, hover = false;
+
+document.addEventListener('mousemove', e => { mX = e.clientX; mY = e.clientY; });
+document.addEventListener('mouseover', e => {
+  hover = !!e.target.closest('button, a, [tabindex], .vibe-orb, [data-mag], #gardenWrap, .flow-entry');
+});
+
+function renderCursor() {
+  cCtx.clearRect(0, 0, curCvs.width, curCvs.height);
+  trail[0] = { x: lerp(trail[0].x, mX, .35), y: lerp(trail[0].y, mY, .35) };
+  for (let i = 1; i < TRAIL; i++) {
+    trail[i] = { x: lerp(trail[i].x, trail[i-1].x, .42), y: lerp(trail[i].y, trail[i-1].y, .42) };
+  }
+  const col = cssVar('--accent');
+  for (let i = 0; i < TRAIL; i++) {
+    const t = 1 - i / TRAIL;
+    const r = (3 + 4 * t) * DPR;
+    cCtx.globalAlpha = t * .50;
+    cCtx.fillStyle = col;
+    cCtx.beginPath();
+    cCtx.arc(trail[i].x * DPR, trail[i].y * DPR, r, 0, PI2);
+    cCtx.fill();
+  }
+  // outer ring
+  cCtx.globalAlpha = .9;
+  cCtx.strokeStyle = col;
+  cCtx.lineWidth = 1 * DPR;
+  cCtx.beginPath();
+  cCtx.arc(trail[0].x * DPR, trail[0].y * DPR, (hover ? 18 : 11) * DPR, 0, PI2);
+  cCtx.stroke();
+  if (hover) {
+    cCtx.globalAlpha = .35;
+    cCtx.beginPath();
+    cCtx.arc(trail[0].x * DPR, trail[0].y * DPR, 24 * DPR, 0, PI2);
+    cCtx.stroke();
+  }
+  cCtx.globalAlpha = 1;
+  requestAnimationFrame(renderCursor);
+}
+requestAnimationFrame(renderCursor);
+
+/* ── ritual flow — particles + breath arc + phase cycle ────────── */
+const veil    = $('#ritualVeil');
+const stage   = $('#ritualStage');
+const word    = $('#rWord');
+const phaseEl = $('#rPhase');
+const dism    = $('#rDismiss');
+const bArc    = $('#bArc');
+const ARC_LEN = 2 * Math.PI * 170;
+
+const rCvs = $('#ritualCvs'); const rCtx = rCvs.getContext('2d');
+fitCanvas(rCvs);
+window.addEventListener('resize', () => fitCanvas(rCvs));
+
+let ritualOn = false;
+let particles = [];
+const PHASES = [
+  { name: 'inhale…',   label: '4 sec · expand',   dur: 4000, dir:  1 },
+  { name: 'hold',      label: '7 sec · still',    dur: 7000, dir:  0 },
+  { name: 'release',   label: '8 sec · dissolve', dur: 8000, dir: -1 },
+  { name: 'be still',  label: '2 sec · empty',    dur: 2000, dir:  0 },
+];
+let pIdx = 0, phaseTimer = null;
+
+function spawnRitualParticles() {
+  particles = [];
+  $$('.shell .panel, .shell .band-top, .shell .band-bottom').forEach(node => {
+    const r = node.getBoundingClientRect();
+    const n = Math.min(Math.floor(r.width * r.height / 700), 110);
+    for (let i = 0; i < n; i++) {
+      particles.push({
+        x: (r.left + Math.random() * r.width) * DPR,
+        y: (r.top  + Math.random() * r.height) * DPR,
+        vx: (Math.random()-.5) * .4 * DPR,
+        vy: (-1.2 - Math.random() * 1.4) * DPR,
+        life: 1, decay: .003 + Math.random() * .004,
+        size: (.8 + Math.random() * 2) * DPR,
+        hue: Math.random() < .55 ? 'a' : 'b',
+      });
+    }
+  });
+}
+
+function renderParticles() {
+  rCtx.clearRect(0, 0, rCvs.width, rCvs.height);
+  const a1 = cssVar('--accent'), a2 = cssVar('--accent2');
+  particles.forEach(p => {
+    p.x += p.vx; p.y += p.vy; p.vy *= .993; p.life -= p.decay;
+    if (p.life <= 0) return;
+    rCtx.globalAlpha = Math.max(p.life, 0);
+    rCtx.fillStyle = p.hue === 'a' ? a1 : a2;
+    rCtx.beginPath(); rCtx.arc(p.x, p.y, p.size, 0, PI2); rCtx.fill();
+  });
+  particles = particles.filter(p => p.life > 0);
+  rCtx.globalAlpha = 1;
+  if (ritualOn || particles.length > 0) requestAnimationFrame(renderParticles);
+  else rCtx.clearRect(0, 0, rCvs.width, rCvs.height);
+}
+
+function startRitual() {
+  if (ritualOn) return;
+  ritualOn = true;
+  pIdx = 0;
+  spawnRitualParticles();
+  renderParticles();
+  const sh = $('.shell');
+  sh.style.transition = 'opacity 1.2s, filter 1.2s';
+  sh.style.opacity = '0';
+  sh.style.filter  = 'blur(12px)';
+  veil.classList.add('on');
+  setTimeout(() => stage.classList.add('on'), 1000);
+  setTimeout(nextPhase, 1600);
+}
+
+function nextPhase() {
+  if (!ritualOn) return;
+  const p = PHASES[pIdx % PHASES.length];
+  word.style.opacity = 0;
+  setTimeout(() => { word.textContent = p.name; word.style.opacity = 1; }, 200);
+  const cycle = Math.floor(pIdx / PHASES.length) + 1;
+  phaseEl.textContent = `${p.label}  ·  breath ${cycle}`;
+  if (p.dir === 1) {
+    bArc.style.transition = `stroke-dashoffset ${p.dur}ms linear`;
+    bArc.style.strokeDashoffset = '0';
+  } else if (p.dir === -1) {
+    bArc.style.transition = `stroke-dashoffset ${p.dur}ms linear`;
+    bArc.style.strokeDashoffset = String(ARC_LEN);
+  }
+  phaseTimer = setTimeout(() => { pIdx++; nextPhase(); }, p.dur);
+}
+
+function endRitual() {
+  if (!ritualOn) return;
+  ritualOn = false;
+  clearTimeout(phaseTimer);
+  stage.classList.remove('on');
+  veil.classList.remove('on');
+  bArc.style.transition = 'none';
+  bArc.style.strokeDashoffset = String(ARC_LEN);
+  setTimeout(() => {
+    const sh = $('.shell');
+    sh.style.opacity = '1';
+    sh.style.filter  = 'blur(0)';
+    const b = parseInt(gardenWrap.dataset.bloom, 10) || 0;
+    gardenWrap.dataset.bloom = String(Math.min(b + 1, 3));
+    applyBloom();
+  }, 500);
+}
+
+$('#beginRitual').addEventListener('click', startRitual);
+dism.addEventListener('click', endRitual);
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && ritualOn) endRitual();
+  if (e.key === 'v' && !ritualOn) {
+    const list = ['dawn','focus','rest'];
+    const cur = body.dataset.vibe;
+    const next = list[(list.indexOf(cur) + 1) % 3];
+    const fakeR = { left: window.innerWidth/2, top: 24, width: 0, height: 0 };
+    switchVibe(next, { target: { getBoundingClientRect: () => fakeR } });
+  }
+  if (e.key === 'r' && !ritualOn) startRitual();
+});
+
+/* ── kick off ───────────────────────────────────────────────────── */
+console.log('%cThe Sanctuary · v2', 'font:14px serif; color:#6D9B6B; font-style:italic');
+console.log('%c· press v to cycle vibes\n· press r to begin a ritual\n· click the lotus to bloom', 'color:#888');
+
+})();
+</script>
+</body>
+</html>
