@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "sanctuary-prototype-python",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["-m", "http.server", "5173", "--directory", "docs/superpowers/prototypes"],
+      "port": 5173
+    },
+    {
+      "name": "sanctuary-prototype-node",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "serve", "docs/superpowers/prototypes", "-l", "3000"],
+      "port": 3000
+    },
+    {
+      "name": "android-install-debug",
+      "runtimeExecutable": "gradlew.bat",
+      "runtimeArgs": ["installDebug"],
+      "port": 0
+    }
+  ]
+}
