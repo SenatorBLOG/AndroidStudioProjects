@@ -19,6 +19,8 @@ data class AppColors(
     val glowInner: Color,
     val glowBackground: Color,
     val isLight: Boolean = false,
+    // Second hue of the breathing orb gradient — pairs with [primary]
+    val orbSecondary: Color = Color(0xFF818CF8),
 )
 
 // ── Shared palette tokens ─────────────────────────────────────────────────────
@@ -68,6 +70,7 @@ val DefaultDarkColors = AppColors(
     glowOuter     = Teal300.copy(alpha = 0.28f),
     glowInner     = Teal300.copy(alpha = 0.65f),
     glowBackground = Teal300.copy(alpha = 0.08f),
+    orbSecondary  = Color(0xFF818CF8),   // indigo
 )
 
 // ── Ocean theme ───────────────────────────────────────────────────────────────
@@ -85,6 +88,7 @@ val OceanThemeColors = AppColors(
     glowOuter     = Blue200.copy(alpha = 0.35f),
     glowInner     = Color(0xFF65A8FF).copy(alpha = 0.70f),
     glowBackground = Color(0xFF65A8FF).copy(alpha = 0.10f),
+    orbSecondary  = Color(0xFF22D3EE),   // cyan
 )
 
 // ── Forest theme ──────────────────────────────────────────────────────────────
@@ -102,6 +106,7 @@ val ForestThemeColors = AppColors(
     glowOuter     = Color(0xFF4C8B6B).copy(alpha = 0.30f),
     glowInner     = Color(0xFF4C8B6B).copy(alpha = 0.62f),
     glowBackground = Color(0xFF4C8B6B).copy(alpha = 0.08f),
+    orbSecondary  = Color(0xFF86EFAC),   // spring green
 )
 
 // ── Sunset theme ──────────────────────────────────────────────────────────────
@@ -119,6 +124,7 @@ val SunsetThemeColors = AppColors(
     glowOuter     = Color(0xFFD78C6A).copy(alpha = 0.30f),
     glowInner     = Color(0xFFD78C6A).copy(alpha = 0.60f),
     glowBackground = Color(0xFFD78C6A).copy(alpha = 0.08f),
+    orbSecondary  = Color(0xFFF472B6),   // dusk pink
 )
 
 // ── Day (light) theme ─────────────────────────────────────────────────────────
@@ -137,6 +143,7 @@ val DayThemeColors = AppColors(
     glowInner      = Color(0xFF0D9488).copy(alpha = 0.45f),
     glowBackground = Color(0xFF0D9488).copy(alpha = 0.06f),
     isLight        = true,
+    orbSecondary   = Color(0xFF38BDF8),   // sky
 )
 
 // ── CompositionLocal — screens read current theme without passing params ──────

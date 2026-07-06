@@ -40,11 +40,11 @@ node_modules/
 package.json
 package-lock.json
 
-# ── Debug artifacts / stray files ─────────────────────────────────────────────
-socket_*
+# ── Debug artifacts / stray files (repo root only — note leading slash) ──────
+/socket_*
 *.class
-java.base/
-com/
-.android-home/
-.kotlin/
+/java.base/
+/com/
+/.android-home/
+/.kotlin/
 /*.png

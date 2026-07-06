@@ -66,6 +66,7 @@ import androidx.navigation.NavController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import com.breatheonline.breathe.R
+import com.breatheonline.breathe.ui.components.AtmosphericBackground
 import com.breatheonline.breathe.ui.components.AuthTextField
 import com.breatheonline.breathe.ui.components.PasswordTextField
 import com.breatheonline.breathe.ui.theme.AppColors
@@ -113,6 +114,7 @@ fun LoginScreen(
             .background(colors.background)
             .systemBarsPadding(),
     ) {
+        AtmosphericBackground(colors = colors)
         AnimatedVisibility(
             visible = visible,
             enter   = fadeIn(tween(500)) + slideInVertically(

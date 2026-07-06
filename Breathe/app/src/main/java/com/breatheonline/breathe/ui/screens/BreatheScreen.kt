@@ -8,6 +8,7 @@ import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -61,7 +62,9 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -72,6 +75,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.breatheonline.breathe.R
+import com.breatheonline.breathe.ui.components.AtmosphericBackground
+import com.breatheonline.breathe.ui.components.GlowButton
 import com.breatheonline.breathe.ui.components.SessionFeedbackModal
 import com.breatheonline.breathe.ui.theme.AppColors
 import com.breatheonline.breathe.viewmodel.BREATH_PRESETS
@@ -119,6 +124,7 @@ fun BreatheScreen(
     }
 
     Box(modifier = Modifier.fillMaxSize().background(colors.background)) {
+        AtmosphericBackground(colors = colors)
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -340,10 +346,6 @@ private fun MiniLiveStat(value: String, label: String, colors: AppColors) {
 
 // ── Breathing Circle ──────────────────────────────────────────────────────────
 
-private val OrbTeal   = Color(0xFF2DD4BF)
-private val OrbIndigo = Color(0xFF818CF8)
-private val OrbGlow   = Color(0xFF5EECD4)
-
 @Composable
 private fun BreathingCircle(
     state: BreatheState,
@@ -361,6 +363,10 @@ private fun BreathingCircle(
     val containerHeight = if (expanded) 420.dp else 320.dp
     val isActive = state.phase != BreathPhase.IDLE && state.phase != BreathPhase.DONE
 
+    // Theme-aware orb duet — every theme breathes in its own hues
+    val orbA = colors.primary
+    val orbB = colors.orbSecondary
+
     // Idle glow pulse — slower when active (breathing cycle drives the visual energy)
     val infiniteTransition = rememberInfiniteTransition(label = "orb_glow")
     val glowAlpha by infiniteTransition.animateFloat(
@@ -372,6 +378,22 @@ private fun BreathingCircle(
         ),
         label = "glow_alpha",
     )
+    // Slow orbital drift of the petal layers — the orb feels alive even at rest
+    val petalAngle by infiniteTransition.animateFloat(
+        initialValue  = 0f,
+        targetValue   = 360f,
+        animationSpec = infiniteRepeatable(tween(48000, easing = LinearEasing)),
+        label = "petal_angle",
+    )
+
+    // Phase progress ring — sweeps once per phase, freezes on pause
+    val totalPhaseS = (state.phaseDurationMs / 1000f).coerceAtLeast(0.001f)
+    val animSecLeft by animateFloatAsState(
+        targetValue   = state.phaseSecondsLeft.toFloat(),
+        animationSpec = tween(900, easing = LinearEasing),
+        label = "phase_arc",
+    )
+    val phaseFraction = if (isActive) (1f - animSecLeft / totalPhaseS).coerceIn(0f, 1f) else 0f
 
     Box(
         modifier         = Modifier.fillMaxWidth().height(containerHeight),
@@ -388,8 +410,8 @@ private fun BreathingCircle(
                     val baseR = size.width / 2
                     drawCircle(
                         brush = Brush.radialGradient(
-                            0f   to OrbGlow.copy(alpha = glowAlpha),
-                            0.45f to OrbGlow.copy(alpha = glowAlpha * 0.40f),
+                            0f   to orbA.copy(alpha = glowAlpha),
+                            0.45f to orbA.copy(alpha = glowAlpha * 0.40f),
                             1f   to Color.Transparent,
                             center = Offset(cx, cy),
                             radius = baseR + 90.dp.toPx(),
@@ -399,14 +421,52 @@ private fun BreathingCircle(
                     if (isActive) {
                         drawCircle(
                             brush = Brush.radialGradient(
-                                0f   to OrbGlow.copy(alpha = glowAlpha * 0.55f),
-                                0.6f to OrbGlow.copy(alpha = glowAlpha * 0.15f),
+                                0f   to orbB.copy(alpha = glowAlpha * 0.55f),
+                                0.6f to orbB.copy(alpha = glowAlpha * 0.15f),
                                 1f   to Color.Transparent,
                                 center = Offset(cx, cy),
                                 radius = baseR + 48.dp.toPx(),
                             ),
                             radius = baseR + 48.dp.toPx(),
                         )
+                    }
+
+                    // ── Orbiting petals: two counter-rotating translucent layers ──
+                    val petalR  = baseR * 0.68f
+                    val orbitR  = baseR * 0.40f
+                    rotate(petalAngle, pivot = Offset(cx, cy)) {
+                        for (k in 0 until 3) {
+                            val a = Math.toRadians((k * 120).toDouble())
+                            val px = cx + (orbitR * Math.cos(a)).toFloat()
+                            val py = cy + (orbitR * Math.sin(a)).toFloat()
+                            drawCircle(
+                                brush = Brush.radialGradient(
+                                    0f to orbA.copy(alpha = 0.26f),
+                                    1f to Color.Transparent,
+                                    center = Offset(px, py),
+                                    radius = petalR,
+                                ),
+                                radius = petalR,
+                                center = Offset(px, py),
+                            )
+                        }
+                    }
+                    rotate(-petalAngle * 0.7f, pivot = Offset(cx, cy)) {
+                        for (k in 0 until 2) {
+                            val a = Math.toRadians((90 + k * 180).toDouble())
+                            val px = cx + (orbitR * 0.8f * Math.cos(a)).toFloat()
+                            val py = cy + (orbitR * 0.8f * Math.sin(a)).toFloat()
+                            drawCircle(
+                                brush = Brush.radialGradient(
+                                    0f to orbB.copy(alpha = 0.22f),
+                                    1f to Color.Transparent,
+                                    center = Offset(px, py),
+                                    radius = petalR * 1.1f,
+                                ),
+                                radius = petalR * 1.1f,
+                                center = Offset(px, py),
+                            )
+                        }
                     }
                 },
             contentAlignment = Alignment.Center,
@@ -419,13 +479,14 @@ private fun BreathingCircle(
                         val cy = size.height / 2
                         val r  = size.width / 2
 
-                        // Orb body: teal → indigo diagonal gradient
+                        // Orb body: off-center radial gradient = lit sphere, not flat disc
                         drawCircle(
-                            brush = Brush.linearGradient(
-                                0f to OrbTeal,
-                                1f to OrbIndigo,
-                                start = Offset(0f, 0f),
-                                end   = Offset(size.width, size.height),
+                            brush = Brush.radialGradient(
+                                0f    to orbA,
+                                0.55f to orbA.copy(alpha = 0.92f),
+                                1f    to orbB,
+                                center = Offset(cx * 0.72f, cy * 0.62f),
+                                radius = r * 1.65f,
                             ),
                             radius = r,
                             center = Offset(cx, cy),
@@ -434,8 +495,8 @@ private fun BreathingCircle(
                         // Glassmorphism highlight: bright spot top-left
                         drawCircle(
                             brush = Brush.radialGradient(
-                                0f    to Color.White.copy(alpha = 0.55f),
-                                0.42f to Color.White.copy(alpha = 0.18f),
+                                0f    to Color.White.copy(alpha = 0.50f),
+                                0.42f to Color.White.copy(alpha = 0.16f),
                                 1f    to Color.Transparent,
                                 center = Offset(cx * 0.50f, cy * 0.40f),
                                 radius = r * 0.68f,
@@ -449,7 +510,7 @@ private fun BreathingCircle(
                             brush = Brush.radialGradient(
                                 0f    to Color.Transparent,
                                 0.70f to Color.Transparent,
-                                1f    to Color(0xFF0D2B35).copy(alpha = 0.32f),
+                                1f    to Color.Black.copy(alpha = 0.28f),
                                 center = Offset(cx, cy),
                                 radius = r,
                             ),
@@ -459,11 +520,25 @@ private fun BreathingCircle(
 
                         // Rim stroke
                         drawCircle(
-                            color  = OrbTeal.copy(alpha = if (isActive) 0.65f else 0.35f),
+                            color  = orbA.copy(alpha = if (isActive) 0.65f else 0.35f),
                             radius = r,
                             center = Offset(cx, cy),
                             style  = Stroke(width = 1.5.dp.toPx()),
                         )
+
+                        // Phase progress ring — thin arc floating just outside the orb
+                        if (phaseFraction > 0f) {
+                            val ringPad = 14.dp.toPx()
+                            drawArc(
+                                color      = Color.White.copy(alpha = 0.85f),
+                                startAngle = -90f,
+                                sweepAngle = 360f * phaseFraction,
+                                useCenter  = false,
+                                topLeft    = Offset(-ringPad, -ringPad),
+                                size       = androidx.compose.ui.geometry.Size(size.width + ringPad * 2, size.height + ringPad * 2),
+                                style      = Stroke(width = 3.dp.toPx(), cap = StrokeCap.Round),
+                            )
+                        }
                     },
                 contentAlignment = Alignment.Center,
             ) {
@@ -501,16 +576,23 @@ private fun BreathingCircle(
                             if (state.phaseSecondsLeft > 0) {
                                 Text(
                                     text       = "${state.phaseSecondsLeft}",
-                                    style      = MaterialTheme.typography.displaySmall,
+                                    style      = MaterialTheme.typography.displaySmall.copy(
+                                        fontSize      = 58.sp,
+                                        lineHeight    = 62.sp,
+                                        letterSpacing = (-1).sp,
+                                    ),
                                     color      = Color.White,
-                                    fontWeight = FontWeight.Bold,
+                                    fontWeight = FontWeight.ExtraLight,
                                 )
                             }
                             if (phaseText.isNotEmpty()) {
                                 Text(
                                     text  = phaseText,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = Color.White.copy(alpha = 0.90f),
+                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                        fontSize      = 20.sp,
+                                        letterSpacing = 3.sp,
+                                    ),
+                                    color = Color.White.copy(alpha = 0.88f),
                                 )
                             }
                         }
@@ -525,7 +607,7 @@ private fun BreathingCircle(
                 horizontalArrangement = Arrangement.spacedBy(7.dp),
             ) {
                 repeat(state.cyclesCompleted.coerceAtMost(8)) {
-                    Box(Modifier.size(6.dp).background(OrbTeal.copy(alpha = 0.75f), CircleShape))
+                    Box(Modifier.size(6.dp).background(orbA.copy(alpha = 0.75f), CircleShape))
                 }
             }
         }
@@ -595,17 +677,12 @@ private fun SessionControls(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         if (isIdle) {
-            Button(
+            GlowButton(
+                text     = stringResource(R.string.breathe_start_button),
+                colors   = colors,
                 onClick  = onStart,
-                modifier = Modifier.fillMaxWidth().height(54.dp),
-                shape    = RoundedCornerShape(18.dp),
-                colors   = ButtonDefaults.buttonColors(
-                    containerColor = colors.primary,
-                    contentColor   = colors.onPrimary,
-                ),
-            ) {
-                Text(stringResource(R.string.breathe_start_button), style = MaterialTheme.typography.labelLarge)
-            }
+                modifier = Modifier.fillMaxWidth(),
+            )
         } else if (isRunning) {
             Row(
                 modifier              = Modifier.fillMaxWidth(),
@@ -1119,14 +1196,13 @@ private fun CompletionOverlay(state: BreatheState, colors: AppColors, onDone: ()
                 color = colors.subtitle,
             )
             Spacer(Modifier.height(48.dp))
-            Button(
+            GlowButton(
+                text     = stringResource(R.string.btn_done),
+                colors   = colors,
                 onClick  = onDone,
-                modifier = Modifier.fillMaxWidth().height(54.dp),
-                shape    = RoundedCornerShape(16.dp),
-                colors   = ButtonDefaults.buttonColors(containerColor = colors.primary),
-            ) {
-                Text(stringResource(R.string.btn_done), style = MaterialTheme.typography.labelLarge, color = colors.onPrimary)
-            }
+                modifier = Modifier.fillMaxWidth(),
+                cornerRadius = 16.dp,
+            )
         }
     }
 }

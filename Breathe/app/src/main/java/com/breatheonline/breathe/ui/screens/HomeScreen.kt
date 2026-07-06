@@ -75,6 +75,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.breatheonline.breathe.R
 import com.breatheonline.breathe.ui.components.AiCoachBottomSheet
+import com.breatheonline.breathe.ui.components.AtmosphericBackground
+import com.breatheonline.breathe.ui.components.GlowButton
 import com.breatheonline.breathe.ui.theme.AppColors
 import com.breatheonline.breathe.viewmodel.AiCoachViewModel
 import com.breatheonline.breathe.viewmodel.HomeViewModel
@@ -172,46 +174,8 @@ fun HomeScreen(
             .fillMaxSize()
             .background(colors.background),
     ) {
-        // ── Parallax mesh-gradient background ─────────────────────────────────
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .graphicsLayer { translationY = -parallaxOffset }
-                .drawBehind {
-                    val w = size.width
-                    val h = size.height
-                    // Blob 1 — top-left glow
-                    drawCircle(
-                        brush = Brush.radialGradient(
-                            listOf(colors.primary.copy(alpha = 0.14f), Color.Transparent),
-                            center = Offset(w * 0.12f, h * 0.08f),
-                            radius = w * 0.62f,
-                        ),
-                        radius = w * 0.62f,
-                        center = Offset(w * 0.12f, h * 0.08f),
-                    )
-                    // Blob 2 — bottom-right glow
-                    drawCircle(
-                        brush = Brush.radialGradient(
-                            listOf(colors.primary.copy(alpha = 0.10f), Color.Transparent),
-                            center = Offset(w * 0.92f, h * 0.82f),
-                            radius = w * 0.58f,
-                        ),
-                        radius = w * 0.58f,
-                        center = Offset(w * 0.92f, h * 0.82f),
-                    )
-                    // Blob 3 — center ambient
-                    drawCircle(
-                        brush = Brush.radialGradient(
-                            listOf(colors.primary.copy(alpha = 0.05f), Color.Transparent),
-                            center = Offset(w * 0.52f, h * 0.44f),
-                            radius = w * 0.72f,
-                        ),
-                        radius = w * 0.72f,
-                        center = Offset(w * 0.52f, h * 0.44f),
-                    )
-                },
-        )
+        // ── Parallax mesh-gradient background (shared visual language) ────────
+        AtmosphericBackground(colors = colors, offsetY = parallaxOffset)
     LazyColumn(
         state   = lazyListState,
         modifier = Modifier
@@ -401,41 +365,20 @@ fun HomeScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp),
             ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(colors.primary)
-                        .clickable {
-                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                            navController.navigate(Route.MEDITATION) {
-                                popUpTo(Route.HOME) { saveState = true }
-                                launchSingleTop = true
-                                restoreState    = true
-                            }
+                GlowButton(
+                    text     = stringResource(R.string.home_start_meditation),
+                    colors   = colors,
+                    icon     = Icons.Default.Spa,
+                    cornerRadius = 20.dp,
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick  = {
+                        navController.navigate(Route.MEDITATION) {
+                            popUpTo(Route.HOME) { saveState = true }
+                            launchSingleTop = true
+                            restoreState    = true
                         }
-                        .padding(vertical = 16.dp),
-                ) {
-                    Row(
-                        verticalAlignment     = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center,
-                    ) {
-                        Icon(
-                            imageVector        = Icons.Default.Spa,
-                            contentDescription = null,
-                            tint               = colors.onPrimary,
-                            modifier           = Modifier.size(18.dp),
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text(
-                            text       = stringResource(R.string.home_start_meditation),
-                            style      = MaterialTheme.typography.labelLarge,
-                            color      = colors.onPrimary,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                    }
-                }
+                    },
+                )
 
                 Row(horizontalArrangement = Arrangement.Center) {
                     TextButton(onClick = { navController.navigate(Route.FAQ) }) {
